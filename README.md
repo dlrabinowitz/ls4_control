@@ -7,23 +7,17 @@ It has been tested with Ubunto 23.10
 
 
 Installation:
-
-copy the base installationin
+    copy the base installationin
 
 in bash:
-
-  source scripts/setup.bash
-  
-  pip install -r ls4_requirements.txt
-  
-  cd archon-main
-  
-  pip install .
+    source scripts/setup.bash
+    pip install -r ls4_requirements.txt
+    cd archon-main
+    pip install .
   
 
 test:
-
-  scripts/test.bash
+    scripts/test.bash
 
 
   
