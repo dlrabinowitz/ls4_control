@@ -1,0 +1,61 @@
+name: Test
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'docs/**'
+      - '**.md'
+      - '**.rst'
+  pull_request:
+    branches: [main]
+    paths-ignore:
+      - 'docs/**'
+      - '**.md'
+      - '**.rst'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.9', '3.10', '3.11', '3.12']
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade wheel pip setuptools
+          pip install .[fitsio]
+
+      - name: Lint with ruff
+        run: |
+          pip install ruff
+          ruff check archon/ tests/
+
+      - name: Lint with black
+        run: |
+          pip install black
+          black --check archon/ tests/
+
+      - name: Test with pytest
+        run: |
+          pip install pytest pytest-mock pytest-asyncio pytest-cov
+          pytest
+        env:
+          OBSERVATORY: LCO
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          file: ./coverage.xml

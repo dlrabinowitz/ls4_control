@@ -1,0 +1,115 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {},
+  "type": "object",
+  "patternProperties": {},
+  "properties": {
+    "system": {
+      "type": "object",
+      "properties": {
+        "controller": { "type": "string" }
+      },
+      "additionalProperties": true,
+      "required": ["controller"]
+    },
+    "error": {
+      "oneOf": [
+        { "type": "string" },
+        {
+          "type": "object",
+          "properties": {
+            "controller": { "type": "string" },
+            "error": { "type": "string" }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "exception_type": { "type": "string" },
+            "exception_message": { "type": "string" }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "status": {
+      "type": "object",
+      "properties": {
+        "controller": { "type": "string" },
+        "status": { "type": "integer" },
+        "status_names": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": true,
+      "required": ["controller", "status", "status_names"]
+    },
+    "frame": {
+      "type": "object",
+      "properties": {
+        "controller": { "type": "string" }
+      },
+      "patternProperties": {
+        "^(?!controller).+$": { "type": "integer" }
+      },
+      "additionalProperties": false,
+      "required": ["controller"]
+    },
+    "config": {
+      "type": "object",
+      "properties": {
+        "controller": { "type": "string" },
+        "config": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProps": false,
+      "required": ["controller", "config"]
+    },
+    "text": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "controller": { "type": "string" },
+            "text": { "type": "string" }
+          },
+          "additionalProperties": false,
+          "required": ["controller", "text"]
+        },
+        {
+          "type": "string"
+        }
+      ]
+    },
+    "log": {
+      "type": "object",
+      "properties": {
+        "controller": { "type": "string" },
+        "log": { "type": "string" }
+      },
+      "additionalProperties": false,
+      "required": ["controller", "log"]
+    },
+    "raw_reply": {
+      "type": "object",
+      "properties": {
+        "controller": { "type": "string" },
+        "command": { "type": "string" },
+        "response": { "type": "string" }
+      },
+      "additionalProperties": false,
+      "required": ["controller", "command", "response"]
+    },
+    "next_exposure_no": { "type": "integer" },
+    "filenames": { "type": "array", "items": { "type": "string" } },
+    "lines": { "type": "integer" },
+    "pixels": { "type": "integer" },
+    "preskiplines": { "type": "integer" },
+    "postskiplines": { "type": "integer" },
+    "preskippixels": { "type": "integer" },
+    "postskippixels": { "type": "integer" },
+    "overscanpixels": { "type": "integer" },
+    "overscanlines": { "type": "integer" },
+    "hbin": { "type": "integer" },
+    "vbin": { "type": "integer" }
+  },
+  "additionalProperties": false
+}

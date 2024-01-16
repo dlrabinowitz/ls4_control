@@ -1,0 +1,28 @@
+---
+# This file contains only basic configuration for the controller. Other configuration
+# parameters are defined for each specific spectrograph and merged with this
+# configuration.
+
+timeouts:
+  controller_connect: 5
+  write_config_timeout: 2
+  write_config_delay: 0.0001
+  expose_timeout: 2
+  readout_expected: 40
+  readout_max: 60
+  fetching_expected: 5
+  fetching_max: 10
+  flushing: 1.2
+
+files:
+  data_dir: '~/'
+  template: 'sdR-{ccd}-{exposure_no:08d}.fits.gz'
+  write_async: true
+  write_engine: astropy
+
+checksum:
+  write: true
+  mode: md5
+
+archon:
+  default_parameters: {}

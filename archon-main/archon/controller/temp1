@@ -1,0 +1,134 @@
+    async def sync_set_param(
+        self,
+        controller_index: int,
+        param: str,
+        value: int,
+        force: bool,
+    ):
+        """ follower : 
+            1. make sure the event is clear.
+            2. acquire the semaphore.
+            3. wait for the event to be set.
+            2. execute FASTPREPPARAM and FASTLOADPARAM for the specified param/value pair.
+            3. aquire the semaphore again.
+            4. return.
+
+            leader: 
+            1. make sure the event is clear.
+            2. wait for the followers to get ready.
+            2. execute FASTPREPPARAM for the specified param/value pair. 
+            3. set the event.
+            4. wait for the semaphore to get ready again.
+            5. execute FASTLOADPARAM for the specified param/value paira
+            6. return.
+        """
+
+        error_msg = None
+        cmd = None
+
+        controller = self.controllers[controller_index]
+ 
+        if self.leader:
+           prefix = "leader %s:" % self.name
+        else:
+           prefix = "follower %s:" % self.name
+
+        # make sure event is not yet set 
+
+        if self.event.is_set():
+            error_msg = "%s event already set before synchronously setting parameter %s to %s" % \
+                         (prefix,param,value)
+        elif self.leader:
+            log.info("%s waiting for followers to sync up" % prefix)
+            try:
+               self._await_followers()
+               log.info("%s followers have synced up`" % prefix)
+            except Exception as e:
+               error_msg = "%s Exception syncing followers: %s" % (prefix,e)
+        else:
+             log.info("%s acquiring semaphore for the first time" % prefix)
+             await self.semaphore.acquire()
+             log.info("%s semaphore acquired for the first time" % prefix)
+             log.info("%s now waiting for event to be set" % prefix)
+             await self.event.wait()
+             log.info("%s event has been set" % prefix)
+
+        # Here all the controllers send the FASTPREPPARAM. However, because the
+        # follower are still waiting for the event to be set by the lead, the lead
+        # sends the FASTPREPPARAM before any of the followers.
+        if error_msg is None:
+          log.info("%s sending FASTPREPPARAM" % prefix)
+          cmd = await self.send_command(f"FASTPREPPARAM {param} {value}")
+          if not cmd.succeeded():
+             error_msg = "%s failed preparing parameters %s to %s" % (prefix,param,value))
+
+        if self.leader and error_msg is None:
+           log.info("%s setting event" % prefix)
+           self.event.set()
+           # In parallel threads, the followers are now sending the FASTPREPPARAM and
+           # FASTLOADPARAM commands to the respective controllers. However, the loading
+           # in these controllers does not actually occur until the followers have 
+           # all synced up again anthe lead controller finally send the FASTLOADPARAM command.
+           #
+           # wait here for the followers to sync up.
+           log.info("%s waiting followers to sync up again" % prefix)
+           try:
+             self._await_followers()
+             log.info("%s follower have synced up: % prefix)
+           except Exception as e:
+             error_msg = "%s Exception waiting for followers to sync up: %s" % (prefix,e)
+           log.info("%s clearing event" % prefix)
+           self.sync_event.clear()
+           log.info("%s event has been cleared" % prefix)
+
+           # once the followers have synced up again, it is safe for the lead
+           # controller to send the FASTLOADPARAM command.
+           # The followers will load the param synchronously.
+           if error_msg is None:
+             log.info("%s setting param %s to %s" % (prefix,param,value))
+             await cmd = self.set_param(param=param,value=value,force=force)
+             log.info("%s done setting param %s to %s" % (prefix,param,value))
+
+        elif error_msg is None:
+           # Here the follower send the FASTLOADPARAM command, but it does
+           # not do anything until the lead controller does the same.
+
+           log.info("%s setting param %s to %s" % (prefix,param,value))
+           await cmd = self.set_param(param=param,value=value)
+           log.info("%s done setting param %s to %s" % (prefix,param,value))
+
+           # Here is where the followers signal the lead controller that they are
+           # done sending the FASTPREPPARAM and FASTLOADPARAM commands
+           log.info("%s acquiring semaphore second time" % prefix)
+           await self.semaphore.acquire()
+           log.info("%s done acquiring semaphore second time" % prefix)
+
+        if error_msg:
+           log.error(error_msg)
+           raise ValueError(error_msg)
+
+        else:
+           return cmd
+
+    async def _await_followers(self):
+        """
+           wait for followers to get ready.
+           The semaphore is released mutliple times, once for each follower.
+           After every follower has acquired the semaphore, it will be locked again,
+           and all the followers will be ready.
+        """
+ 
+        assert self.semaphore.locked(), "semaphore is not locked before awaiting followers"
+
+        log.info("releasing semaphore %d times"" % self.num_followers)
+        for _ in range(0,self.num_followers):
+            self.semaphore.release()
+
+        log.info("waiting %d msec for semaphore to lock again" % self.follower_timeout_msec)
+        dt=0
+        while not self.semphore.locked() and dt < self.follower_timeout_msec:
+            asyncio.sleep(0.001)
+            dt += 1
+        assert dt < self.follower_timeout_msec, "timeout waiting for semaphore to lock again"
+        log.info("waited %d msec for semaphore to lock again" % dt)
+

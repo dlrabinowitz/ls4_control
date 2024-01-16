@@ -1,0 +1,33 @@
+Code to run the Archon controller for the LS4 camera
+D. Rabinowitz 2023 Dec 18
+
+requirements:
+  Python environment with required modules (ls4_venv)
+  Python module archon-main with ls4 addition
+  bash shell
+
+Installation:
+  source ~/ls4_venv/bin/activate
+  cd archon-main
+  pip install .
+
+Usage:
+  bash
+  cd source directory for this package
+  source scripts/setup.bash
+  scripts/test.bash
+
+output:
+  test.fits
+
+configuration:
+  conf/yale_se_sdss.acf
+
+source:
+  python/test_controller.py
+  scripts/setup.bash
+  scripts/test.bash
+
+archon-main
+  
+

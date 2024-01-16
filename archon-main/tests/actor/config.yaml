@@ -1,0 +1,63 @@
+---
+controllers:
+  sp1:
+    host: 10.7.45.26
+    port: 4242
+    detectors:
+      r1:
+        sensor: A
+        taps: 4
+      b1:
+        sensor: B
+        taps: 4
+      z1:
+        sensor: C
+        taps: 4
+
+window_modes:
+  test_mode:
+    lines: 50
+    pixels: 50
+
+archon:
+  acf_file: '../data/BOSS_extra.acf'
+
+files:
+  data_dir: '/var/tmp'
+  split: true
+  template: 'sdR-{ccd}-{exposure_no:08d}.fits.gz'
+  use_sjd: true
+
+checksum:
+  write: true
+  mode: md5
+
+header:
+  CCDTEMP1:
+    command: status
+    detectors:
+      r1: ['mod2/tempa', 'Temperature of the sensor (HEATERX 2)', 2]
+      b1: ['mod12/tempc', 'Temperature of the sensor (HEATERX 12)', 2]
+      z1: ['mod12/tempa', 'Temperature of the sensor (HEATERX 12)', 2]
+      r2: ['mod2/tempa', 'Temperature of the sensor (HEATERX 2)', 2]
+      b2: ['mod12/tempc', 'Temperature of the sensor (HEATERX 12)', 2]
+      z2: ['mod12/tempa', 'Temperature of the sensor (HEATERX 12)', 2]
+  CCDTEMP2:
+    command: status
+    detectors:
+      r1: ['mod2/tempb', 'LN2 temperature (HEATERX 2)', 2]
+      b1: ['mod2/tempc', 'LN2 temperature (HEATERX 2)', 2]
+      z1: ['mod12/tempb', 'LN2 temperature (HEATERX 12)', 2]
+      r2: ['mod2/tempa', 'Temperature of the sensor (HEATERX 2)', 2]
+      b2: ['mod12/tempc', 'Temperature of the sensor (HEATERX 12)', 2]
+      z2: ['mod12/tempa', 'Temperature of the sensor (HEATERX 12)', 2]
+    BADKEY: 'Invalid'
+    BADDICT:
+      detectors:
+        not_a_ccd: ['key1', 'value1']
+
+actor:
+  name: archon
+  host: localhost
+  port: 5672
+  run_recovery_on_start: false
