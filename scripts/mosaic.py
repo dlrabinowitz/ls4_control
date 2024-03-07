@@ -118,11 +118,13 @@ def write_fits(data=None,header=None,output='test.fits'):
     hdul.writeto(output,overwrite=True)
     hdul.close()
 
-def subtract_bias(data=None,pre_x=0,post_x=0,pre_y=0,post_y=0,amp_name=None):
+def subtract_col_bias(data=None,pre_x=0,post_x=0,pre_y=0,post_y=0,amp_name=None):
 
     width=data.shape[1]
     height=data.shape[0]
 
+    y1 = int(height/2)
+    y2 = height
     if amp_name == 'LEFT':
         x1 = width-post_x+1
         x2 = width
@@ -133,14 +135,67 @@ def subtract_bias(data=None,pre_x=0,post_x=0,pre_y=0,post_y=0,amp_name=None):
     z1=0.0
     z2=0.0
     for x in range(x1,x2):
-        for y in range(0,height):
+        for y in range(y1,y2):
             z = float(data[y][x])
             z2 = z2 + (z*z)
             z1 = z1 + z
             n += 1
     avg= z1/float(n)
     rms = np.sqrt((z2/(float(n)) - avg*avg))
-    data1 = data - int(avg) + 1000
+
+    #3-sigma clip
+    n=0
+    z1=0.0
+    z2=0.0
+    z_min = avg-(3.0*rms)
+    z_max = avg+(3.0*rms)
+    for x in range(x1,x2):
+        for y in range(y1,y2):
+            z = float(data[y][x])
+            if z>z_min and z < z_max:
+              z2 = z2 + (z*z)
+              z1 = z1 + z
+              n += 1
+
+    if n>10:
+      avg= z1/float(n)
+      rms = np.sqrt((z2/(float(n)) - avg*avg))
+    else:
+      avg=0.0
+      rms=0.0
+
+
+
+    temp_data = np.zeros(shape=data.shape,dtype=np.double)
+    temp_data = data
+    temp_data = temp_data - avg + 1000.0
+    data1 = np.zeros(shape=data.shape,dtype=np.ushort)
+    data1 = temp_data
+
+    return data1,avg,rms
+
+def subtract_row_bias(data=None,pre_x=0,post_x=0,pre_y=0,post_y=0,amp_name=None):
+
+    width=data.shape[1]
+    height=data.shape[0]
+
+    n=0
+    z1=0.0
+    z2=0.0
+    y1 = height-10
+    y2 = height
+    x1=1
+    x2=width
+
+    for y in range(y1,y2):
+       for x in range(x1,x2):
+            z = float(data[y][x])
+            z2 = z2 + (z*z)
+            z1 = z1 + z
+            n += 1
+    avg= z1/float(n)
+    rms = np.sqrt((z2/(float(n)) - avg*avg))
+    data1 = (data + 1000) - int(avg)
 
     return data1,avg,rms
 
@@ -172,21 +227,35 @@ def assemble_mosaic(conf=None):
                    (im,im_data_raw.shape,shape)
      ccd_name= im_head['CCD_NAME'].strip()
      amp_name = im_head['AMP_NAME'].strip()
+
+     # for the NE quadrant CCD in A position, orientations are reversed for both amps
+     if ccd_name == 'NE_A' and amp_name == 'LEFT':
+            amp_name = 'RIGHT'
+     elif ccd_name == 'NE_A' and amp_name == 'RIGHT':
+            amp_name = 'LEFT'
+
+
      assert ccd_name in ccd_map.keys(),"ccd_name %s not in ccd_map" % ccd_name
      assert amp_name in ['LEFT','RIGHT'],"amp_name %s must be LEFT or RIGHT" % amp_name
 
-     im_data,bias,rms = subtract_bias(im_data_raw,prescan_x, postscan_x,prescan_y,postscan_y,amp_name)
+     if conf['bias']:
+       im_data,bias,rms = subtract_col_bias(im_data_raw,prescan_x, postscan_x,prescan_y,postscan_y,amp_name)
+     else:
+       im_data=im_data_raw
+       bias=0.0
+       rms=0.0
 
-     print("image %s: ccd_name: %s  amp_name: %s bias: %7.3f rms: %7.3f" % (im,ccd_name,amp_name,bias,rms))
+     min_val = np.min(im_data)
+     max_val = np.max(im_data)
 
      offsets = ccd_map[ccd_name]
      x0 = offsets[0]*width*amps_per_ccd
      if amp_name == 'RIGHT':
         x0 += width
      y0 = offsets[1]*height
-     print("image %s: ccd_name: %s  amp_name: %s bias: %7.3f x0,y0: %d,%d" % (im,ccd_name,amp_name,bias,x0,y0))
+     print("image %s: ccd_name: %s  amp_name: %s bias: %7.3f x0,y0: %d,%d min,max: %d %d" % (im,ccd_name,amp_name,bias,x0,y0,min_val,max_val))
 
-     mos_data[y0:y0+height,x0:x0+width]=im_data
+     mos_data[y0:y0+height,x0:x0+width]=np.flip(im_data)
      hdu_list.close()
   
   write_fits(mos_data,im_head,conf['output'])
@@ -203,6 +272,7 @@ def get_params():
   parser.add_argument('--y1', metavar='y', type=int, default=-1)
   parser.add_argument('--dy', metavar='h', type=int, default=-1)
   parser.add_argument('--output', metavar='c', type=str, default='test.fits')
+  parser.add_argument('--bias', metavar='b', type=bool, default=False)
   conf.update(vars(parser.parse_args()))
 
   return (conf)

@@ -1,4 +1,3 @@
-
 # -*- coding: utf-8 -*-
 #
 # @Author: José Sánchez-Gallego (gallegoj@uw.edu)
@@ -32,6 +31,7 @@ from typing import Any, Callable, Iterable, Literal, Optional, cast, overload
 import numpy
 
 from archon.controller.ls4_device import LS4_Device
+from archon.controller.ls4_sync_io import LS4_SyncIO
 
 from archon import config as lib_config
 from archon import log
@@ -43,10 +43,30 @@ from archon.exceptions import (
     ArchonUserWarning,
 )
 
-from . import MAX_COMMAND_ID, MAX_CONFIG_LINES, FOLLOWER_TIMEOUT_MSEC
+from . import MAX_COMMAND_ID, MAX_CONFIG_LINES, FOLLOWER_TIMEOUT_MSEC, \
+              P100_SUPPLY_VOLTAGE, N100_SUPPLY_VOLTAGE
 
 
 __all__ = ["LS4Controller"]
+
+class TimePeriod():
+    """ useful for keeping track of time intervals required for processes"""
+
+    def __init__(self):
+
+        self.start_time = 0.0
+        self.end_time = 0.0
+        self.period = 0.0
+
+    def start(self):
+
+        self.start_time=time.time()
+        self.end_time = self.start
+
+    def end(self):
+
+        self.end_time = time.time()
+        self.period = self.end_time-self.start_time
 
 class LS4Controller(LS4_Device):
     """Talks to an Archon controller over TCP/IP.
@@ -66,6 +86,7 @@ class LS4Controller(LS4_Device):
         Configuration data. Otherwise uses default configuration.
     """
 
+
     def __init__(
         self,
         name: str,
@@ -73,6 +94,8 @@ class LS4Controller(LS4_Device):
         local_addr: tuple = ('127.0.0.1',4242),
         port: int = 4242,
         config: dict | None = None,
+        param_args: list[dict] | None = None,
+        command_args: list[dict] | None = None
     ):
         self.__running_commands: dict[int, ArchonCommand] = {}
         self._id_pool = set(range(MAX_COMMAND_ID))
@@ -120,20 +143,103 @@ class LS4Controller(LS4_Device):
             "pneumatics": 1.5,\
             "purge": 0.2})
 
-        self.sync_sem_list = None
-        self.sync_sem = None
-        self.leader = False
-        self.follower_timeout_msec = FOLLOWER_TIMEOUT_MSEC
-        self.num_controllers = 0
-        self.sync_index = None
+        if "supply voltages" not in self.config:
+            self.config["supply voltages"]={}
 
-        # sync_flag is set when parameters must be synchronously set
-        # across controllers. That is when the sync_event and sync_sem
-        # objects come into play (see self.sync_set_param() below).
+        self.config["supply voltages"].update(\
+               {"p5v_v":5.0,\
+                "p6v_v":6.0,\
+                "n6v_v":-6.0,\
+                "p17v_v":17.0,\
+                "n17v_v":-17.0,\
+                "p35v_v":35.0,\
+                #"n35v_v":-35.0,\
+                # -35V line is not used, but registers as zero V ?
+                "n35v_v":0.0,\
+                #
+                # Power Supply +/-100 lines changes to +/-50 v
+                #"p100v_v":100.0,\
+                #"n100v_v":-100.0\
+                "p100v_v":P100_SUPPLY_VOLTAGE,\
+                "n100v_v":N100_SUPPLY_VOLTAGE\
+               })
+             
+        if "expose params" not in self.config:
+            self.config["expose params"]={}
 
-        self.sync_flag = False
+        self.config["expose params"].update(\
+               {"date-obs":"0000-00-00T00:00:00",\
+                "object": "TEST",\
+                "obsmode": "TEST",\
+                "imagetyp": "TEST",\
+                "exptime": 0.0,\
+                "focus": 0.0,\
+                "tele-ra": 0.0,\
+                "tele-dec": 0.0,\
+                "chip-ra": 0.0,\
+                "chip-dec": 0.0,\
+                "equinox": 2000.0,\
+                "lst": 0.0,\
+                "ha": 0.0,\
+                "filterna": "clear",\
+                "filterid": "",\
+                "frame": 0,\
+                "read-per": 0.0,\
+                "xbinning": 1,\
+                "ybinning": 1,\
+                "gain": 1.0,\
+                "readnois": 0.0,\
+                "ccdsec": "[1:1024,1:4096]",\
+                "biassec": "[1024:1024,4096:4096]",\
+                "bias": 0.0,\
+                "ccdtemp": 0.0,\
+                "fileroot": "",\
+                "ujd": 0.0,\
+                "fwhm": 0.0,\
+                "sky": 0.0,\
+                "skysigma": 0.0,\
+                "zp": 0.0\
+               })
+             
 
+        self.exp_per = TimePeriod()
+        self.read_per = TimePeriod()
+        self.fetch_per = TimePeriod()
+         
+        self.ls4_sync_io = LS4_SyncIO(name=self.name,
+           param_args=param_args,command_args=command_args)
+   
+        self.ls4_sync_io.add_loggers(info=self.info, error=self.error, debug=self.debug, warn = self.warn)
 
+        self.set_sync_event_lists=self.ls4_sync_io.set_sync_event_lists
+        self.set_sync_index=self.ls4_sync_io.set_sync_index
+        self.set_sync=self.ls4_sync_io.set_sync
+        self.set_num_controllers= self.ls4_sync_io.set_num_controllers
+
+        self.prefix = ""
+
+    def set_lead(self, lead_flag: bool = False):
+         self.leader = lead_flag
+         self.prefix = "leader %s:" % self.name
+         if self.ls4_sync_io is not None:
+            self.ls4_sync_io.set_lead(lead_flag)
+
+    def info(self,str):
+        if self.ls4_sync_io.leader is True or self.name == "ctrl1":
+           log.info(str)
+           sys.stdout.flush()
+
+    def debug(self,str):
+        if self.ls4_sync_io.leader is True or self.name == "ctrl1":
+           log.debug(str)
+           sys.stdout.flush()
+
+    def error(self,str):
+           sys.stdout.flush()
+
+    def warn(self,str):
+           log.warn(str)
+           sys.stdout.flush()
 
     async def start(self, reset: bool = True, read_acf: bool = True):
         """Starts the controller connection. If ``reset=True``, resets the status."""
@@ -150,7 +256,7 @@ class LS4Controller(LS4_Device):
         if reset:
             try:
                 await self._set_default_window_params()
-                await self.reset()
+                await self.reset(sync_flag=False)
             except ArchonControllerError as err:
                 warnings.warn(f"Failed resetting controller: {err}", ArchonUserWarning)
 
@@ -162,6 +268,11 @@ class LS4Controller(LS4_Device):
 
         return self._status
 
+    def get_obsdate(self,tm=None):
+        dt = "%04d-%02d-%02dT%02d:%02d:%05.2f" % \
+              (tm.tm_year,tm.tm_mon,tm.tm_mday, tm.tm_hour,tm.tm_min,tm.tm_sec)
+        return dt
+        
     def update_status(
         self,
         bits: ControllerStatus | list[ControllerStatus],
@@ -232,10 +343,122 @@ class LS4Controller(LS4_Device):
                 yield self.status
             self.__status_event.clear()
 
+
+    async def send_command(
+        self,
+        command_string: str,
+        command_id: Optional[int] = None,
+        sync_flag: bool | None = None,
+        **kwargs,
+    ) -> ArchonCommand:
+
+        """Sends a command to the Archon.
+
+        Parameters
+        ----------
+        command_string
+            The command to send to the Archon. Will be converted to uppercase.
+        command_id
+            The command id to associate with this message. If not provided, a
+            sequential, autogenerated one will be used.
+        kwargs
+            Other keyword arguments to pass to `.ArchonCommand`.
+        """
+
+        prefix = self.prefix
+        error_msg = None
+
+        if sync_flag is None:
+           sync_flag = self.ls4_sync_io.sync_flag
+
+        log.info("%s: sending command [%s] sync_flag: %s" %\
+           (prefix,command_string,sync_flag))
+
+        command_id = command_id or self._get_id()
+
+        if command_id > MAX_COMMAND_ID or command_id < 0:
+            raise ArchonControllerError(
+                f"Command ID must be in the range [0, {MAX_COMMAND_ID:d}]."
+            )
+
+        command = ArchonCommand(
+            command_string,
+            command_id,
+            controller=self,
+            **kwargs,
+        )
+
+        self.__running_commands[command_id] = command
+
+        # non-synchronous I/O
+        if not sync_flag:
+            self.debug("%s: asynchronously writing command [%s]" % (prefix,command.command_string))
+            self.write(command.raw)
+
+        # synchronous I/O
+        else:
+
+          # Here, The leader breezes through sync_prepare without waiting for events.
+          # The followers, on the other hand, get held up until the  the leader later 
+          # executes sync_update (below)
+
+          self.debug("%s: preparing sync" % prefix)
+          try:
+            await self.ls4_sync_io.sync_prepare(param_args=None,\
+                   command_args={'command_string':command_string,'command_id':command_id})
+          except Exception as e:
+            error_msg = "Exception preparing sync: %s" % e
+
+          # After the leader has already proceeded to sync_update, the followers proceed to write the command and then 
+          # update ls4_sync_io when they are done.
+          #
+          # Meanwhile, the leader updates ls4_sync_io before writing the command. It can not proceed
+          # to write the command until the followers have all updated sync_io (after they have
+          # all written the command).
+
+          if error_msg is None:
+
+            # The followers write the command here after leader update sync_io below.
+            if not self.ls4_sync_io.leader:
+              self.debug("%s: synchronously writing command [%s]" % (prefix,command.command_string))
+              self.write(command.raw)
+
+            # The followers wait here for leader to update sync_io. 
+            # When the leader begins updating sync_io, it first allows the followers to proceed with their
+            # own update to sync_io. The leader then waits until all the followers have completed
+            # the update before it can proceed.
+            self.debug("%s: updating sync" % prefix)
+            try:
+              await self.ls4_sync_io.sync_update(command_flag=True)
+            except Exception as e:
+              error_msg = "Exception updating sync: %s" % e
+ 
+            # The leader writes the command here, after the followers have updated  sync_io.
+            if self.ls4_sync_io.leader and not error_msg:
+              self.debug("%s: synchronously writing command [%s]" % (prefix,command.command_string))
+              self.write(command.raw)
+
+            if not error_msg:
+              self.debug("%s: verifying sync" % prefix)
+              try:
+                await self.ls4_sync_io.sync_verify(command_flag=True)
+              except Exception as e:
+                error_msg = "Exception verifying sync: %s" % e
+
+        if error_msg is not None:
+           self.error("%s: %s" % (prefix,error_msg))
+           raise ArchonControllerError(f"Failed running {command_string}: %s" % error_msg)
+
+        log.info("%s: done sending command [%s] sync_flag: %s" %\
+           (prefix,command_string,sync_flag))
+          
+        return command
+
     def send_command(
         self,
         command_string: str,
         command_id: Optional[int] = None,
+        sync_flag: bool | None = None,
         **kwargs,
     ) -> ArchonCommand:
         """Sends a command to the Archon.
@@ -266,9 +489,10 @@ class LS4Controller(LS4_Device):
         )
         self.__running_commands[command_id] = command
 
+           
         self.write(command.raw)
         log.debug(f"{self.name} -> {command.raw}")
-
+           
         return command
 
     async def send_many(
@@ -678,7 +902,7 @@ class LS4Controller(LS4_Device):
                 await self.power(True)
 
         notifier("resetting")
-        await self.reset(release_timing=release_timing)
+        await self.reset(release_timing=release_timing,sync_flag=False)
 
         return
 
@@ -763,7 +987,7 @@ class LS4Controller(LS4_Device):
             if cmd_apply.status == ArchonCommandStatus.FAILED:
                 raise ArchonControllerError(f"Failed applying changes to {mod}.")
 
-            log.info(f"{self.name}: {keyword}={value_str}")
+            self.info(f"{self.name}: {keyword}={value_str}")
 
     async def power(self, mode: bool | None = None):
         """Handles power to the CCD(s). Sets the power status bit.
@@ -815,51 +1039,59 @@ class LS4Controller(LS4_Device):
     async def set_autoflush(self, mode: bool):
         """Enables or disables autoflushing."""
 
-        log.info("setting AutoFlush : %s" % mode)
-        await self.set_param("AutoFlush", int(mode))
+        #self.info("setting AutoFlush : %s" % mode)
+        #await self.set_param("AutoFlush", int(mode))
+        self.debug("setting ContinuousExposures: %s" % mode)
+        await self.set_param("ContinuousExposures", int(mode))
 
         self.auto_flush = mode
 
-    async def reset(self, autoflush=True, release_timing=True, update_status=True):
+    async def reset(self, autoflush=True, release_timing=True, update_status=True, sync_flag=None):
         """Resets timing and discards current exposures."""
+
+        if sync_flag is None:
+           sync_flag = self.ls4_sync_io.sync_flag
 
         self._parse_params()
 
-        log.info(f"{self.name}: start resetting controller")
+        self.info(f"{self.name}: start resetting controller")
 
-        log.info(f"{self.name}: hold_timing")
+        self.info(f"{self.name}: hold_timing")
         await self.hold_timing()
 
-        log.info(f"{self.name}: autoflush")
+
+        self.debug(f"{self.name}: set autoflush %s" % autoflush)
         await self.set_autoflush(autoflush)
-        log.info(f"{self.name}: setting Exposures to 0")
-        await self.set_param("Exposures", 0)
-        log.info(f"{self.name}: setting ReadOut to 0")
-        await self.set_param("ReadOut", 0)
-        log.info(f"{self.name}: setting AbortExposure to 0")
-        await self.set_param("AbortExposure", 0)
-        log.info(f"{self.name}: setting DoFlush to 0")
-        await self.set_param("DoFlush", 0)
-        log.info(f"{self.name}: setting WaitCount to 0")
-        await self.set_param("WaitCount", 0)
+        self.debug(f"{self.name}: setting Exposures to 0")
+        await self.set_param(param="Exposures", value=0, sync_flag=sync_flag)
+        self.debug(f"{self.name}: setting ReadOut to 0")
+        await self.set_param(param="ReadOut", value=0, sync_flag=sync_flag)
+        self.debug(f"{self.name}: setting AbortExposure to 0")
+        await self.set_param(param="AbortExposure", value=0, sync_flag=sync_flag)
+        self.debug(f"{self.name}: setting DoFlush to 0")
+        await self.set_param(param="DoFlush", value=0, sync_flag=sync_flag)
+        self.debug(f"{self.name}: setting WaitCount to 0")
+        await self.set_param(param="WaitCount", value=0, sync_flag=sync_flag)
 
         # Reset parameters to their default values.
         if "default_parameters" in self.config["archon"]:
             default_parameters = self.config["archon"]["default_parameters"]
             for param in default_parameters:
-                log.info(f"{self.name}: setting %s to %d" % (param, default_parameters[param]))
-                await self.set_param(param, default_parameters[param])
+                self.debug(f"{self.name}: setting %s to %d" %\
+                      (param, default_parameters[param]))
+                await self.set_param(param=param, \
+                      value=default_parameters[param], sync_flag=sync_flag)
 
         if release_timing:
-            log.info(f"{self.name}: release_timing .")
+            self.info(f"{self.name}: release_timing .")
             await self.release_timing()
 
         if update_status:
             self._status = ControllerStatus.IDLE
-            log.info(f"{self.name}: awaiting self.power()")
+            self.debug(f"{self.name}: awaiting self.power()")
             await self.power()  # Sets power bit.
 
-        log.info(f"{self.name}: done with reset")
+        self.info(f"{self.name}: done with reset")
 
     def _parse_params(self):
         """Reads the ACF file and constructs a dictionary of parameters."""
@@ -903,24 +1135,42 @@ class LS4Controller(LS4_Device):
             "vbin": int(self.parameters.get("VERTICALBINNING", 1)),
         }
 
-        log.info(f"{self.name}: default window: {self.default_window}")
+        #self.info(f"{self.name}: default window: {self.default_window}")
 
         self.current_window = self.default_window.copy()
 
-        log.info(f"{self.name}: current window: {self.current_window}")
+        #self.info(f"{self.name}: current window: {self.current_window}")
 
         if reset:
             await self.reset_window()
 
-    async def async_set_param(
+    async def set_param(
         self,
         param: str,
         value: int,
         force: bool = False,
+        sync_flag: bool | None = None
     ) -> ArchonCommand | None:
 
-        """Asynchronously sets the parameter ``param`` to value ``value`` calling ``FASTLOADPARAM``.
+        """sets the parameter ``param`` to value ``value`` calling ``FASTLOADPARAM``.
+           If self.ls4_sync_io.sync_flag is true, ls4_sync_io is used to synchronize
+           execution of set_param across synchronized controllers
+
         """
+
+        error_msg = None
+        sync_test = False
+        cmd = None
+        prefix = self.prefix
+
+        if sync_flag is None:
+           sync_flag = self.ls4_sync_io.sync_flag
+
+        if param in ["SYNCTEST","SYNC_TEST"]:
+           sync_test = True
+
+        log.debug("%s: setting [%s] to [%d] sync_flag: %s sync_test: %s" %\
+           (prefix,param,value,sync_flag,sync_test))
 
         # First we check if the parameter actually exists.
         if len(self.parameters) == 0:
@@ -928,24 +1178,66 @@ class LS4Controller(LS4_Device):
                 raise ArchonControllerError("ACF not loaded. Cannot modify parameters.")
 
         param = param.upper()
-        if param not in self.parameters and force is False:
-            warnings.warn(
-                f"Trying to set unknown parameter {param}.",
-                ArchonUserWarning,
-            )
-            return
+          
+        if (not sync_test) and (param not in self.parameters) and (force is False):
+            error_msg = f"Trying to set unknown parameter {param}"
 
-        cmd = await self.send_command(f"FASTLOADPARAM {param} {value}")
+        if sync_flag and error_msg is None:
+          # The leader breezes through sync_prepare without waiting for events.
+          # The followers get held up in sync prepare until the leader executes sync_update (below)
 
-        if not cmd.succeeded():
-            raise ArchonControllerError(
-                f"Failed setting parameter {param!r} ({cmd.status.name})."
-            )
+          self.debug("%s preparing sync" % prefix)
+          try:
+            await self.ls4_sync_io.sync_prepare(param_args={'param':param,'value':value,'force':force},command_args=None)
+          except Exception as e:
+            error_msg = "Exception preparing sync: %s" % e
 
-        log.debug(f"{self.name}: {param}={value}")
+          # The leaders execute FASTPREPARM before the followers because it gets here first
+          if not error_msg and not sync_test:
+
+            self.debug("%s sending FASTPREPPARAM" % prefix)
+            cmd = await self.send_command(f"FASTPREPPARAM {param} {value}",sync_flag=False)
+            if not cmd.succeeded():
+               error_msg = "%s failed preparing parameters %s to %s" % (prefix,param,value)
+
+          # Here the leader allows the followers to catch up and send FASTPREPPARAM command
+          if not error_msg:
+            self.debug("%s updating sync" % prefix)
+            try:
+              await self.ls4_sync_io.sync_update(param_flag=True)
+            except Exception as e:
+              error_msg = "Exception updating sync: %s" % e
+
+        # All the controller threads arrive here about the same time. However, if they
+        # have been set up for synchronous IO, they will load the parameter at the same 
+        # time. If they are not synchronized, the relative timing will be random.
+        if not error_msg and not sync_test:
+          cmd_string=f"FASTLOADPARAM {param} {value}"
+          self.debug("%s sending command [%s]" % (prefix,cmd_string))
+          try:
+            #cmd = await self.send_command(f"FASTLOADPARAM {param} {value}")
+            cmd = await self.send_command(cmd_string)
+            if not cmd.succeeded():
+               error_msg = f"Failed sending command [%s]" % cmd_string
+          except Exception as e:
+            error_msg = "Exception setting param: %s" % e
+
+        # synchronization house-keeping
+        if not error_msg and sync_flag:
+          try:
+            self.debug("%s verifying sync" % prefix)
+            await self.ls4_sync_io.sync_verify(param_flag=True)
+          except Exception as e:
+            error_msg = "Exception verifying sync: %s" % e
+
+        if error_msg is not None:
+           self.error("%s: %s" % (prefix,error_msg))
+           raise ArchonControllerError(f"Failed setting param {param} to value {value}:  %s" % error_msg)
 
         self.parameters[param] = value
-
+        log.debug("%s: done setting [%s] to [%d] sync_flag: %s sync_test: %s" %\
+           (prefix,param,value,sync_flag,sync_test))
+        
         return cmd
 
     async def reset_window(self):
@@ -1035,7 +1327,7 @@ class LS4Controller(LS4_Device):
             "vbin": vbin,
         }
 
-        log.info(f"{self.name}: current window: {self.current_window}")
+        #self.info(f"{self.name}: current window: {self.current_window}")
 
         return self.current_window
 
@@ -1052,7 +1344,7 @@ class LS4Controller(LS4_Device):
         that the readout has started.
         """
 
-        log.info(f"{self.name}: exposing with exposure time {exposure_time}.")
+        self.info(f"{self.name}: exposing with exposure time {exposure_time} and readout {readout}.")
 
         CS = ControllerStatus
 
@@ -1067,49 +1359,91 @@ class LS4Controller(LS4_Device):
         if (not (CS.POWERON & self.status)) or (CS.POWERBAD & self.status):
             raise ArchonControllerError("Controller power is off or invalid.")
 
-        await self.reset(autoflush=False, release_timing=False)
-        if self.sync_flag:
-           log.info("syncing up")
-           await self.set_param(param="SYNCTEST",value=0,sync_test=True)
-           log.info("done syncing up")
-
-        if readout is False:
-            await self.set_param("ReadOut", 0)
-        else:
-            await self.set_param("ReadOut", 1)
+        self.debug(f"{self.name}: resetting") 
+        #await self.reset(autoflush=False, release_timing=False,sync_flag=self.ls4_sync_io.sync_flag)
+        await self.reset(autoflush=False, release_timing=False,sync_flag=False)
+        self.debug(f"{self.name}: done resetting") 
+        if self.ls4_sync_io.sync_flag:
+           self.debug(f"{self.name}: syncing up")
+           await self.set_param(param="SYNCTEST",value=0)
 
         # Set integration time in centiseconds (yep, centiseconds).
+        self.debug(f"{self.name}: setting IntCS to %d" % int(exposure_time * 100))
         await self.set_param("IntCS", int(exposure_time * 100))
+
+        if readout is False:
+            self.debug(f"{self.name}: skipping readout: setting Readout param to 0")
+            await self.set_param("ReadOut", 0)
+        else:
+            self.debug(f"{self.name}: reading out: setting Readout param to 1")
+            await self.set_param("ReadOut", 1)
+
+        self.debug(f"{self.name}: setting Exposures to 1")
         await self.set_param("Exposures", 1)
-        #if exposure_time > 0.0:
-        # await self.set_param("TRIGOUTLEVEL", 1)
-        #else:
-        # await self.set_param("TRIGOUTLEVEL", 0)
 
+        self.config['expose params']['exptime']=0.0
+        self.config['expose params']['read-per']=0.0
+
+        self.debug(f"{self.name}: sending RELEASETIMING")
         await self.send_command("RELEASETIMING")
-
+        self.debug(f"{self.name}: updating status to EXPOSING and READOUT_PENDING")
         self.update_status([CS.EXPOSING, CS.READOUT_PENDING])
+        t_start = time.time()
+        self.exp_per.start()
+        tm = time.gmtime()
+        self.config['expose params']['dateobs']=self.get_obsdate(tm)
+
+        self.debug(f"{self.name}: returning update_state function")
 
         async def update_state():
-            log.info("sleeping %7.3f sec" % exposure_time)
-            await asyncio.sleep(exposure_time)
+           dt = time.time()-t_start
+           done=True
+           aborted=False
+           if exposure_time>0.0 and dt < exposure_time:
+              self.debug(f"{self.name}: update_state: waiting %7.3f sec for exposure to end" % exposure_time)
+              done = False
+              aborted = False
+              while (not done) and (not aborted):
+                 dt = time.time()-t_start
+                 if dt >= exposure_time:
+                    self.info(f"{self.name}: update_state: exposure completed after %7.3f sec" % dt)
+                    done= True
+                 elif not (self.status & CS.EXPOSING):  # Must have been aborted.
+                    self.info(f"{self.name}: update_state: exposure was aborted after %7.3f sec" % dt)
+                    abort=True
+                 else:
+                    time.sleep(0.001)
+           else:
+              self.debug(f"{self.name}: update_state: skipping 0-sec exposure loop")
 
-            if not self.status & CS.EXPOSING:  # Must have been aborted.
-                return
-            if readout is False:
-                self.update_status([CS.IDLE, CS.READOUT_PENDING])
-                return
-            frame = await self.get_frame()
-            wbuf = frame["wbuf"]
-            if frame[f"buf{wbuf}complete"] == 0:
-                self.update_status(
-                    [CS.EXPOSING, CS.READOUT_PENDING],
-                    "off",
-                    notify=False,
-                )
-                self.update_status(CS.READING)
-            else:
-                raise ArchonControllerError("Controller is not reading.")
+           self.exp_per.end()
+           self.config['expose params']['exptime']=self.exp_per.period
+            
+           if done:
+              if aborted:
+                 pass
+              elif not readout: # readout later
+                 self.debug(f"{self.name}: update_state: updating status to IDLE, READOUT_PENDING")
+                 self.update_status([CS.IDLE, CS.READOUT_PENDING])
+              else: # readout now
+                 self.info(f"{self.name}: update_state: starting readout")
+                 frame = await self.get_frame()
+                 wbuf = frame["wbuf"]
+                 if frame[f"buf{wbuf}complete"] == 0:
+                    self.update_status(
+                      [CS.EXPOSING, CS.READOUT_PENDING],
+                      "off",
+                      notify=False,
+                    )
+                    self.update_status(CS.READING)
+                    self.read_per.start()
+                 else:
+                    self.info(f"{self.name}: update_state: failed starting readout")
+                    raise ArchonControllerError("Controller is not reading.")
+
+           if not readout:
+              self.read_per.end()
+              self.config['expose params']['read-per']=self.read_per.period
 
         return asyncio.create_task(update_state())
 
@@ -1120,7 +1454,7 @@ class LS4Controller(LS4_Device):
         Aborting does not flush the charge.
         """
 
-        log.info(f"{self.name}: aborting controller.")
+        self.info(f"{self.name}: aborting controller.")
 
         CS = ControllerStatus
 
@@ -1141,9 +1475,9 @@ class LS4Controller(LS4_Device):
     async def flush(self, count: int = 2, wait_for: Optional[float] = None):
         """Resets and flushes the detector. Blocks until flushing completes."""
 
-        log.info(f"{self.name}: flushing.")
+        self.info(f"{self.name}: flushing.")
 
-        await self.reset(release_timing=False)
+        await self.reset(release_timing=False,sync_flag=False)
 
         await self.set_param("FlushCount", int(count))
         await self.set_param("DoFlush", 1)
@@ -1175,40 +1509,65 @@ class LS4Controller(LS4_Device):
         many seconds (useful for creating photon transfer frames).
         """
 
-        log.info(f"{self.name}: reading out controller.")
+        if notifier:
+          notifier(f"synchronizing...")
+
+        await self.set_param(param="SYNCTEST",value=0)
+
+        if notifier:
+          notifier(f"start reading out controller.")
 
         if not force and not (
             (self.status & ControllerStatus.READOUT_PENDING)
             and (self.status & ControllerStatus.IDLE)
         ):
-            raise ArchonControllerError("Controller is not in a readable state.")
+            raise ArchonControllerError(f"{self.name}: Controller is not in a readable state.")
 
         delay = int(delay)
 
-        log.info(f"{self.name}: reset...")
-        await self.reset(autoflush=False, release_timing=False, update_status=False)
-        log.info(f"{self.name}: set Readout to 1")
+        if notifier:
+           notifier (f"reset...")
+
+        await self.reset(autoflush=False, release_timing=False, update_status=False,sync_flag=False)
+
+        if notifier:
+          notifier(f"set Readout to 1")
+
         await self.set_param("ReadOut", 1)
-        log.info(f"{self.name}: sending READLEASETIMING")
+
+        if notifier:
+           notifier(f"sending READLEASETIMING")
+
         await self.send_command("RELEASETIMING")
 
-        if delay > 0:
-            log.info(f"{self.name}: setting WaitCount to %d" % delay)
-            await self.set_param("WaitCount", delay)
+        self.read_per.start()
 
-        log.info(f"{self.name}: update_status READING")
+        if delay > 0:
+           if notifier:
+               notifier(f"setting WaitCount to {delay}")
+           await self.set_param("WaitCount", delay)
+
+        if notifier:
+           notifier (f"{self.name}: update_status READING")
+
         self.update_status(ControllerStatus.READING, notify=False)
-        log.info(f"{self.name}: update_status READOUT_PENDING")
+
+        if notifier:
+           notifier(f"update_status READOUT_PENDING")
+
         self.update_status(ControllerStatus.READOUT_PENDING, "off")
 
         if not block:
-            log.info(f"{self.name}: not block, returning")
-            return
+           if notifier:
+              notifier(f"not block, returning")
+           return
 
         max_wait = self.config["timeouts"]["readout_max"] + delay
 
-        wait_for = wait_for or 3  # Min delay to ensure the new frame starts filling.
-        log.info(f"{self.name}: sleeping %d sec" % wait_for)
+        wait_for = wait_for or 3  # sec delay to ensure the new frame starts filling.
+        if notifier:
+          notifier(f"sleeping {wait_for} sec to make sure readout has started")
+
         await asyncio.sleep(wait_for)
         waited = wait_for
 
@@ -1216,35 +1575,51 @@ class LS4Controller(LS4_Device):
         wbuf = frame["wbuf"]
 
         if notifier:
-            notifier(f"Reading frame to buffer {wbuf}.")
+           notifier(f"Reading frame to buffer {wbuf}.")
 
-        while True:
-            if waited > max_wait:
-                self.update_status(ControllerStatus.ERROR)
-                raise ArchonControllerError(
-                    "Timed out waiting for controller to finish reading."
-                )
-            #if notifier:
-            #    notifier(f"awaiting get_frame().")
-            frame = await self.get_frame()
-            #if notifier:
-            #    notifier(f"done awaiting get_frame().")
-            #if notifier:
-            #    notifier(f"frame keys are %s" % frame.keys())
-            if frame[f"buf{wbuf}complete"] == 1:
-                #if notifier:
-                #   notifier (f"frame is complete")
-                if idle_after:
-                    self.update_status(ControllerStatus.IDLE)
-                # Reset autoflushing.
-                await self.set_autoflush(True)
-                break
-            elif notifier:
-                pixels_read=frame[f"buf{wbuf}pixels"]
-                lines_read=frame[f"buf{wbuf}lines"]
-                notifier(f"%7.3f: frame is not complete: %d pixels  %d lines" % (waited,pixels_read,lines_read))
-            waited += 1.0
-            await asyncio.sleep(1.0)
+        dt = 0.0
+        status_interval = 1.0
+        update_interval = 0.01
+        #update_interval = 1.0
+
+        done = False
+        timeout = False
+        while (not done) and (not timeout):
+           if waited > max_wait:
+              timeout = True
+           else:
+              frame = await self.get_frame()
+              if frame[f"buf{wbuf}complete"] == 1:
+                 done=True
+           if not done:
+              if notifier and dt > status_interval:
+                 dt = 0.0
+                 pixels_read=frame[f"buf{wbuf}pixels"]
+                 lines_read=frame[f"buf{wbuf}lines"]
+                 w= int(waited)
+                 notifier(f"{w}: frame is not complete: {pixels_read} pixel {lines_read} lines")
+              await asyncio.sleep(update_interval)
+              dt += update_interval
+              waited += update_interval
+
+        self.config['expose params']['read-per']=self.read_per.period
+        if done:
+           self.read_per.end()
+           if notifier:
+               notifier(f"done reading out controller in %7.3f sec" % self.read_per.period)
+           if idle_after:
+               notifier(f"idling controller...")
+               self.update_status(ControllerStatus.IDLE)
+               notifier(f"done idling controller...")
+           # Reset autoflushing.
+           await self.set_autoflush(True)
+
+        elif timeout:
+           if notifier:
+               notifier(f"imeout reading out controller")
+           self.update_status(ControllerStatus.ERROR)
+           raise ArchonControllerError(\
+                f"{self.name}:Timed out waiting for controller to finish reading.")
 
         return wbuf
 
@@ -1306,7 +1681,7 @@ class LS4Controller(LS4_Device):
         """
 
         t_start = time.time()
-        log.info(f"{self.name}: start fetching data from buffer %d." % buffer_no)
+        self.info(f"{self.name}: start fetching data from buffer %d." % buffer_no)
 
         if self.status & ControllerStatus.FETCHING:
             raise ArchonControllerError("Controller is already fetching.")
@@ -1373,7 +1748,7 @@ class LS4Controller(LS4_Device):
 
         t_end = time.time()
         dt = "%7.3f" % (t_end-t_start)
-        log.info(f"{self.name}: done fetching data in {dt} sec.")
+        self.info(f"{self.name}: done fetching data in {dt} sec.")
 
         if return_buffer:
             return (arr, buffer_no)
@@ -1464,22 +1839,6 @@ class LS4Controller(LS4_Device):
                 self.__running_commands.pop(cid)
             await asyncio.sleep(0.5)
 
-    # additions below by D. Rabinowitz 
-
-    def set_sync_sem_list(self,sync_sem_list: Iterable[Semaphore]):
-         self.sync_sem_list=sync_sem_list
-
-    def set_sync_index(self,sync_index: int):
-         self.sync_index = sync_index
-
-    def set_lead(self, lead_flag: bool = False):
-         self.leader = lead_flag
-
-    def set_sync(self, sync_flag: bool = False):
-        self.sync_flag = sync_flag
-
-    def set_num_controllers(self, num_controllers = 0):
-        self.num_controllers = num_controllers
 
     def _get_id(self) -> int:
         """Returns an identifier from the pool."""
@@ -1493,9 +1852,9 @@ class LS4Controller(LS4_Device):
     async def erase(self):
         """Run the LBNL erase procedure."""
 
-        log.info(f"{self.name}: erasing.")
+        self.info(f"{self.name}: erasing.")
 
-        await self.reset(release_timing=False, autoflush=False)
+        await self.reset(release_timing=False, autoflush=False,sync_flag=False)
 
         self.update_status(ControllerStatus.FLUSHING)
 
@@ -1504,7 +1863,7 @@ class LS4Controller(LS4_Device):
 
         await asyncio.sleep(2)  # Real time should be ~0.6 seconds.
 
-        await self.reset()
+        await self.reset(sync_flag=False)
 
     async def cleanup(
         self,
@@ -1542,7 +1901,7 @@ class LS4Controller(LS4_Device):
 
         mode = "fast" if fast else "normal"
         purge_msg = f"Doing {n_cycles} with DoPurge=1 (mode={mode})"
-        log.info(purge_msg)
+        #self.info(purge_msg)
         notifier(purge_msg)
 
         for ii in range(n_cycles):
@@ -1552,12 +1911,12 @@ class LS4Controller(LS4_Device):
         await self.set_param("DoPurge", 0)
 
         flush_msg = "Flushing 3x"
-        log.info(flush_msg)
+        #self.info(flush_msg)
         notifier(flush_msg)
 
         await self.flush(3)
 
-        await self.reset()
+        await self.reset(sync_flag=False)
 
         return True
 
@@ -1575,7 +1934,7 @@ class LS4Controller(LS4_Device):
 
         """
 
-        log.info("Running e-purge.")
+        self.info("Running e-purge.")
 
         if fast:
             await self.set_param("FLUSHBIN", 10)
@@ -1584,14 +1943,14 @@ class LS4Controller(LS4_Device):
             await self.set_param("FLUSHBIN", 2200)
             await self.set_param("SKIPLINEBINVSHIFT", 1)
 
-        await self.reset(release_timing=False)
+        await self.reset(release_timing=False,sync_flag=False)
 
         self.update_status(ControllerStatus.FLUSHING)
 
         await self.set_param("DOPURGE", 1)
         await self.send_command("RELEASETIMING")
 
-        #log.info("self.config = %s" % self.config)
+        #self.info("self.config = %s" % self.config)
         #
         flush_time = self.config["timeouts"]["flushing"]
         if fast:
@@ -1602,168 +1961,7 @@ class LS4Controller(LS4_Device):
         await self.set_param("FLUSHBIN", 2200)
         await self.set_param("SKIPLINEBINVSHIFT", 1)
 
-        await self.reset()
+        await self.reset(sync_flag=False)
 
         return True
-
-    async def set_param(
-        self,
-        param: str,
-        value: int,
-        force: bool = False,
-        sync_test: bool = False
-    ):
-        """ if self sync_flag is true, call the sync_set_param.
-            Otherwise call async_set_param.
-        """
-          
-        if self.sync_flag:
-           return await self.sync_set_param(param=param,value=value,force=force,sync_test=sync_test)
-        else:
-           return await self.async_set_param(param=param,value=value,force=force)
-
-    def sync_log(self,sync_test,str):
-        if sync_test:
-           log.info(str)
-        else:
-           log.debug(str)
-
-    async def sync_set_param(
-        self,
-        param: str,
-        value: int,
-        force: bool = False,
-        sync_test: bool = False
-    ):
-        """ follower : 
-            1. acquire self.sync_sem
-            #2. execute FASTPREPPARAM and FASTLOADPARAM for the specified param/value pair.
-            2. execute FASTPREPPARAM for the specified param/value pair.
-            3. release self.sync_sem
-
-            leader: 
-            1. make sure all the semphores are acquired already
-            2. execute FASTPREPPARAM for the specified param/value pair. 
-            3. release each follower's sync_sem
-            4. acquire each follower's sync_sem
-            5. execute FASTLOADPARAM for the specified param/value paira
-            6. return.
-
-            if sync_test, follower skips line 2 and leader skips lines 2 and 5
-        """
-
-        error_msg = None
-        cmd = None
-
-        if self.leader:
-           prefix = "leader %s:" % self.name
-        else:
-           prefix = "follower %s:" % self.name
-
-        if sync_test:
-           self.sync_log(sync_test,"%s : running sync test" % prefix)
-
-        self.sync_log(sync_test,"%s : synchronously setting %s to %d" % (prefix,param,value))
-
-        if self.leader:
-              assert self.check_semaphores(lock_flag=True), "not all semaphore are initially locked"
-        else:
-             self.sync_log(sync_test,"%s acquiring sync_sem" % prefix)
-             await self.acquire_semaphores(sync_index=self.sync_index)
-             self.sync_log(sync_test,"%s done acquiring sync_sem" % prefix)
-
-        # Here all the controllers send the FASTPREPPARAM. However, because the
-        # follower are still waiting for their semaphore to release, the lead
-        # sends the FASTPREPPARAM before any of the followers.
-
-        if error_msg is None and not sync_test:
-          self.sync_log(sync_test,"%s sending FASTPREPPARAM" % prefix)
-          cmd = await self.send_command(f"FASTPREPPARAM {param} {value}")
-          if not cmd.succeeded():
-             error_msg = "%s failed preparing parameters %s to %s" % (prefix,param,value)
-          self.sync_log(sync_test,"%s done sending FASTPREPPARAM" % prefix)
-
-        if self.leader and error_msg is None:
-           self.sync_log(sync_test,"%s releasing semaphores" % prefix)
-           self.release_semaphores()
-           self.sync_log(sync_test,"%s done releasing semaphores" % prefix)
-
-           # In parallel threads, the followers are now sending the FASTPREPPARAM and
-           # FASTLOADPARAM commands to the respective controllers. However, the loading
-           # in these controllers does not actually occur until the followers have 
-           # all synced up again and the lead controller finally send the FASTLOADPARAM command.
-           #
-           # wait here for the followers to sync up.
-           self.sync_log(sync_test,"%s re-acquiring semaphores" % prefix)
-           await self.acquire_semaphores()
-           self.sync_log(sync_test,"%s done re-acquiring semaphores" % prefix)
-
-           # It is not safe for the lead controller to send
-           # the FASTLOADPARAM command. The followers will load the param synchronously.
-
-           if error_msg is None and not sync_test:
-             self.sync_log(sync_test,"%s setting param %s to %s" % (prefix,param,value))
-             cmd = await self.async_set_param(param=param,value=value,force=force)
-             self.sync_log(sync_test,"%s done setting param %s to %s" % (prefix,param,value))
-
-        elif error_msg is None:
-           # Here the followers send the FASTLOADPARAM command, but it does
-           # not do anything until the lead controller does the same.
-
-           cmd = None
-
-           # Here is where the followers signal the lead controller that they are
-           # done sending the FASTPREPPARAM and FASTLOADPARAM commands
-           self.sync_log(sync_test,"%s releasing sync_sem" % prefix)
-           self.release_semaphores(sync_index=self.sync_index)
-           self.sync_log(sync_test,"%s done releasing sync_sem" % prefix)
-           
-        sys.stdout.flush()
-        sys.stderr.flush()
-
-        if error_msg:
-           log.error(error_msg)
-           raise ValueError(error_msg)
-
-        else:
-           return cmd
-
-        
-    def check_semaphores(self, lock_flag = True):
-        index = 0
-        all_locked = True
-        for sync_sem in self.sync_sem_list:
-            if sync_sem.locked() != lock_flag:
-               log.warn("semaphore %d is not locked" % index)
-               all_locked = False
-            index += 1
-        return all_locked
-
-        
-    async def acquire_semaphores(self, sync_index: int = -1, timeout_msec:float = -1.0):
-        """
-           acquire the semaphores in the sync_sem_list
-        """
-        assert sync_index < self.num_controllers, "sync_index [%d] out of range" % sync_index
-
-        if sync_index > -1:
-           await self.sync_sem_list[sync_index].acquire()
-
-        else:
-           await asyncio.gather(*(sync_sem.acquire() for sync_sem in self.sync_sem_list))
-
-    def release_semaphores(self, sync_index: int = -1, timeout_msec:float = -1.0):
-        """
-           release the semaphores in the sync_sem_list
-        """
-        assert sync_index < self.num_controllers, "sync_index [%d] out of range" % sync_index
-
-        if sync_index > -1:
-           self.sync_sem_list[sync_index].release()
-
-        else:
-           #asyncio.gather(*(sync_sem.release() for sync_sem in self.sync_sem_list))
-           for sync_sem in self.sync_sem_list:
-               sync_sem.release()
-
 

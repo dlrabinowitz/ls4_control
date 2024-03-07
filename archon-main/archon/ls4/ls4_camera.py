@@ -1,20 +1,43 @@
+############################
+# -*- coding: utf-8 -*-
+#
+# @Author: David Rabinowitz (david.rabinowitz@yale.edu)
+# @Date: 2024-01-16
+# @Filename: ls4_camera.py
+# @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
+#
+# Python code defining LS4_Camera class 
+# The LS4 camera-control program instantiated one
+# instance of the class for each Archon controller.
+# All access to the controller (initializing, 
+# configuring, exposing, readout, buffer access)
+# is through this class.
+#
+# The class is an extensionn of the sdss-archon code
+# available on github. Some of the sdss-archon code was
+# modified for this purpose
+#
+################################
 
+import numpy as np
 import sys
 import asyncio
 import archon
 from archon import log
 import logging
 from archon.ls4.ls4_sync import LS4_Sync
-from archon.ls4.ls4_controller import LS4Controller
+from archon.controller.ls4_controller import LS4Controller
 from archon.controller.maskbits import ArchonPower
 from astropy.io import fits
 import json
 import time
 import argparse
+#from . import MAX_COMMAND_ID,FOLLOWER_TIMEOUT_MSEC
+from . import VOLTAGE_TOLERANCE
 
 # Notes about LS4 tap lines and CCD placement
 #
-# For each quadrant of the CCD (NW, NW, SW, SE) there are 8 connectors (A, B, ..., H)
+# For each quadrant of the CCD (NW, NE, SW, SE) there are 8 connectors (A, B, ..., H)
 # on the mother board, one for each CCD location in the focal plane:
 #
 #         __________________NORTH__________________
@@ -32,7 +55,7 @@ import argparse
 #       |                     |                     |
 #       |                     |                     |
 #       |                     |                     |
-#       | SW-E SW-F SW-G WW-H | SE-A SE-B SE-C SE-D |
+#       | SW-E SW-F SW-G SW-H | SE-A SE-B SE-C SE-D |
 #       |                     |                     |
 #       | __________________SOUTH___________________|
 #
@@ -69,7 +92,7 @@ import argparse
 #  TAPLINE4=
 #  TAPLINES=4
 #
-#  To provide additional descriptive about CCD locations to the controller, an optional
+#  To provide additional information about CCD locations to the controller, an optional
 #  "ccd_map" may be provided. For example, if only location "A" and "E" are occupied :
 #
 #     ccd_map =  {"A":{"CCD_NAME":"S-003"},
@@ -113,9 +136,27 @@ class LS4_Camera():
     required_conf_params = ['data_path','acf_file','test','log_level','ip','name']
     default_params = {'data_path':'/tmp','test':False,'log_level':'INFO','ip':'10.0.0.2','name':'ctrlx','local_addr':('127.0.0.1',4242)}
 
-    def __init__(self,ls4_conf=None):
+    def __init__(self,ls4_conf=None,param_args=None,command_args=None):
+       
+        """ ls4_conf is a dictionary with configuration variables for the instance of LS4_Camera.
+
+            param_args is a list with one entry -- a dictionary to hold parameter arguments 
+            for sync_set_param. It is set up as a list so that any changes to the dictionary
+            contents are inherited by all threads sharing param_args. 
+
+            command_args is  also a list with one entry -- a dictionary to hold command arguments 
+            for sync_send_commnd. It is set up as a list so that any changes to the dictionary
+            contents are inherited by all threads sharing command_args
+        """
+
+        self.leader = False
+        self.prefix = ""
 
         assert ls4_conf is not None,"unspecified configuration"
+        assert param_args is not None,"unspecified param_args"
+        assert command_args is not None,"unspecified command_args"
+        assert len(param_args)==1, "param_args is not a list of length 1"
+        assert len(command_args)==1, "command_args is not a list of length 1"
 
         for key in self.default_params:
             if key not in ls4_conf:
@@ -137,7 +178,7 @@ class LS4_Camera():
         #self.log = log
 
         if 'log_format' in ls4_conf and ls4_conf['log_format'] is not None:
-          self.info("setting log format to %s" % ls4_conf['log_format'])
+          self.debug("setting log format to %s" % ls4_conf['log_format'])
           try:
              logging.basicConfig(format=ls4_conf['log_format'])
           except Exception as e:
@@ -157,9 +198,10 @@ class LS4_Camera():
         elif log_level in ["CRITICAL","critical","Critical"]:
            log.setLevel(logging.CRITICAL)
 
-        self.info('ls4_conf:')
-        for key in ls4_conf:
-            self.info("%20s : %s" % (key,ls4_conf[key]))
+
+        self.debug('ls4_conf:')
+        #for key in ls4_conf:
+        #    self.info("%20s : %s" % (key,ls4_conf[key]))
 
         self.ls4_test = ls4_conf['test']
 
@@ -182,31 +224,53 @@ class LS4_Camera():
         self.ccd_map=None
 
         if 'map_file' in ls4_conf:
-          self.info("loading ccd map file %s" % ls4_conf['map_file'])
+          self.debug("loading ccd map file %s" % ls4_conf['map_file'])
           try: 
              self.load_ccd_map(ccd_map_file=ls4_conf['map_file'], upper_flag=True)
           except Exception as e:
              raise RuntimeError("unable to load ccd_map_file %s" % ls4_conf['map_file'])
 
-        if self.ccd_map is not None:
-           self.info("initial ccd_map is %s" % self.ccd_map)
+        #if self.ccd_map is not None:
+        #  self.info("initial ccd_map is %s" % self.ccd_map)
     
+        self.ls4_conf = ls4_conf
+ 
+        # self.param_args[0] is a shared global
+        self.param_args = param_args
+
+        # self.command_args[0] is a shared global
+        self.command_args = command_args
+
+
     def info(self,str):
+      if self.leader or self.name == "ctrl1":
         str1 = "%s: "%self.name + str
         #self.log.info(str1)
         log.info(str1)
+        sys.stdout.flush()
     def error(self,str):
         str1 = "%s: "%self.name + str
         log.error(str1)
+        sys.stdout.flush()
     def warn(self,str):
         str1 = "%s: "%self.name + str
         log.warn(str1)
+        sys.stdout.flush()
     def debug(self,str):
+      if self.leader or self.name == "ctrl1":
         str1 = "%s: "%self.name + str
         log.debug(str1)
+        sys.stdout.flush()
     def critical(self,str):
         str1 = "%s: "%self.name + str
         log.critical(str1)
+        sys.stdout.flush()
+
+    def set_lead(self, lead_flag: bool = False):
+        self.leader = lead_flag
+        self.prefix = "leader %s:" % self.name
+        if self.ls4_controller is not None:
+           self.ls4_controller.set_lead(lead_flag)
 
     def load_ccd_map(self,ccd_map_file=None,upper_flag=False):
 
@@ -275,6 +339,7 @@ class LS4_Camera():
           self.error("exception powering up controller: %s" %e)
           return None
 
+        assert await self.check_voltages(), "voltages out of range" 
         return result
 
     async def start_autoflush(self):
@@ -304,7 +369,9 @@ class LS4_Camera():
 
         if error_msg is None:
           try:
-            self.ls4_controller = LS4Controller(name=self.name,host=self.ip_address,local_addr=self.local_addr)
+            self.ls4_controller = LS4Controller(name=self.name,\
+                 host=self.ip_address,local_addr=self.local_addr,\
+                 param_args=self.param_args,command_args=self.command_args)
             self.info("awaiting ac.start")
             await self.ls4_controller.start(reset=False)
           except Exception as e:
@@ -312,7 +379,7 @@ class LS4_Camera():
 
         if error_msg is None and hold_timing is True:
           try:
-            self.info("hold timing until after config file is loaded")
+            self.debug("hold timing until after config file is loaded")
             await self.hold_timing()
           except Exception as e:
             error_msg = "exception holding timing for archon controller: %s" % e
@@ -323,6 +390,22 @@ class LS4_Camera():
             raise RuntimeError(error_msg)
         else:
             self.info("controller initialized")
+
+    async def reset(self,release_timing=False):
+
+        error_msg = None
+
+        try:
+          assert self.ls4_controller != None,"controller must first be initialized"
+        except Exception as e:
+          error_msg = "%s" % e
+
+        if error_msg is None:
+          try:
+            await self.ls4_controller.reset(release_timing=release_timing)
+          except Exception as e:
+            error_msg = "exception resetting controller: %s" % e
+
 
     async def hold_timing(self):
 
@@ -354,7 +437,7 @@ class LS4_Camera():
           except Exception as e:
             error_msg = "exception releasing timing for controller: %s" % e
 
-    async def start_controller(self,release_timing=True):
+    async def start_controller(self,release_timing=True,power_on=True):
         """ if release_timing is False, the controller will not start its timing scripts until
             self.ls4_controller.release_timing() is later executed. This synchronizes
             the timing scripts for controller connected by sync cables
@@ -369,7 +452,7 @@ class LS4_Camera():
           error_msg = "%s" % e
 
         if error_msg is None  and  self.acf_conf_file is not None:
-          self.info("writing acf_conf_file %s to controller, release_timing is %s" %\
+          self.debug("writing acf_conf_file %s to controller, release_timing is %s" %\
                       (self.acf_conf_file,release_timing))
           try:
             # in test mode, do apply configuration to controller and do not power it on
@@ -384,7 +467,13 @@ class LS4_Camera():
           except Exception as e:
             error_msg = "exception writing acf_conf_file to controller: %s" % e
 
-        
+
+        if power_on and error_msg is None:
+           try:
+              assert await self.check_voltages(), "voltages out of range"
+           except Exception as e:
+              error_msg = e
+ 
         if error_msg is None:
           self.acf_conf=self.ls4_controller.acf_config
           try:
@@ -393,26 +482,27 @@ class LS4_Camera():
             error_msg="exception updating ccd_map: %s" % e
 
         if error_msg:
-            self.error(error_msg)
+            self.error(str(error_msg))
             raise RuntimeError(error_msg)
         else:
             self.info("controller started sucessfully")
 
-    async def stop_controller(self):
+    async def stop_controller(self,power_down=True):
 
         power_state = None
 
         assert self.ls4_controller is not None,"ERROR: controller has not been started"
 
-        try:
-          self.info("powering down controller")
-          power_state = await self.power_down()
-          self.info("power state is %s" % power_state)
-        except Exception as e:
-          self.error("exception powering down controller: %s" %e)
+        if power_down:
+          try:
+            self.info("powering down controller")
+            power_state = await self.power_down()
+            self.info("power state is %s" % power_state)
+          except Exception as e:
+            self.error("exception powering down controller: %s" %e)
 
-        if (power_state != ArchonPower.OFF):
-             self.error("unable to power down controller")
+          if (power_state != ArchonPower.OFF):
+               self.error("unable to power down controller")
          
         try:
           self.info("stopping controller")
@@ -426,8 +516,13 @@ class LS4_Camera():
 
         image_index = 0
         header_info0 = {}
-        header_info0 = self._get_header_info(header_info0,\
-                      status=status, system=system, image_info = self.image_info)
+        header_info0 = self._get_header_info(header_info0,conf = self.ls4_conf)
+        header_info0 = self._get_header_info(header_info0,conf = self.ls4_controller.config['expose params'])
+        header_info0 = self._get_header_info(header_info0,conf = self.ls4_controller.config['archon'])
+        header_info0 = self._get_header_info(header_info0,conf = status)
+        header_info0 = self._get_header_info(header_info0,conf = system)
+
+
         for ccd_location in self.ccd_map:
           for amp_index in range(0,self.amps_per_ccd):
             amp_selection = self._get_amp_selection(amp_index)
@@ -459,79 +554,216 @@ class LS4_Camera():
                 except:
                   pass
                 image_index += 1
-          
-    async def acquire(self,output_image=None,exptime=0.0):
-        err = False
+         
+    async def check_voltages(self,status=None,voltage_tolerance=VOLTAGE_TOLERANCE):
+        """ check that voltages are within desired tolerance """
+
+        in_tolerance = True
+
+        if status is None:
+          status = await self.get_status()
+
+        conf_keys=[\
+          'mod4\\lvhc_v1',\
+          'mod4\\lvhc_v2',\
+          'mod4\\lvhc_v3',\
+          'mod4\\lvhc_v4',\
+          'mod4\\lvhc_v5',\
+          'mod4\\lvhc_v6',\
+          'mod9\\xvn_v1',\
+          'mod9\\xvn_v2',\
+          'mod9\\xvn_v3',\
+          'mod9\\xvn_v4',\
+          'mod9\\xvp_v1',\
+          'mod9\\xvp_v2',\
+          'mod9\\xvp_v3',\
+          'mod9\\xvp_v4',\
+          ]
+
+        supply_voltage_keys=[\
+          'p5v_v',\
+          'p6v_v',\
+          'n6v_v',\
+          'p17v_v',\
+          'n17v_v',\
+          'p35v_v',\
+          'n35v_v',\
+          'p100v_v',\
+          'n100v_v',\
+          ]
+
+        status_keys=[\
+            'mod4/lvhc_v1',\
+            'mod4/lvhc_v2',\
+            'mod4/lvhc_v3',\
+            'mod4/lvhc_v4',\
+            'mod4/lvhc_v5',\
+            'mod4/lvhc_v6',\
+            'mod9/xvn_v1',\
+            'mod9/xvn_v2',\
+            'mod9/xvn_v3',\
+            'mod9/xvn_v4',\
+            'mod9/xvp_v1',\
+            'mod9/xvp_v2',\
+            'mod9/xvp_v3',\
+            'mod9/xvp_v4',\
+            'p5v_v',\
+            'p6v_v',\
+            'n6v_v',\
+            'p17v_v',\
+            'n17v_v',\
+            'p35v_v',\
+            'n35v_v',\
+            'p100v_v',\
+            'n100v_v',\
+            ]
+
+        conf_enable_keys=[\
+            'mod4\\lvhc_enable1',\
+            'mod4\\lvhc_enable2',\
+            'mod4\\lvhc_enable3',\
+            'mod4\\lvhc_enable4',\
+            'mod4\\lvhc_enable5',\
+            'mod4\\lvhc_enable6',\
+            'mod9\\xvn_enable1',\
+            'mod9\\xvn_enable2',\
+            'mod9\\xvn_enable3',\
+            'mod9\\xvn_enable4',\
+            'mod9\\xvp_enable1',\
+            'mod9\\xvp_enable2',\
+            'mod9\\xvp_enable3',\
+            'mod9\\xvp_enable4',\
+            ]
+
+
+        if self.ls4_controller is not None:
+          conf = self.ls4_controller.acf_config["CONFIG"]
+          index = 0
+          for c_key in conf_keys:
+            s_key = status_keys[index]
+            c_enable_key = conf_enable_keys[index]
+            assert c_key in conf, "config key %s not found in conf" % c_key
+            assert c_enable_key in conf, "config key %s not found in conf" % c_enable_key
+            assert s_key in status, "status key %s not found in status" % s_key
+            if conf[c_enable_key] in [1,"1"]:
+              v_in = float(conf[c_key])
+              v_out = status[s_key]
+              if  np.fabs(v_in-v_out) > max(voltage_tolerance,0.01*np.fabs(v_in)):
+                 self.warn("voltage %s is out of tolerance: set: %7.3f actual: %7.3f" % (c_key,v_in,v_out))
+                 in_tolerance = False
+              else:
+                 self.debug("voltage %s is in range: set: %7.3f actual: %7.3f" % (c_key,v_in,v_out))
+            index += 1
+
+          assert "supply voltages" in self.ls4_controller.config, "no supply voltages in config"
+          conf = self.ls4_controller.config["supply voltages"]
+          self.debug("conf = %s" % str(conf))
+          for supply_key in supply_voltage_keys:
+            assert supply_key in conf, "supply_voltage key %s not found in conf" % supply_key
+            assert supply_key in status, "supply_voltage key %s not found in status" % supply_key
+            v_in = float(conf[supply_key])
+            v_out = status[supply_key]
+            if np.fabs(v_in)>40.0:
+               v_tol = 3.0
+            else:
+               v_tol = voltage_tolerance
+            v_tol =  max(v_tol,0.01*np.fabs(v_in))
+            if np.fabs(v_in-v_out) > v_tol:
+               self.warn("supply voltage %s is out of tolerance: set: %7.3f actual: %7.3f tol: %7.3f" %\
+                       (supply_key,v_in,v_out,v_tol))
+               in_tolerance = False
+            else:
+               self.debug("supply voltage %s is in range: set: %7.3f actual: %7.3f" % (c_key,v_in,v_out))
+
+        return in_tolerance
+
+    async def acquire(self,output_image=None,exptime=0.0, acquire=True, fetch=True, save=True):
+        error_msg = None
         cmd = None
+        self.image_data = None
+
+        self.debug("acquire with output: %s exptime: %7.3f acquire: %s  fetch:  %s  save: %s" %\
+               (output_image,exptime,acquire,fetch,save))
+        try:
+           assert self.ls4_controller is not None,"controller has not been started"
+        except Exception as e:
+           error_msg = e
+
+        if error_msg is None:
+          status = await self.get_status()
+          system = await self.get_system()
+
+        if error_msg is None:
+
+          if self.ls4_test or acquire==False:
+             self.debug("ls4_test mode: skipping aquisition of image")
+          else:
+            try:
+              assert await self.check_voltages(status),"voltages out of range first check"
+            except Exception as e:
+              error_msg = e
+
+            if error_msg is None:
+              self.debug("start exposing %7.3f sec. Trigger readout only:" % exptime)
+              try:
+                self.info("waiting for exposure")
+                await self.ls4_controller.expose(exptime, readout=False)
+                self.info("waited %7.3f sec for exposure" % self.ls4_controller.config['expose params']['exptime'])
+              except Exception as e:
+                error_msg = "exception exposing: %s" % e
+
+        if error_msg is None:
+          if self.ls4_test or acquire==False:
+             self.debug("ls4_test mode: skipping readout of image")
+          else:
+            self.debug("reading out CCD to controller memory")
+            try:
+              if self.ls4_controller.ls4_sync_io.leader:
+                 wait_for = 1.0
+              else:
+                 #DEBUG
+                 #wait_for = 0.0
+                 wait_for = 1.0
+              await self.ls4_controller.readout(notifier=self.notifier,wait_for=1.0)
+            except Exception as e:
+              error_msg = "exception reading out to controller memory: %s" % e
+
+        if error_msg is None and fetch:
+          self.info("fetching data:")
+          try:
+            await self.fetch_and_save(output_image=output_image,status=status,system=system,save=save)
+          except Exception as e:
+            error_msg = "Exception fetching and saving data: %s" %e
+
+        assert error_msg is None, error_msg
+          
+    async def fetch_and_save(self,output_image=None, status=None, system=None,save=True):
+        error_msg = None
         self.image_data = None
 
         try:
            assert self.ls4_controller is not None,"ERROR: controller has not been started"
         except Exception as e:
-            self.info("%s" % e)
-            err = True
-            self.info("status:")
-            status = await self.get_status()
-            self.info(status)
+            error_msg = "%s" % e
 
-        if not err:
-          status = await self.get_status()
-          system = await self.get_system()
-
-          if self.ls4_test:
-             self.info("ls4_test mode: skipping aquisition of image")
-          else:
-            self.info("start exposing %7.3f sec and then reading out:" % exptime)
-            try:
-              expose_task = await self.ls4_controller.expose(exptime, readout=False)
-              t_start = time.time()
-              self.info("waiting for exposure:")
-              await expose_task
-              dt = time.time()-t_start
-              self.info("waited %7.3f sec for readout" % dt)
-            except Exception as e:
-              self.error("exception exposing: %s" % e)
-              err = True
-              self.info("status:")
-              status = await self.get_status()
-              self.info(status)
-
-        if not err:
-          if self.ls4_test:
-             self.info("ls4_test mode: skipping readout of image")
-          else:
-            self.info("waiting for readout")
-            try:
-              t_start = time.time()
-              self.info("start waiting for readout:")
-              await self.ls4_controller.readout(notifier=self.notifier)
-              dt = time.time()-t_start
-              self.info("waited %7.3f sec for readout" % dt)
-            except Exception as e:
-              self.error("exception reading out: %s" % e)
-              err = True
-              self.info("status:")
-              status = await self.get_status()
-              self.info(status)
-
-        if not err:
-          self.info("fetching data:")
+        if error_msg is None:
+          #self.info("fetching data:")
           try:
-            self.image_data = await self.ls4_controller.fetch()
-            #self.info("image: %s" % self.image_data[1-16])
+            self.image_data,buffer_no = await self.ls4_controller.fetch(return_buffer=True)
+            self.debug("image fetched from buffer %d" % buffer_no)
           except Exception as e:
-            self.error("Exception fetching data: %s" %e)
-            err = True
+            error_msg = "Exception fetching data: %s" %e
 
         
-        if not err:
+        if error_msg is None and save:
           self.info("saving image to %s" % output_image)
           try:
-          #if 1:
             await self.save_image(output_image=output_image,status=status,system=system)
           except Exception as e:
-            self.error("Exception saving image to %s: %s" % (output_image,e))
+            error_msg = "Exception saving image to %s: %s" % (output_image,e)
+
         
+        assert error_msg is None, error_msg
 
     def _update_ccd_map(self):
 
@@ -608,8 +840,8 @@ class LS4_Camera():
         assert "TAPLINES" in self.acf_conf["CONFIG"], "TAPLINES not in acf_conf"
 
 
-        self.info("PIXELCOUNT: %s" % self.acf_conf["CONFIG"]["PIXELCOUNT"])
-        self.info("LINECOUNT: %s" % self.acf_conf["CONFIG"]["LINECOUNT"])
+        self.debug("PIXELCOUNT: %s" % self.acf_conf["CONFIG"]["PIXELCOUNT"])
+        self.debug("LINECOUNT: %s" % self.acf_conf["CONFIG"]["LINECOUNT"])
 
         # make sure the TAPLINES value is in range 1 to 16
         num_taps = int(self.acf_conf["CONFIG"]["TAPLINES"])
@@ -829,8 +1061,31 @@ class LS4_Camera():
         return self._get_tap_data(ccd_name=ccd_name,ccd_location=ccd_location,\
                 amp_name=amp_name,data_key="TAP_INDICES")
 
+    def update_header(self,header=None,conf=None,reject_keys={}):
 
-    def _get_header_info(self,header={},ccd_location=None, amp_index=None, status=None, system=None, image_info=None):
+        """ update header with key,value pairs in given configuration dictionary """
+
+        for key in conf:
+          if key not in reject_keys:
+            try:  
+              value=conf[key]
+              if isinstance(value,(dict,list,tuple)):
+                 if len(value) == 0:
+                    value = None
+              elif isinstance(value,str):
+                 if len(value) == 0:
+                    value = None
+                 elif len(key+value)>70:
+                    value = value[:70]
+              self.debug("key: %s  value: %s" % (key,value))
+              header.update({key:value})
+            except Exception as e:
+              self.error("Exception updating update header with configuration key,value %s %s: %s" %\
+                        (key,dict[key],e))
+
+
+    def _get_header_info(self,header={},conf=None,ccd_location=None,amp_index=None):
+
 
         """
             build a fits header for specifed CCD and ccd amplifire using information in
@@ -843,7 +1098,14 @@ class LS4_Camera():
         #                  "E":{"CCD_NAME":"S-196","TAP_INDICES":[2,3],"TAP_NAMES":["AD12L","AD11R"},
         #                       "AMP_NAMES":["LEFT","RIGHT"],"TAP_SCALES":[1,1],"TAP_OFFSETS":[5000,700]} }
 
-        if ccd_location is not None:
+        if conf is not None:
+          reject_keys=[]
+          for key in conf:
+             if "_list" in key or 'log_format' in key:
+                reject_keys.append(key)
+          self.update_header(header=header,conf=conf,reject_keys=reject_keys)
+
+        elif ccd_location is not None:
           try:
             assert amp_index is not None, "unspecified amp index"
             assert ccd_location in self.ccd_map, "ccd location %s not found in ccd map" % ccd_location
@@ -866,21 +1128,6 @@ class LS4_Camera():
               value = ccd_info[k][amp_index]
               header.update({key:value})
              
-        if image_info is not None:
-          for key in image_info:
-              value = image_info[key]
-              header.update({key:value})
-
-        if status is not None:
-          for key in status:
-              value = status[key]
-              header.update({key:value})
-
-        if system is not None:
-          for key in system:
-              value = system[key]
-              header.update({key:value})
-
         return header
 
 

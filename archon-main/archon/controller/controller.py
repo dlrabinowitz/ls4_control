@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+
 # -*- coding: utf-8 -*-
 #
 # @Author: José Sánchez-Gallego (gallegoj@uw.edu)
@@ -21,7 +21,7 @@ from typing import Any, Callable, Iterable, Literal, Optional, cast, overload
 
 import numpy
 
-from archon.ls4.ls4_device import LS4_Device
+from archon.controller.ls4_device import LS4_Device
 
 from archon import config as lib_config
 from archon import log
@@ -88,6 +88,8 @@ class ArchonController(LS4_Device):
         # TODO: asyncio recommends using asyncio.create_task directly, but that
         # call get_running_loop() which fails in iPython.
         self._job = asyncio.get_event_loop().create_task(self.__track_commands())
+
+        self.frame=None
 
     async def start(self, reset: bool = True, read_acf: bool = True):
         """Starts the controller connection. If ``reset=True``, resets the status."""
@@ -415,6 +417,7 @@ class ArchonController(LS4_Device):
         }
 
         #print("get_frame: frame: %s" % str(frame))
+        self.frame=frame
         return frame
 
     async def read_config(
@@ -861,7 +864,9 @@ class ArchonController(LS4_Device):
         force: bool = False,
     ) -> ArchonCommand | None:
 
-        """Sets the parameter ``param`` to value ``value`` calling ``FASTLOADPARAM``."""
+        """Asynchronously sets the parameter ``param`` to value ``value`` calling ``FASTLOADPARAM``.
+           See ls4/ls4_controller.py and ls4/ls4_sync.py for the synchronous version.
+        """
 
         # First we check if the parameter actually exists.
         if len(self.parameters) == 0:
@@ -1018,6 +1023,10 @@ class ArchonController(LS4_Device):
         # Set integration time in centiseconds (yep, centiseconds).
         await self.set_param("IntCS", int(exposure_time * 100))
         await self.set_param("Exposures", 1)
+        #if exposure_time > 0.0:
+        # await self.set_param("TRIGOUTLEVEL", 1)
+        #else:
+        # await self.set_param("TRIGOUTLEVEL", 0)
 
         await self.send_command("RELEASETIMING")
 
@@ -1229,7 +1238,7 @@ class ArchonController(LS4_Device):
         """
 
         t_start = time.time()
-        log.info(f"{self.name}: start fetching data.")
+        log.info(f"{self.name}: start fetching data from buffer %d." % buffer_no)
 
         if self.status & ControllerStatus.FETCHING:
             raise ArchonControllerError("Controller is already fetching.")

@@ -2,9 +2,12 @@
 # -*- coding: utf-8 -*-
 #
 # @Author: David Rabinowitz (david.rabinowitz@yale.edu)
-# @Date: 2023-12-18
+# @Date: 2024-01-16
 # @Filename: ls4_controller.py
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
+#
+# This is an extension of the controller.py in sdss-archon 
+# distribution (on github)
 
 from __future__ import annotations
 
