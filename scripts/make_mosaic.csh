@@ -16,7 +16,7 @@ set l = `ls "$prefix"*"$seq_num"*".fits"`
 echo "l: $l"
 set l1 = `echo $l | sed -e "s/ /,/g"`
 echo "l1: $l1"
-python  $LS4_CONTROL_ROOT/scripts/mosaic.py  --images $l1 --output $output 
+python  $LS4_CONTROL_ROOT/scripts/mosaic.py  --images $l1 --output $output  --bias True
 
 
 
