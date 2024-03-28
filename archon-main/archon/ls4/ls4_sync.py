@@ -1,7 +1,9 @@
 import asyncio
 
 from archon.controller.ls4_controller import LS4Controller
-from archon.ls4.ls4_events import *
+from archon.controller.ls4_logger import LS4_Logger
+from archon.ls4.ls4_events import LS4_Events
+
 from archon import log
 
 class LS4_Sync():
@@ -27,13 +29,25 @@ class LS4_Sync():
     def __init__(
         self,
         num_controllers: int = 0 ,
-        lead_index: int = 0
+        lead_index: int = 0,
+        ls4_logger: LS4_Logger | None = None
     ):
      
         assert lead_index is not None, "lead_index must be specified"
         assert num_controllers > 0, "num_controllers must exceed 0"
         assert lead_index in range(0,num_controllers), \
                   "lead_index must be in range 0 to %d" % num_controllers
+
+        if ls4_logger is None:
+           self.ls4_logger = LS4_Logger()
+        else:
+           self.ls4_logger=ls4_logger
+
+        self.info = self.ls4_logger.info
+        self.debug = self.ls4_logger.debug
+        self.warn= self.ls4_logger.warn
+        self.error= self.ls4_logger.error
+        self.critical= self.ls4_logger.critical
 
         # list of instances of LS4Controller, one for each synchronized controller
         self.controller_list=[]
@@ -66,20 +80,21 @@ class LS4_Sync():
              self.command_sync_msg_list.append(asyncio.Event())
              self.command_sync_reply_list.append(asyncio.Event())
 
+        self.event_lists={\
+            "param_msg":self.param_sync_msg_list,
+            "param_reply":self.param_sync_reply_list,
+            "command_msg":self.command_sync_msg_list,
+            "command_reply":self.command_sync_reply_list}
+
+
+        # ls4_events keeps track of event list for synchronizing controller threads
+        self.ls4_events=LS4_Events(num_controllers=num_controllers,
+                              event_lists=self.event_lists)
+
+
         #global copy of arguments used by ls4_controller.set_params
         self.param_args = [{}]
         self.command_args = [{}]
-
-    def info(self,str):
-        log.info(str)
-    def error(self,str):
-        log.error(str)
-    def warn(self,str):
-        log.warn(str) 
-    def debug(self,str):
-        log.debug(str)
-    def critical(self,str):
-        log.critical(str)
 
     def add_controller(
         self,
@@ -95,12 +110,14 @@ class LS4_Sync():
         assert controller is not None, "controller is not instantiated"       
 
         self.controller_list.append(controller)
+       
+        """
         controller.set_sync_event_lists(\
                       param_sync_msg_list=self.param_sync_msg_list,
                       param_sync_reply_list=self.param_sync_reply_list,
                       command_sync_msg_list=self.command_sync_msg_list,
                       command_sync_reply_list=self.command_sync_reply_list)
-
+        """
         controller.set_sync_index(sync_index)
 
 
@@ -108,21 +125,8 @@ class LS4_Sync():
 
         """If sync_flag is True/False, enable/disable synchronization of the controllers."""
 
-        #check that param_sync_msg events are all clear
-        result = await check_events(event_list=self.param_sync_msg_list,sync_index=-1,set_flag=False)
-        assert result is True,"not all param_sync_msg events are clear"
-
-        #check that param_sync_reply events are all clear
-        result = await check_events(event_list=self.param_sync_reply_list,sync_index=-1,set_flag=False)
-        assert result is True,"not all param_sync_reply events are clear"
-
-        #check that command_sync_msg events are all clear
-        result = await check_events(event_list=self.command_sync_msg_list,sync_index=-1,set_flag=False)
-        assert result is True,"not all command_sync_msg events are clear"
-
-        #check that command_sync_reply events are all clear
-        result = await check_events(event_list=self.command_sync_reply_list,sync_index=-1,set_flag=False)
-        assert result is True,"not all command_sync_reply events are clear"
+        result = await self.ls4_events.check_all_events_clear()
+        assert result is True,"not all sync events are clear"
 
         for controller in self.controller_list:
             controller.set_sync(sync_flag)

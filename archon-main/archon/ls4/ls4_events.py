@@ -1,163 +1,197 @@
 import asyncio
 from archon import log
+from archon.controller.ls4_logger import LS4_Logger
 
 # utility functions for working with asyncio Events
 
-async def wait_events(
-    event_list: list[asyncio.Event]=[],
-    sync_index: int = -1,
-):
-    """ wait for  for all (sync_index-1) or a particular (sync_index>-1) 
-        event in event_list to be set
-    """
+class LS4_Events():
 
-    assert sync_index in range(-1,len(event_list)),\
-            "sync_index [%d] out of range [-1 to %d]" % (sync_index,len(event_list))
+    def __init__(self,
+        num_controllers: int,
+        event_lists: dict | None = None
+    ):
 
-    if sync_index > -1:
-       log.debug("wating for event for sync index %d" % sync_index)
-       result = await event_action(event_list[sync_index],"wait")
-       return [result]
-    else:
-       result = await asyncio.gather(*(event_action(event,"wait") for event in event_list))
-       log.debug("wait_events: result = %s" % result)
-       return result
+        self.num_controllers = num_controllers
 
+        assert event_lists is not None, "event_lists are unspecified"
+        self.event_lists = event_lists
 
+        param_msg_list = None
+        param_reply_list = None
+        command_msg_list = None
+        command_reply_list = None
 
-async def defunct_wait_events(
-    event_list: list[asyncio.Event]=[],
-    set_flag: bool = True,
-    sync_index: int = -1,
-    timeout_msec: float = 1000.0
-):
-    """ wait up to timeout_msec for all (sync_index-1) 
-        or a particular (sync_index>-1) event in event_list to have 
-        specified setting (set_flag = True/False)
-    """
+        if 'param_msg' in event_lists:
+            param_msg_list = event_lists['param_msg']
+        if 'param_reply' in event_lists:
+            param_reply_list = event_lists['param_reply']
+        if 'command_msg' in event_lists:
+            command_msg_list = event_lists['command_msg']
+        if 'command_reply' in event_lists:
+            command_reply_list = event_lists['command_reply']
 
-    assert sync_index in range(-1,len(event_list)),\
-            "sync_index [%d] out of range [-1 to %d]" % (sync_index,len(event_list))
+        assert param_msg_list is not None, "param_msg_list is unspecified in event_list"
+        assert param_reply_list is not None, "param_reply_list is unspecified in event_list"
+        assert command_msg_list is not None, "command_msg_list is unspecified in event_list"
+        assert command_reply_list is not None, "command_reply_list is unspecified in event_list"
 
-    wait_interval = 0.01 # sec
-    t_start = time.time()
-    dt = 0.0
-    done = False
-    timeout = False
-    while not done and not timeout:
-        dt = (time.time() - t_start)*1000.0
-        if await check_events(event_list=event_list,sync_index=sync_index,set_flag=set_flag):
-           done=True
-        elif dt > timeout_msec:
-           timeout=True
+        self.param_msg_list = param_msg_list
+        self.param_reply_list = param_reply_list
+        self.command_msg_list = command_msg_list
+        self.command_reply_list = command_reply_list
+
+    async def check_all_events_clear(self):
+
+        all_results = True
+
+        #check that param_sync_msg events are all clear
+        result = await self.check_events(event_list=self.param_msg_list,sync_index=-1,set_flag=False)
+        if  not result:
+            all_results = False
+            self.warn("not all param msg events are clear")
+
+        #check that param_sync_reply events are all clear
+        result = await self.check_events(event_list=self.param_reply_list,sync_index=-1,set_flag=False)
+        if  not result:
+            all_results = False
+            self.warn("not all param reply events are clear")
+
+        #check that command_sync_msg events are all clear
+        result = await self.check_events(event_list=self.command_msg_list,sync_index=-1,set_flag=False)
+        if  not result:
+            all_results = False
+            self.warn("not all command msg events are clear")
+
+        #check that command_sync_reply events are all clear
+        result = await self.check_events(event_list=self.command_reply_list,sync_index=-1,set_flag=False)
+        if  not result:
+            all_results = False
+            self.warn("not all command reply events are clear")
+
+        return all_results
+
+    async def wait_events(self,
+        event_list: list[asyncio.Event]=[],
+        sync_index: int = -1,
+    ):
+        """ wait for  for all (sync_index-1) or a particular (sync_index>-1) 
+            event in event_list to be set
+        """
+
+        assert sync_index in range(-1,len(event_list)),\
+                "sync_index [%d] out of range [-1 to %d]" % (sync_index,len(event_list))
+
+        if sync_index > -1:
+           log.debug("wating for event for sync index %d" % sync_index)
+           result = await self.event_action(event_list[sync_index],"wait")
+           return [result]
         else:
-           asyncio.sleep(wait_interval)
-
-    if timeout:
-       print("timeout waiting for sync_events to clear")
-
-    return done
-
-async def check_events(
-    event_list: list[asyncio.Event]=[],
-    sync_index: int = -1,
-    set_flag: bool = True
-):
-
-    """ check that all (sync_index==1) or a specific event  (sync_index>-1) in event_list 
-        have status matching set_flag 
-    """
-    assert sync_index in range(-1,len(event_list)),\
-            "sync_index [%d] out of range [-1 to %d]" % (sync_index,len(event_list))
-
-    index = 0
-    all_correct = True
-    
-    if sync_index > -1:
-       log.debug("checking event for sync index %d" % sync_index)
-       if event_list[sync_index].is_set() != set_flag:
-         all_correct = False
-    else:
-       result = await asyncio.gather(*(event_action(event,"is_set") for event in event_list))
-       """
-       result = []
-       index = 0
-       for event in event_list:
-          r = event.is_set()
-          log.debug("event %d state: %s" % (index,r))
-          result.append(r)
-       """
-       if (not set_flag)  in result:
-          log.debug ("check_events unwanted result (all should be %s) : %s" % (set_flag,result))
-          all_correct = False
-
-    return all_correct
-
-async def set_events(
-    event_list: list[asyncio.Event]=[],
-    sync_index: int = -1 
-):
-
-    """ set  all (sync_index==1) or a specific event  (sync_index>-1) in event_list """
-
-    assert sync_index in range(-1,len(event_list)),\
-            "sync_index [%d] out of range [-1 to %d]" % (sync_index,len(event_list))
-
-    if sync_index > -1:
-       log.debug("setting event for sync index %d" % sync_index)
-       result = await event_action(event_list[sync_index],"set")
-       results = [result]
-    else:
-       result = await asyncio.gather(*(event_action(event,"set") for event in event_list))
-       return result
+           result = await asyncio.gather(*(self.event_action(event,"wait") for event in event_list))
+           log.debug("wait_events: result = %s" % result)
+           return result
 
 
-async def clear_events(
-    event_list: list[asyncio.Event]=[],
-    sync_index: int = -1 
-):
-    """ clear all (sync_index==1) or a specific event  (sync_index>-1) in event_list """
-    
+    async def check_events(self,
+        event_list: list[asyncio.Event]=[],
+        sync_index: int = -1,
+        set_flag: bool = True
+    ):
 
-    assert sync_index in range(-1,len(event_list)),\
-            "sync_index [%d] out of range [-1 to %d]" % (sync_index,len(event_list))
+        """ check that all (sync_index==1) or a specific event  (sync_index>-1) in event_list 
+            have status matching set_flag 
+        """
+        assert sync_index in range(-1,len(event_list)),\
+                "sync_index [%d] out of range [-1 to %d]" % (sync_index,len(event_list))
 
-    if sync_index > -1:
-       log.debug("clearing event for sync index %d" % sync_index)
-       result = event_list[sync_index].clear()
-       return [result]
+        index = 0
+        all_correct = True
+        
+        if sync_index > -1:
+           log.debug("checking event for sync index %d" % sync_index)
+           if event_list[sync_index].is_set() != set_flag:
+             all_correct = False
+        else:
+           result = await asyncio.gather(*(self.event_action(event,"is_set") for event in event_list))
+           """
+           result = []
+           index = 0
+           for event in event_list:
+              r = event.is_set()
+              log.debug("event %d state: %s" % (index,r))
+              result.append(r)
+           """
+           if (not set_flag)  in result:
+              log.debug ("check_events unwanted result (all should be %s) : %s" % (set_flag,result))
+              all_correct = False
 
-    else:
-       result = await asyncio.gather(*(event_action(event,"clear") for event in event_list))
-       """
-       result=[]
-       index = 0
-       for event in event_list:
-           log.debug("clearing event %d" % index)
-           result.append(event.clear())
-           log.debug("result of clearing: %s" % event.is_set())
-       """
-       log.debug("clear_events result: %s" % result)
+        return all_correct
 
-       return result
+    async def set_events(self,
+        event_list: list[asyncio.Event]=[],
+        sync_index: int = -1 
+    ):
 
-async def event_action(
-    event: asyncio.Event,
-    action: str = "none"
-):
-    result = None
+        """ set  all (sync_index==1) or a specific event  (sync_index>-1) in event_list """
 
-    assert action in ["set","clear","is_set","wait"],\
-       "unexpected action: %s" % action
+        assert sync_index in range(-1,len(event_list)),\
+                "sync_index [%d] out of range [-1 to %d]" % (sync_index,len(event_list))
 
-    if action == "set":
-       result = event.set()
-    elif action == "clear":
-       result = event.clear()
-    elif action == "is_set":
-       result = event.is_set()
-    elif action == "wait":
-       result = await event.wait()
-    return result
+        if sync_index > -1:
+           log.debug("setting event for sync index %d" % sync_index)
+           log.debug("setting event for sync index %d" % sync_index)
+           result = await self.event_action(event_list[sync_index],"set")
+           results = [result]
+        else:
+           result = await asyncio.gather(*(self.event_action(event,"set") for event in event_list))
+           return result
+
+
+    async def clear_events(self,
+        event_list: list[asyncio.Event]=[],
+        sync_index: int = -1 
+    ):
+        """ clear all (sync_index==1) or a specific event  (sync_index>-1) in event_list """
+        
+
+        assert sync_index in range(-1,len(event_list)),\
+                "sync_index [%d] out of range [-1 to %d]" % (sync_index,len(event_list))
+
+        if sync_index > -1:
+           log.debug("clearing event for sync index %d" % sync_index)
+           result = event_list[sync_index].clear()
+           return [result]
+
+        else:
+           result = await asyncio.gather(*(self.event_action(event,"clear") for event in event_list))
+           """
+           result=[]
+           index = 0
+           for event in event_list:
+               log.debug("clearing event %d" % index)
+               result.append(event.clear())
+               log.debug("result of clearing: %s" % event.is_set())
+           """
+           log.debug("clear_events result: %s" % result)
+
+           return result
+
+    async def event_action(self,
+        event: asyncio.Event,
+        action: str = "none"
+    ):
+        result = None
+
+        assert action in ["set","clear","is_set","wait"],\
+           "unexpected action: %s" % action
+
+        if action == "set":
+           result = event.set()
+        elif action == "clear":
+           result = event.clear()
+        elif action == "is_set":
+           result = event.is_set()
+        elif action == "wait":
+           result = await event.wait()
+        return result
 
 

@@ -44,7 +44,7 @@ from archon.exceptions import (
 )
 
 from . import MAX_COMMAND_ID, MAX_CONFIG_LINES, FOLLOWER_TIMEOUT_MSEC, \
-              P100_SUPPLY_VOLTAGE, N100_SUPPLY_VOLTAGE
+              P100_SUPPLY_VOLTAGE, N100_SUPPLY_VOLTAGE, AMPS_PER_CCD, CCDS_PER_QUAD
 
 
 __all__ = ["LS4Controller"]
@@ -86,7 +86,6 @@ class LS4Controller(LS4_Device):
         Configuration data. Otherwise uses default configuration.
     """
 
-
     def __init__(
         self,
         name: str,
@@ -95,11 +94,56 @@ class LS4Controller(LS4_Device):
         port: int = 4242,
         config: dict | None = None,
         param_args: list[dict] | None = None,
-        command_args: list[dict] | None = None
+        command_args: list[dict] | None = None,
+        ls4_events: LS4_Events | None = None,
+        ls4_logger: LS4_Logger | None = None,
+        fake: bool | None = None,
+        timing = None,
+        notifier: Optional[Callable[[str], None]] = None,
     ):
+
+        assert param_args is not None, "param_args are not specified"
+        assert command_args is not None, "command_args are not specified"
+        assert ls4_events is not None, "ls4_events are not specified"
+
+        self.notifier = notifier
+        self.leader = False
+        self.prefix = "follow %s" % name
+        if ls4_logger is None:
+           self.ls4_logger = LS4_Logger(name=name)
+        else:
+           self.ls4_logger=ls4_logger
+
+        self.info = self.ls4_logger.info
+        self.debug = self.ls4_logger.debug
+        self.warn= self.ls4_logger.warn
+        self.error= self.ls4_logger.error
+        self.critical= self.ls4_logger.critical
+
+        if fake is not None:
+           self.fake_controller = fake
+           self.host = host
+           self.port = port
+           self.local_addr=local_addr
+           self.fake_count = 0
+           self.fake_data = None
+           self.fake_conf={}
+           self.fake_conf['bytes_per_pixel']=2
+           self.fake_conf['data_type']=numpy.uint16
+           self.fake_conf['n_amps']=AMPS_PER_CCD*CCDS_PER_QUAD
+
+        else:
+           self.fake_controller = False
+
+        #self.add_logger(info=info, error=error, debug=debug, warn = warn)
+
+        self.info("\n\tname: %s    host: %s    port: %d    local_addr: %s    fake: %s" %\
+             (name,host,port,local_addr,fake))
+
         self.__running_commands: dict[int, ArchonCommand] = {}
         self._id_pool = set(range(MAX_COMMAND_ID))
-        LS4_Device.__init__(self, name=name, host=host, port=port, local_addr=local_addr)
+        LS4_Device.__init__(self, name=name, host=host, port=port, local_addr=local_addr,
+                    ls4_logger=self.ls4_logger)
 
         self.name = name
         self._status: ControllerStatus = ControllerStatus.UNKNOWN
@@ -202,53 +246,31 @@ class LS4Controller(LS4_Device):
                })
              
 
-        self.exp_per = TimePeriod()
-        self.read_per = TimePeriod()
-        self.fetch_per = TimePeriod()
-         
-        self.ls4_sync_io = LS4_SyncIO(name=self.name,
-           param_args=param_args,command_args=command_args)
+        self.ls4_sync_io = LS4_SyncIO(name=self.name,ls4_events=ls4_events,
+           param_args=param_args,command_args=command_args,ls4_logger = self.ls4_logger)
    
-        self.ls4_sync_io.add_loggers(info=self.info, error=self.error, debug=self.debug, warn = self.warn)
-
-        self.set_sync_event_lists=self.ls4_sync_io.set_sync_event_lists
         self.set_sync_index=self.ls4_sync_io.set_sync_index
         self.set_sync=self.ls4_sync_io.set_sync
-        self.set_num_controllers= self.ls4_sync_io.set_num_controllers
 
-        self.prefix = ""
+        if timing is not None:
+           self.timing=timing
+        else:
+           self.timing={'expose':TimePeriod(),'readout':TimePeriod(),'fetch':TimePeriod()}
 
     def set_lead(self, lead_flag: bool = False):
          self.leader = lead_flag
-         self.prefix = "leader %s:" % self.name
+         self.prefix = "leader %s" % self.name
          if self.ls4_sync_io is not None:
             self.ls4_sync_io.set_lead(lead_flag)
-
-    def info(self,str):
-        if self.ls4_sync_io.leader is True or self.name == "ctrl1":
-           log.info(str)
-           sys.stdout.flush()
-
-    def debug(self,str):
-        if self.ls4_sync_io.leader is True or self.name == "ctrl1":
-           log.debug(str)
-           sys.stdout.flush()
-
-    def error(self,str):
-           sys.stdout.flush()
-
-    def warn(self,str):
-           log.warn(str)
-           sys.stdout.flush()
 
     async def start(self, reset: bool = True, read_acf: bool = True):
         """Starts the controller connection. If ``reset=True``, resets the status."""
 
         await super().start()
-        log.debug(f"Controller {self.name} connected at {self.host}.")
+        self.debug(f"Controller {self.name} connected at {self.host}.")
 
         if read_acf:
-            log.debug(f"Retrieving ACF data from controller {self.name}.")
+            self.debug(f"Retrieving ACF data from controller {self.name}.")
             config_parser, _ = await self.read_config()
             self.acf_config = config_parser
             self._parse_params()
@@ -371,8 +393,8 @@ class LS4Controller(LS4_Device):
         if sync_flag is None:
            sync_flag = self.ls4_sync_io.sync_flag
 
-        log.info("%s: sending command [%s] sync_flag: %s" %\
-           (prefix,command_string,sync_flag))
+        self.debug("sending command [%s] sync_flag: %s" %\
+           (command_string,sync_flag))
 
         command_id = command_id or self._get_id()
 
@@ -449,8 +471,8 @@ class LS4Controller(LS4_Device):
            self.error("%s: %s" % (prefix,error_msg))
            raise ArchonControllerError(f"Failed running {command_string}: %s" % error_msg)
 
-        log.info("%s: done sending command [%s] sync_flag: %s" %\
-           (prefix,command_string,sync_flag))
+        self.debug("done sending command [%s] sync_flag: %s" %\
+           (command_string,sync_flag))
           
         return command
 
@@ -491,7 +513,7 @@ class LS4Controller(LS4_Device):
 
            
         self.write(command.raw)
-        log.debug(f"{self.name} -> {command.raw}")
+        #self.debug(f"-> {command.raw}")
            
         return command
 
@@ -786,7 +808,7 @@ class LS4Controller(LS4_Device):
         poweron: bool = False,
         timeout: float | None = None,
         overrides: dict = {},
-        notifier: Optional[Callable[[str], None]] = None,
+        #notifier: Optional[Callable[[str], None]] = None,
         release_timing: bool = True,
     ):
         """Writes a configuration file to the contoller.
@@ -813,10 +835,10 @@ class LS4Controller(LS4_Device):
             A dictionary with configuration lines to be overridden. Must be a mapping
             of keywords to replace, including the module name (e.g.,
             ``MOD11/HEATERAP``), to the new values.
-        notifier
-            A callback that receives a message with the current operation being
-            performed. Useful when `.write_config` is called by the actor to report
-            progress to the users.
+        #notifier
+        #   A callback that receives a message with the current operation being
+        #   performed. Useful when `.write_config` is called by the actor to report
+        #   progress to the users.
         release_timing
             If True, allow controller to start its timing script after writing config file.
             If False, and "hold_timing()" was previously executed, then the controller will 
@@ -827,9 +849,9 @@ class LS4Controller(LS4_Device):
 
         ACS = ArchonCommandStatus
 
-        notifier = notifier or (lambda x: None)
+        #notifier = notifier or (lambda x: None)
 
-        notifier("Reading configuration file")
+        #notifier("Reading configuration file")
 
         timeout = timeout or self.config["timeouts"]["write_config_timeout"]
         delay: float = self.config["timeouts"]["write_config_delay"]
@@ -853,10 +875,10 @@ class LS4Controller(LS4_Device):
         for key in aconfig:
             lines.append(key.upper().replace("\\", "/") + "=" + aconfig[key].strip('"'))
 
-        notifier("Clearing previous configuration")
+        self.debug("Clearing previous configuration")
         await self.send_and_wait("CLEARCONFIG", timeout=timeout)
 
-        notifier("Sending configuration lines")
+        self.debug("Sending configuration lines")
 
         # Stop the controller from polling internally to speed up network response
         # time. This command is not in the official documentation.
@@ -878,7 +900,7 @@ class LS4Controller(LS4_Device):
 
         # Write overrides. Do not apply since we optionall do an APPLYALL afterwards.
         if overrides and len(overrides) > 0:
-            notifier("Writing configuration overrides.")
+            self.debug("Writing configuration overrides.")
             for keyword, value in overrides.items():
                 await self.write_line(keyword, value, apply=False)
 
@@ -886,11 +908,11 @@ class LS4Controller(LS4_Device):
         await self.send_command("POLLON")
 
         for mod in applymods:
-            notifier(f"Sending {mod.upper()}")
+            #notifier(f"Sending {mod.upper()}")
             await self.send_and_wait(mod.upper(), timeout=5)
 
         if applyall:
-            notifier("Sending APPLYALL")
+            #notifier("Sending APPLYALL")
             await self.send_and_wait("APPLYALL", timeout=5)
 
             # Reset objects that depend on the configuration file.
@@ -898,10 +920,10 @@ class LS4Controller(LS4_Device):
             await self._set_default_window_params()
 
             if poweron:
-                notifier("Sending POWERON")
+                #notifier("Sending POWERON")
                 await self.power(True)
 
-        notifier("resetting")
+        #notifier("resetting")
         await self.reset(release_timing=release_timing,sync_flag=False)
 
         return
@@ -987,7 +1009,7 @@ class LS4Controller(LS4_Device):
             if cmd_apply.status == ArchonCommandStatus.FAILED:
                 raise ArchonControllerError(f"Failed applying changes to {mod}.")
 
-            self.info(f"{self.name}: {keyword}={value_str}")
+            self.debug(f"{keyword}={value_str}")
 
     async def power(self, mode: bool | None = None):
         """Handles power to the CCD(s). Sets the power status bit.
@@ -1039,8 +1061,6 @@ class LS4Controller(LS4_Device):
     async def set_autoflush(self, mode: bool):
         """Enables or disables autoflushing."""
 
-        #self.info("setting AutoFlush : %s" % mode)
-        #await self.set_param("AutoFlush", int(mode))
         self.debug("setting ContinuousExposures: %s" % mode)
         await self.set_param("ContinuousExposures", int(mode))
 
@@ -1054,44 +1074,44 @@ class LS4Controller(LS4_Device):
 
         self._parse_params()
 
-        self.info(f"{self.name}: start resetting controller")
+        self.debug(f"start resetting controller")
 
-        self.info(f"{self.name}: hold_timing")
+        self.debug(f"hold_timing")
         await self.hold_timing()
 
 
-        self.debug(f"{self.name}: set autoflush %s" % autoflush)
+        self.debug(f"set autoflush %s" % autoflush)
         await self.set_autoflush(autoflush)
-        self.debug(f"{self.name}: setting Exposures to 0")
+        self.debug(f"setting Exposures to 0")
         await self.set_param(param="Exposures", value=0, sync_flag=sync_flag)
-        self.debug(f"{self.name}: setting ReadOut to 0")
+        self.debug(f"setting ReadOut to 0")
         await self.set_param(param="ReadOut", value=0, sync_flag=sync_flag)
-        self.debug(f"{self.name}: setting AbortExposure to 0")
+        self.debug(f"setting AbortExposure to 0")
         await self.set_param(param="AbortExposure", value=0, sync_flag=sync_flag)
-        self.debug(f"{self.name}: setting DoFlush to 0")
+        self.debug(f"setting DoFlush to 0")
         await self.set_param(param="DoFlush", value=0, sync_flag=sync_flag)
-        self.debug(f"{self.name}: setting WaitCount to 0")
+        self.debug(f"setting WaitCount to 0")
         await self.set_param(param="WaitCount", value=0, sync_flag=sync_flag)
 
         # Reset parameters to their default values.
         if "default_parameters" in self.config["archon"]:
             default_parameters = self.config["archon"]["default_parameters"]
             for param in default_parameters:
-                self.debug(f"{self.name}: setting %s to %d" %\
+                self.debug(f"setting %s to %d" %\
                       (param, default_parameters[param]))
                 await self.set_param(param=param, \
                       value=default_parameters[param], sync_flag=sync_flag)
 
         if release_timing:
-            self.info(f"{self.name}: release_timing .")
+            self.debug(f"release_timing .")
             await self.release_timing()
 
         if update_status:
             self._status = ControllerStatus.IDLE
-            self.debug(f"{self.name}: awaiting self.power()")
+            self.debug(f"awaiting self.power()")
             await self.power()  # Sets power bit.
 
-        self.info(f"{self.name}: done with reset")
+        self.debug(f"done with reset")
 
     def _parse_params(self):
         """Reads the ACF file and constructs a dictionary of parameters."""
@@ -1135,11 +1155,11 @@ class LS4Controller(LS4_Device):
             "vbin": int(self.parameters.get("VERTICALBINNING", 1)),
         }
 
-        #self.info(f"{self.name}: default window: {self.default_window}")
+        #self.info(f"default window: {self.default_window}")
 
         self.current_window = self.default_window.copy()
 
-        #self.info(f"{self.name}: current window: {self.current_window}")
+        #self.info(f"current window: {self.current_window}")
 
         if reset:
             await self.reset_window()
@@ -1169,7 +1189,7 @@ class LS4Controller(LS4_Device):
         if param in ["SYNCTEST","SYNC_TEST"]:
            sync_test = True
 
-        log.debug("%s: setting [%s] to [%d] sync_flag: %s sync_test: %s" %\
+        self.debug("%s: setting [%s] to [%d] sync_flag: %s sync_test: %s" %\
            (prefix,param,value,sync_flag,sync_test))
 
         # First we check if the parameter actually exists.
@@ -1235,7 +1255,7 @@ class LS4Controller(LS4_Device):
            raise ArchonControllerError(f"Failed setting param {param} to value {value}:  %s" % error_msg)
 
         self.parameters[param] = value
-        log.debug("%s: done setting [%s] to [%d] sync_flag: %s sync_test: %s" %\
+        self.debug("%s: done setting [%s] to [%d] sync_flag: %s sync_test: %s" %\
            (prefix,param,value,sync_flag,sync_test))
         
         return cmd
@@ -1327,7 +1347,7 @@ class LS4Controller(LS4_Device):
             "vbin": vbin,
         }
 
-        #self.info(f"{self.name}: current window: {self.current_window}")
+        #self.info(f"current window: {self.current_window}")
 
         return self.current_window
 
@@ -1344,7 +1364,7 @@ class LS4Controller(LS4_Device):
         that the readout has started.
         """
 
-        self.info(f"{self.name}: exposing with exposure time {exposure_time} and readout {readout}.")
+        self.debug(f"exposing with exposure time {exposure_time} and readout {readout}.")
 
         CS = ControllerStatus
 
@@ -1359,74 +1379,73 @@ class LS4Controller(LS4_Device):
         if (not (CS.POWERON & self.status)) or (CS.POWERBAD & self.status):
             raise ArchonControllerError("Controller power is off or invalid.")
 
-        self.debug(f"{self.name}: resetting") 
+        self.debug(f"resetting") 
         #await self.reset(autoflush=False, release_timing=False,sync_flag=self.ls4_sync_io.sync_flag)
         await self.reset(autoflush=False, release_timing=False,sync_flag=False)
-        self.debug(f"{self.name}: done resetting") 
+        self.debug(f"done resetting") 
         if self.ls4_sync_io.sync_flag:
-           self.debug(f"{self.name}: syncing up")
+           self.debug(f"syncing up")
            await self.set_param(param="SYNCTEST",value=0)
 
         # Set integration time in centiseconds (yep, centiseconds).
-        self.debug(f"{self.name}: setting IntCS to %d" % int(exposure_time * 100))
+        self.debug(f"setting IntCS to %d" % int(exposure_time * 100))
         await self.set_param("IntCS", int(exposure_time * 100))
 
         if readout is False:
-            self.debug(f"{self.name}: skipping readout: setting Readout param to 0")
+            self.debug(f"skipping readout: setting Readout param to 0")
             await self.set_param("ReadOut", 0)
         else:
-            self.debug(f"{self.name}: reading out: setting Readout param to 1")
+            self.debug(f"reading out: setting Readout param to 1")
             await self.set_param("ReadOut", 1)
 
-        self.debug(f"{self.name}: setting Exposures to 1")
+        self.debug(f"setting Exposures to 1")
         await self.set_param("Exposures", 1)
 
         self.config['expose params']['exptime']=0.0
         self.config['expose params']['read-per']=0.0
 
-        self.debug(f"{self.name}: sending RELEASETIMING")
+        self.debug(f"sending RELEASETIMING")
         await self.send_command("RELEASETIMING")
-        self.debug(f"{self.name}: updating status to EXPOSING and READOUT_PENDING")
+        self.debug(f"updating status to EXPOSING and READOUT_PENDING")
         self.update_status([CS.EXPOSING, CS.READOUT_PENDING])
-        t_start = time.time()
-        self.exp_per.start()
+        self.timing['expose'].start()
         tm = time.gmtime()
         self.config['expose params']['dateobs']=self.get_obsdate(tm)
 
-        self.debug(f"{self.name}: returning update_state function")
-
+        self.debug(f"returning update_state function")
+       
         async def update_state():
-           dt = time.time()-t_start
+           dt = 0.0
            done=True
            aborted=False
            if exposure_time>0.0 and dt < exposure_time:
-              self.debug(f"{self.name}: update_state: waiting %7.3f sec for exposure to end" % exposure_time)
+              self.notifier(f"update_state: waiting %7.3f sec for exposure to end" % exposure_time)
               done = False
               aborted = False
               while (not done) and (not aborted):
-                 dt = time.time()-t_start
                  if dt >= exposure_time:
-                    self.info(f"{self.name}: update_state: exposure completed after %7.3f sec" % dt)
+                    self.notifier(f"update_state: exposure completed after %7.3f sec" % dt)
                     done= True
                  elif not (self.status & CS.EXPOSING):  # Must have been aborted.
-                    self.info(f"{self.name}: update_state: exposure was aborted after %7.3f sec" % dt)
+                    self.notifi(f"update_state: exposure was aborted after %7.3f sec" % dt)
                     abort=True
                  else:
                     time.sleep(0.001)
+                    dt += 0.001
            else:
-              self.debug(f"{self.name}: update_state: skipping 0-sec exposure loop")
+              self.debug(f"update_state: skipping 0-sec exposure loop")
 
-           self.exp_per.end()
-           self.config['expose params']['exptime']=self.exp_per.period
+           self.timing['expose'].end()
+           self.config['expose params']['exptime']=self.timing['expose'].period
             
            if done:
               if aborted:
                  pass
               elif not readout: # readout later
-                 self.debug(f"{self.name}: update_state: updating status to IDLE, READOUT_PENDING")
+                 self.debug(f"update_state: updating status to IDLE, READOUT_PENDING")
                  self.update_status([CS.IDLE, CS.READOUT_PENDING])
               else: # readout now
-                 self.info(f"{self.name}: update_state: starting readout")
+                 self.notifier(f"update_state: starting readout")
                  frame = await self.get_frame()
                  wbuf = frame["wbuf"]
                  if frame[f"buf{wbuf}complete"] == 0:
@@ -1436,14 +1455,14 @@ class LS4Controller(LS4_Device):
                       notify=False,
                     )
                     self.update_status(CS.READING)
-                    self.read_per.start()
+                    self.timing['readout'].start()
                  else:
-                    self.info(f"{self.name}: update_state: failed starting readout")
+                    self.notifier(f"update_state: failed starting readout")
                     raise ArchonControllerError("Controller is not reading.")
 
            if not readout:
-              self.read_per.end()
-              self.config['expose params']['read-per']=self.read_per.period
+              self.timing['readout'].end()
+              self.config['expose params']['read-per']=self.timing['readout'].period
 
         return asyncio.create_task(update_state())
 
@@ -1454,7 +1473,7 @@ class LS4Controller(LS4_Device):
         Aborting does not flush the charge.
         """
 
-        self.info(f"{self.name}: aborting controller.")
+        self.notifier("aborting controller.")
 
         CS = ControllerStatus
 
@@ -1475,7 +1494,7 @@ class LS4Controller(LS4_Device):
     async def flush(self, count: int = 2, wait_for: Optional[float] = None):
         """Resets and flushes the detector. Blocks until flushing completes."""
 
-        self.info(f"{self.name}: flushing.")
+        self.notifier("flushing.")
 
         await self.reset(release_timing=False,sync_flag=False)
 
@@ -1498,7 +1517,7 @@ class LS4Controller(LS4_Device):
         block: bool = True,
         delay: int = 0,
         wait_for: float | None = None,
-        notifier: Optional[Callable[[str], None]] = None,
+        #notifier: Optional[Callable[[str], None]] = None,
         idle_after: bool = True,
     ):
         """Reads the detector into a buffer.
@@ -1509,64 +1528,64 @@ class LS4Controller(LS4_Device):
         many seconds (useful for creating photon transfer frames).
         """
 
-        if notifier:
-          notifier(f"synchronizing...")
+        #if notifier:
+        #  notifier(f"synchronizing...")
 
         await self.set_param(param="SYNCTEST",value=0)
 
-        if notifier:
-          notifier(f"start reading out controller.")
+        #if notifier:
+        #  notifier(f"start reading out controller.")
 
         if not force and not (
             (self.status & ControllerStatus.READOUT_PENDING)
             and (self.status & ControllerStatus.IDLE)
         ):
-            raise ArchonControllerError(f"{self.name}: Controller is not in a readable state.")
+            raise ArchonControllerError(f"Controller is not in a readable state.")
 
         delay = int(delay)
 
-        if notifier:
-           notifier (f"reset...")
+        #if notifier:
+        #   notifier (f"reset...")
 
         await self.reset(autoflush=False, release_timing=False, update_status=False,sync_flag=False)
 
-        if notifier:
-          notifier(f"set Readout to 1")
+        #if notifier:
+        #  notifier(f"set Readout to 1")
 
         await self.set_param("ReadOut", 1)
 
-        if notifier:
-           notifier(f"sending READLEASETIMING")
+        #if notifier:
+        #   notifier(f"sending READLEASETIMING")
 
         await self.send_command("RELEASETIMING")
 
-        self.read_per.start()
+        self.timing['readout'].start()
 
         if delay > 0:
-           if notifier:
-               notifier(f"setting WaitCount to {delay}")
+           #if notifier:
+           #    notifier(f"setting WaitCount to {delay}")
            await self.set_param("WaitCount", delay)
 
-        if notifier:
-           notifier (f"{self.name}: update_status READING")
+        #if notifier:
+        #   notifier (f"update_status READING")
 
         self.update_status(ControllerStatus.READING, notify=False)
 
-        if notifier:
-           notifier(f"update_status READOUT_PENDING")
+        #if notifier:
+        #   notifier(f"update_status READOUT_PENDING")
 
         self.update_status(ControllerStatus.READOUT_PENDING, "off")
 
         if not block:
-           if notifier:
-              notifier(f"not block, returning")
+           #if notifier:
+           #   notifier(f"not block, returning")
            return
 
         max_wait = self.config["timeouts"]["readout_max"] + delay
 
         wait_for = wait_for or 3  # sec delay to ensure the new frame starts filling.
-        if notifier:
-          notifier(f"sleeping {wait_for} sec to make sure readout has started")
+        #if notifier:
+        #  notifier(f"sleeping {wait_for} sec to make sure readout has started")
 
         await asyncio.sleep(wait_for)
         waited = wait_for
@@ -1574,8 +1593,8 @@ class LS4Controller(LS4_Device):
         frame = await self.get_frame()
         wbuf = frame["wbuf"]
 
-        if notifier:
-           notifier(f"Reading frame to buffer {wbuf}.")
+        #if notifier:
+        #   notifier(f"Reading frame to buffer {wbuf}.")
 
         dt = 0.0
         status_interval = 1.0
@@ -1592,31 +1611,32 @@ class LS4Controller(LS4_Device):
               if frame[f"buf{wbuf}complete"] == 1:
                  done=True
            if not done:
-              if notifier and dt > status_interval:
+              if self.notifier and dt > status_interval:
                  dt = 0.0
                  pixels_read=frame[f"buf{wbuf}pixels"]
                  lines_read=frame[f"buf{wbuf}lines"]
                  w= int(waited)
-                 notifier(f"{w}: frame is not complete: {pixels_read} pixel {lines_read} lines")
+                 self.notifier(f"{w}: frame is not complete: {pixels_read} pixel {lines_read} lines")
               await asyncio.sleep(update_interval)
               dt += update_interval
               waited += update_interval
 
-        self.config['expose params']['read-per']=self.read_per.period
+        self.timing['readout'].end()
+        self.config['expose params']['read-per']=self.timing['readout'].period
+
         if done:
-           self.read_per.end()
-           if notifier:
-               notifier(f"done reading out controller in %7.3f sec" % self.read_per.period)
+           #if notifier:
+           #    notifier(f"done reading out controller in %7.3f sec" % self.timing['readout'].period)
            if idle_after:
-               notifier(f"idling controller...")
+               #notifier(f"idling controller...")
                self.update_status(ControllerStatus.IDLE)
-               notifier(f"done idling controller...")
+               #notifier(f"done idling controller...")
            # Reset autoflushing.
            await self.set_autoflush(True)
 
         elif timeout:
-           if notifier:
-               notifier(f"imeout reading out controller")
+           #if notifier:
+           #    notifier(f"timeout reading out controller")
            self.update_status(ControllerStatus.ERROR)
            raise ArchonControllerError(\
                 f"{self.name}:Timed out waiting for controller to finish reading.")
@@ -1627,7 +1647,7 @@ class LS4Controller(LS4_Device):
     async def fetch(
         self,
         buffer_no: int = -1,
-        notifier: Optional[Callable[[str], None]] = None,
+        #notifier: Optional[Callable[[str], None]] = None,
         *,
         return_buffer: Literal[False],
     ) -> numpy.ndarray:
@@ -1637,7 +1657,7 @@ class LS4Controller(LS4_Device):
     async def fetch(
         self,
         buffer_no: int = -1,
-        notifier: Optional[Callable[[str], None]] = None,
+        #notifier: Optional[Callable[[str], None]] = None,
         *,
         return_buffer: Literal[True],
     ) -> tuple[numpy.ndarray, int]:
@@ -1647,7 +1667,7 @@ class LS4Controller(LS4_Device):
     async def fetch(
         self,
         buffer_no: int = -1,
-        notifier: Optional[Callable[[str], None]] = None,
+        #notifier: Optional[Callable[[str], None]] = None,
         return_buffer: bool = False,
     ) -> numpy.ndarray:
         ...
@@ -1655,7 +1675,7 @@ class LS4Controller(LS4_Device):
     async def fetch(
         self,
         buffer_no: int = -1,
-        notifier: Optional[Callable[[str], None]] = None,
+        #notifier: Optional[Callable[[str], None]] = None,
         return_buffer: bool = False,
     ):
         """Fetches a frame buffer and returns a Numpy array.
@@ -1665,9 +1685,6 @@ class LS4Controller(LS4_Device):
         buffer_no
             The frame buffer number to read. Use ``-1`` to read the most recently
             complete frame.
-        notifier
-            A callback that receives a message with the current operation. Useful when
-            `.fetch` is called by the actor to report progress to the users.
         return_buffer
             If `True`, returns the buffer number returned.
 
@@ -1680,17 +1697,17 @@ class LS4Controller(LS4_Device):
 
         """
 
-        t_start = time.time()
-        self.info(f"{self.name}: start fetching data from buffer %d." % buffer_no)
+        self.timing['fetch'].start()
+
+        self.notifier("start fetching data from buffer %d" % buffer_no)
 
         if self.status & ControllerStatus.FETCHING:
-            raise ArchonControllerError("Controller is already fetching.")
+            raise ArchonControllerError("Controller is already fetching")
 
-        notifier = notifier or (lambda x: None)
         frame_info = await self.get_frame()
 
         if buffer_no not in [1, 2, 3, -1]:
-            raise ArchonControllerError(f"Invalid frame buffer {buffer_no}.")
+            raise ArchonControllerError(f"Invalid frame buffer {buffer_no}")
 
         if buffer_no == -1:
             buffers = [
@@ -1699,18 +1716,17 @@ class LS4Controller(LS4_Device):
                 if frame_info[f"buf{n}complete"] == 1
             ]
             if len(buffers) == 0:
-                raise ArchonControllerError("There are no buffers ready to be read.")
+                raise ArchonControllerError("There are no buffers ready to be read")
             sorted_buffers = sorted(buffers, key=lambda x: x[1], reverse=True)
             buffer_no = sorted_buffers[0][0]
         else:
             if frame_info[f"buf{buffer_no}complete"] == 0:
-                raise ArchonControllerError(f"Buffer frame {buffer_no} cannot be read.")
+                raise ArchonControllerError(f"Buffer frame {buffer_no} cannot be read")
 
         self.update_status(ControllerStatus.FETCHING)
 
         # Lock for reading
-        notifier(f"Locking buffer {buffer_no}")
-        await self.send_command(f"LOCK{buffer_no}")
+        await self.send_command(f"LOCK{buffer_no}",sync_flag=False)
 
         width = frame_info[f"buf{buffer_no}width"]
         height = frame_info[f"buf{buffer_no}height"]
@@ -1720,19 +1736,16 @@ class LS4Controller(LS4_Device):
 
         start_address = frame_info[f"buf{buffer_no}base"]
 
-        notifier("Reading frame buffer ...")
-
         # Set the expected length of binary buffer to read, including the prefixes.
         self.set_binary_reply_size((1024 + 4) * n_blocks)
 
         cmd: ArchonCommand = await self.send_command(
             f"FETCH{start_address:08X}{n_blocks:08X}",
-            timeout=None,
+            timeout=None,sync_flag=False
         )
 
         # Unlock all
-        notifier("Frame buffer readout complete. Unlocking all buffers.")
-        await self.send_command("LOCK0")
+        await self.send_command("LOCK0",sync_flag=False)
 
         # The full read buffer probably contains some extra bytes to complete the 1024
         # reply. We get only the bytes we know are part of the buffer.
@@ -1746,9 +1759,8 @@ class LS4Controller(LS4_Device):
         # Turn off FETCHING bit
         self.update_status(ControllerStatus.IDLE)
 
-        t_end = time.time()
-        dt = "%7.3f" % (t_end-t_start)
-        self.info(f"{self.name}: done fetching data in {dt} sec.")
+        self.timing['fetch'].end()
+        self.notifier("done fetching data in %7.3f sec" % self.timing['fetch'].period)
 
         if return_buffer:
             return (arr, buffer_no)
@@ -1852,7 +1864,7 @@ class LS4Controller(LS4_Device):
     async def erase(self):
         """Run the LBNL erase procedure."""
 
-        self.info(f"{self.name}: erasing.")
+        self.notifier("erasing.")
 
         await self.reset(release_timing=False, autoflush=False,sync_flag=False)
 
@@ -1870,7 +1882,7 @@ class LS4Controller(LS4_Device):
         erase: bool = False,
         n_cycles: int = 10,
         fast: bool = False,
-        notifier: Callable[[str], None] | None = None,
+        #notifier: Callable[[str], None] | None = None,
     ):
         """Runs a cleanup procedure for the LBNL chip.
 
@@ -1887,32 +1899,30 @@ class LS4Controller(LS4_Device):
         fast
             If `False`, a complete flushing is executed after each e-purge (each
             line is shifted and read). If `True`, a binning factor of 10 is used.
-        notifier
-            A function to call to output messages (usually a command write method).
+        #notifier
+        #    A function to call to output messages (usually a command write method).
 
         """
 
-        if notifier is None:
-            notifier = lambda text: None  # noqa
+        #if notifier is None:
+        #    notifier = lambda text: None  # noqa
 
         if erase:
-            notifier("Erasing chip.")
+            #notifier("Erasing chip.")
             await self.erase()
 
         mode = "fast" if fast else "normal"
         purge_msg = f"Doing {n_cycles} with DoPurge=1 (mode={mode})"
-        #self.info(purge_msg)
-        notifier(purge_msg)
+        self.notifier(purge_msg)
 
         for ii in range(n_cycles):
-            notifier(f"Cycle {ii+1} of {n_cycles}.")
+            #notifier(f"Cycle {ii+1} of {n_cycles}.")
             await self.purge(fast=fast)
 
         await self.set_param("DoPurge", 0)
 
-        flush_msg = "Flushing 3x"
-        #self.info(flush_msg)
-        notifier(flush_msg)
+        #flush_msg = "Flushing 3x"
+        self.notifier(flush_msg)
 
         await self.flush(3)
 
@@ -1934,7 +1944,7 @@ class LS4Controller(LS4_Device):
 
         """
 
-        self.info("Running e-purge.")
+        self.notifier("Running e-purge.")
 
         if fast:
             await self.set_param("FLUSHBIN", 10)
@@ -1965,3 +1975,6 @@ class LS4Controller(LS4_Device):
 
         return True
 
+if "__name__" == "__main__":
+
+    print("hello")

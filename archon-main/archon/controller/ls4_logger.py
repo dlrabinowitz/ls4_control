@@ -9,8 +9,12 @@
 # Class to handle LS4 logging
 
 import sys
+import os
 from archon import log
 import logging
+from inspect import currentframe, getframeinfo
+
+
 
 class LS4_Logger():
 
@@ -53,33 +57,43 @@ class LS4_Logger():
       if critical is not None:
          self.critical= critical
 
-    def ls4_info(self,str):
-      if self.leader or self.name == "ctrl1":
-        str1 = "%s: "%self.name + str
-        log.info(str1)
+    def ls4_info(self,s: str):
+      #if self.leader or self.name == "ctrl1":
+        cf=currentframe()
+        fi=getframeinfo(cf.f_back)
+        s1 = "[" + os.path.basename(fi.filename) + ":" +  str(fi.lineno) + "] " + ("%s: " % self.name) + s
+        log.info(s1)
 
-    def ls4_error(self,str):
-        str1 = "%s: "%self.name + str
-        log.error(str1)
+    def ls4_error(self,s: str):
+        cf=currentframe()
+        fi=getframeinfo(cf.f_back)
+        s1 = "[" + os.path.basename(fi.filename) + ":" +  str(fi.lineno) + "] " + ("%s: " % self.name) + s
+        log.error(s1)
         sys.stdout.flush()
         sys.stderr.flush()
 
-    def ls4_warn(self,str):
-        str1 = "%s: "%self.name + str 
-        log.warn(str1)
+    def ls4_warn(self,s: str):
+        cf=currentframe()
+        fi=getframeinfo(cf.f_back)
+        s1 = "[" + os.path.basename(fi.filename) + ":" +  str(fi.lineno) + "] " + ("%s: " % self.name) + s
+        log.warning(s1)
         sys.stdout.flush()
         sys.stderr.flush()
 
-    def ls4_debug(self,str):
-      if self.leader or self.name == "ctrl1":
-        str1 = "%s: "%self.name + str
-        log.debug(str1)
+    def ls4_debug(self,s: str):
+
+        cf=currentframe()
+        fi=getframeinfo(cf.f_back)
+        s1 = "[" + os.path.basename(fi.filename) + ":" +  str(fi.lineno) + "] " + ("%s: " % self.name) + s
+        log.debug(s1)
         sys.stdout.flush()
         sys.stderr.flush()
 
-    def ls4_critical(self,str):
-        str1 = "%s: "%self.name + str
-        log.critical(str1)
+    def ls4_critical(self,s: str):
+        cf=currentframe()
+        fi=getframeinfo(cf.f_back)
+        s1 = "[" + os.path.basename(fi.filename) + ":" +  str(fi.lineno) + "] " + ("%s: " % self.name) + s
+        log.critical(s1)
         sys.stdout.flush()
         sys.stderr.flush()
 
@@ -109,7 +123,11 @@ class LS4_Logger():
 if( __name__ == '__main__'):
 
   lg=LS4_Logger(leader=True)
-  lg.set_format("[####%(filename)s:%(lineno)s:%(funcName)s### ] %(message)s")
+  lg.set_format("%(message)s")
 
-  lg.info("hello")
+  lg.info("hello info")
+  lg.debug("hello debug")
+  lg.warn("hello warn")
+  lg.error("hello error")
+  lg.critical("hello critical")
 #"""

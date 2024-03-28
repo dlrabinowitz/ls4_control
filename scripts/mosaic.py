@@ -12,6 +12,8 @@
 
 import sys
 from astropy.io import fits
+import warnings
+from astropy.io.fits.verify import VerifyWarning
 import argparse
 import numpy as np
 
@@ -109,6 +111,7 @@ amps_per_ccd = 2
 
 def write_fits(data=None,header=None,output='test.fits'):
 
+    warnings.simplefilter('ignore',category=VerifyWarning)
     hdu = fits.PrimaryHDU(data)
     fits_header = hdu.header
     for k in header:
@@ -118,13 +121,11 @@ def write_fits(data=None,header=None,output='test.fits'):
     hdul.writeto(output,overwrite=True)
     hdul.close()
 
-def subtract_col_bias(data=None,pre_x=0,post_x=0,pre_y=0,post_y=0,amp_name=None):
+def subtract_col_bias(data=None,pre_x=0,post_x=0,pre_y=0,post_y=0,amp_name=None,y1=None,y2=None):
 
     width=data.shape[1]
     height=data.shape[0]
 
-    y1 = int(height/2)
-    y2 = height
     if amp_name == 'LEFT':
         x1 = width-post_x+1
         x2 = width
@@ -227,19 +228,30 @@ def assemble_mosaic(conf=None):
                    (im,im_data_raw.shape,shape)
      ccd_name= im_head['CCD_NAME'].strip()
      amp_name = im_head['AMP_NAME'].strip()
+     tap_name = im_head['TAP_NAME'].strip()
 
-     # for the NE quadrant CCD in A position, orientations are reversed for both amps
-     if ccd_name == 'NE_A' and amp_name == 'LEFT':
-            amp_name = 'RIGHT'
-     elif ccd_name == 'NE_A' and amp_name == 'RIGHT':
-            amp_name = 'LEFT'
-
+     position = amp_name
 
      assert ccd_name in ccd_map.keys(),"ccd_name %s not in ccd_map" % ccd_name
      assert amp_name in ['LEFT','RIGHT'],"amp_name %s must be LEFT or RIGHT" % amp_name
 
+
+     # flip meaning of Right and Left
+     if amp_name == 'RIGHT':
+          position = 'LEFT'
+     elif amp_name == 'LEFT':
+          position = 'RIGHT'
+
+
+     y1 = 10
+     y2 = shape[0]
+
+     if (tap_name in ["AD1R", "AD2L"] ) and ("SW" in  ccd_name):
+         y1 = y2 - 40
+         print("y1,y2 = %d %d" % (y1,y2))
+
      if conf['bias']:
-       im_data,bias,rms = subtract_col_bias(im_data_raw,prescan_x, postscan_x,prescan_y,postscan_y,amp_name)
+       im_data,bias,rms = subtract_col_bias(im_data_raw,prescan_x, postscan_x,prescan_y,postscan_y,amp_name,y1,y2)
      else:
        im_data=im_data_raw
        bias=0.0
@@ -250,10 +262,11 @@ def assemble_mosaic(conf=None):
 
      offsets = ccd_map[ccd_name]
      x0 = offsets[0]*width*amps_per_ccd
-     if amp_name == 'RIGHT':
+     if position == 'RIGHT':
         x0 += width
      y0 = offsets[1]*height
-     print("image %s: ccd_name: %s  amp_name: %s bias: %7.3f x0,y0: %d,%d min,max: %d %d" % (im,ccd_name,amp_name,bias,x0,y0,min_val,max_val))
+     print("ccd_name: %6s  tap_name: %6s amp_name: %6s bias: %07.1f rms: %07.3f image: %s" % \
+            (ccd_name,tap_name,amp_name,bias,rms,im))
 
      mos_data[y0:y0+height,x0:x0+width]=np.flip(im_data)
      hdu_list.close()

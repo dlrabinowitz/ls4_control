@@ -30,7 +30,7 @@ from .maskbits import ControllerStatus, ModType
 # added by D. Rabinowitz
 
 FOLLOWER_TIMEOUT_MSEC = 10000
-AMPC_PER_CCD = 2
+AMPS_PER_CCD = 2
 CCDS_PER_QUAD = 8
 
 # Note +/-100 V supply voltages changed to +/- 50.0 V by G. Bredthauer

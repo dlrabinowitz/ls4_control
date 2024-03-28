@@ -217,21 +217,15 @@ def get_stats(conf=None):
                    (im,im_data_raw.shape,shape)
      ccd_name= im_head['CCD_NAME'].strip()
      amp_name = im_head['AMP_NAME'].strip()
-
-     # for the NE quadrant CCD in A position, orientations are reversed for both amps
-     if ccd_name == 'NE_A' and amp_name == 'LEFT':
-            amp_name = 'RIGHT'
-     elif ccd_name == 'NE_A' and amp_name == 'RIGHT':
-            amp_name = 'LEFT'
-
+     tap_name = im_head['TAP_NAME'].strip()
 
      assert ccd_name in ccd_map.keys(),"ccd_name %s not in ccd_map" % ccd_name
      assert amp_name in ['LEFT','RIGHT'],"amp_name %s must be LEFT or RIGHT" % amp_name
 
-     col_avg,col_rms = get_colbias_stats(im_data_raw,prescan_x, postscan_x,prescan_y,postscan_y,amp_name)
-     row_avg,row_rms = get_rowbias_stats(im_data_raw,prescan_x, postscan_x,prescan_y,postscan_y,amp_name)
+     bias,rms = get_colbias_stats(im_data_raw,prescan_x, postscan_x,prescan_y,postscan_y,amp_name)
 
-     print("%s  colbavg,rms: %7.3f %7.3f rowavg,rms: %7.3f %7.3f image: %s %s" % (ccd_name,col_avg,col_rms,row_avg,row_rms,im,amp_name))
+     print("ccd_name: %6s  tap_name: %6s amp_name: %6s bias: %07.1f rms: %07.3f image: %s" % \
+            (ccd_name,tap_name,amp_name,bias,rms,im))
 
 def namelist(s):
     return s.split(",")

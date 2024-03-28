@@ -8,6 +8,7 @@
 
 import asyncio
 from clu.device import Device
+from archon.controller.ls4_logger import LS4_Logger
 #from clu.protocol import open_connection
 
 __all__ = ["LS4_Device"]
@@ -20,42 +21,56 @@ __all__ = ["LS4_Device"]
 class LS4_TCPStreamClient:
     """An object containing a writer and reader stream to a TCP server."""
 
-    def __init__(self, host: str, port: int, local_addr: tuple = ('127.0.0.1',4242)):
+    def __init__(self, name: str, host: str, port: int, local_addr: tuple = ('127.0.0.1',4242),
+                 ls4_logger = None):
+
+        self.ls4_logger=ls4_logger
+        if self.ls4_logger is None:
+           self.ls4_logger = LS4_Logger(name=name)
+
+        self.info = self.ls4_logger.info
+        self.debug = self.ls4_logger.debug
+        self.warn= self.ls4_logger.warn
+        self.error= self.ls4_logger.error
+        self.critical= self.ls4_logger.critical
+
+        self.name = name
         self.host = host
         self.port = port
         self.local_addr=local_addr
-
         self.reader = None
         self.writer = None
 
     async def open_connection(self):
         """Creates the connection."""
 
-        print("local_addr = %s,%s" % self.local_addr)
-        print("host = %s" % self.host)
-        print("port = %d" % self.port)
+        self.debug("name = %s" % self.name)
+        self.debug("local_addr = %s,%s" % self.local_addr)
+        self.debug("host = %s" % self.host)
+        self.debug("port = %d" % self.port)
 
         # if local_addr is None or the port is 0, do not bind the socket to the address/port
 
         # if local_addr is None or the port is 0, do not bind the socket to the address/port
         if self.local_addr is None or self.local_addr[1] == 0 or self.local_addr[1] == "0":
-           print("open connection without binding : local_addr/port : %s "% str(self.local_addr))
+           self.debug("open connection without binding : local_addr/port : %s "% str(self.local_addr))
            self.reader, self.writer = await asyncio.open_connection(host=self.host, port=self.port)
 
         # otherwise bind. Note: After closing, there is a system-dependent delay before the port becomes
         # available again for socket IO.
         else:
-           print("open connection with binding : local_addr/port : %s "% str(self.local_addr))
-           self.reader, self.writer = await asyncio.open_connection(host=self.host, port=self.port, local_addr=self.local_addr)
+           self.debug("open connection with binding : local_addr/port : %s "% str(self.local_addr))
+           self.reader, self.writer = await asyncio.open_connection\
+                  (host=self.host, port=self.port, local_addr=self.local_addr)
 
     async def close(self):
         """Close the stream connection."""
 
         if self.writer:
-            print("closing writer connection")
+            self.debug("closing writer connection")
             self.writer.close()
             await self.writer.wait_closed()
-            print("done closing writer connection")
+            self.debug("done closing writer connection")
 
         else:
             raise RuntimeError("writer connection cannot be closed because it is not open.")
@@ -69,8 +84,21 @@ class LS4_Device(Device):
         local_addr: tuple = ('127.0.0.1',4242),
         port: int = 4242,
         config: dict | None = None,
+        ls4_logger = None
     ):
+
+        self.ls4_logger=ls4_logger
+        if self.ls4_logger is None:
+           self.ls4_logger = LS4_Logger(name=name)
+
+        self.info = self.ls4_logger.info
+        self.debug = self.ls4_logger.debug
+        self.warn= self.ls4_logger.warn
+        self.error= self.ls4_logger.error
+        self.critical= self.ls4_logger.critical
+
         super(LS4_Device,self).__init__(host=host,port=port)
+        self.name=name
         self.local_addr=local_addr
         self.config=config
 
@@ -93,24 +121,9 @@ class LS4_Device(Device):
 
 
     async def ls4_open_connection(self):
-        """Returns a TCP stream connection with a writer and reader.
+        """Returns a TCP stream connection with a writer and reader """
 
-        Parameters
-        ----------
-        host : str
-            The host of the TCP server.
-        port : int
-            The port of the TCP server.
-        local_addr: tuple
-            The local network (ip,port) to bind the connection to
-
-        Returns
-        -------
-        client : `.LS4_TCPStreamClient`
-            A container for the stream reader and writer.
-        """
-
-        client = LS4_TCPStreamClient(host=self.host, port=self.port, local_addr=self.local_addr)
+        client = LS4_TCPStreamClient(name=self.name,host=self.host, port=self.port, local_addr=self.local_addr)
         await client.open_connection()
 
         return client
