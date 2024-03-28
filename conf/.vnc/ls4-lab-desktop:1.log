@@ -1,0 +1,2689 @@
+
+Xvnc TigerVNC 1.12.0 - built 2023-01-06 16:01
+Copyright (C) 1999-2021 TigerVNC Team and many others (see README.rst)
+See https://www.tigervnc.org for information on TigerVNC.
+Underlying X server release 12101006, X.Org
+
+
+Mon Nov 27 17:28:29 2023
+ vncext:      VNC extension running!
+ vncext:      Listening for VNC connections on all interface(s), port 5901
+ vncext:      created VNC server for screen 0
+3NI3X0 New Xtigervnc server 'ls4-lab-desktop:1 (ls4)' on port 5901 for display :1.
+3NI3X0 Use xtigervncviewer -SecurityTypes VncAuth,TLSVnc -passwd /tmp/tigervnc.atH5Aj/passwd ls4-lab-desktop:1 to connect to the VNC server.
+[mi] mieq: warning: overriding existing handler (nil) with 0x55b876036490 for event 2
+[mi] mieq: warning: overriding existing handler (nil) with 0x55b876036490 for event 3
+
+Tue Nov 28 12:56:37 2023
+ ComparingUpdateTracker: 0 pixels in / 0 pixels out
+ ComparingUpdateTracker: (1:-nan ratio)
+The Xtigervnc server cleanly exited!
+
+Xvnc TigerVNC 1.12.0 - built 2023-01-06 16:01
+Copyright (C) 1999-2021 TigerVNC Team and many others (see README.rst)
+See https://www.tigervnc.org for information on TigerVNC.
+Underlying X server release 12101006, X.Org
+
+
+Tue Nov 28 15:35:35 2023
+ vncext:      VNC extension running!
+ vncext:      Listening for VNC connections on all interface(s), port 5901
+ vncext:      created VNC server for screen 0
+3NI3X0 New Xtigervnc server 'ls4-lab-desktop:1 (ls4)' on port 5901 for display :1.
+3NI3X0 Use xtigervncviewer -SecurityTypes VncAuth,TLSVnc -passwd /tmp/tigervnc.7jn8Bg/passwd ls4-lab-desktop:1 to connect to the VNC server.
+[mi] mieq: warning: overriding existing handler (nil) with 0x55ec1d592490 for event 2
+[mi] mieq: warning: overriding existing handler (nil) with 0x55ec1d592490 for event 3
+X connection to :1 broken (explicit kill or server shutdown).
+
+Tue Nov 28 15:35:43 2023
+ ComparingUpdateTracker: 0 pixels in / 0 pixels out
+ ComparingUpdateTracker: (1:-nan ratio)
+The Xtigervnc server cleanly exited!
+tigervncserver: No matching VNC server running for this user!
+
+Xvnc TigerVNC 1.12.0 - built 2023-01-06 16:01
+Copyright (C) 1999-2021 TigerVNC Team and many others (see README.rst)
+See https://www.tigervnc.org for information on TigerVNC.
+Underlying X server release 12101006, X.Org
+
+
+Wed Nov 29 10:05:05 2023
+ vncext:      VNC extension running!
+ vncext:      Listening for VNC connections on all interface(s), port 5901
+ vncext:      created VNC server for screen 0
+3NI3X0 New Xtigervnc server 'ls4-lab-desktop:1 (ls4)' on port 5901 for display :1.
+3NI3X0 Use xtigervncviewer -SecurityTypes VncAuth,TLSVnc -passwd /tmp/tigervnc.8xf41T/passwd ls4-lab-desktop:1 to connect to the VNC server.
+[mi] mieq: warning: overriding existing handler (nil) with 0x558941889490 for event 2
+[mi] mieq: warning: overriding existing handler (nil) with 0x558941889490 for event 3
+
+Wed Nov 29 10:05:24 2023
+ Connections: accepted: 10.0.0.11::38870
+ SConnection: Client needs protocol version 3.8
+ SConnection: Client requests security type VeNCrypt(19)
+ SVeNCrypt:   Client requests security type VncAuth (2)
+
+Wed Nov 29 10:05:27 2023
+ VNCSConnST:  Server default pixel format depth 24 (32bpp) little-endian rgb888
+ ComparingUpdateTracker: 0 pixels in / 0 pixels out
+ ComparingUpdateTracker: (1:-nan ratio)
+
+Wed Nov 29 10:05:38 2023
+ VNCSConnST:  closing 10.0.0.11::38870: Clean disconnection
+ EncodeManager: Framebuffer updates: 6
+ EncodeManager:   Tight:
+ EncodeManager:     Solid: 13 rects, 742.113 kpixels
+ EncodeManager:            208 B (1:14272.2 ratio)
+ EncodeManager:     Indexed RLE: 4 rects, 6.645 kpixels
+ EncodeManager:                  683 B (1:38.9868 ratio)
+ EncodeManager:   Tight (JPEG):
+ EncodeManager:     Full Colour: 12 rects, 75.924 kpixels
+ EncodeManager:                  50.998 KiB (1:5.81824 ratio)
+ EncodeManager:   Total: 29 rects, 824.682 kpixels
+ EncodeManager:          51.8682 KiB (1:62.1143 ratio)
+ Connections: closed: 10.0.0.11::38870
+ ComparingUpdateTracker: 0 pixels in / 0 pixels out
+ ComparingUpdateTracker: (1:-nan ratio)
+
+Wed Nov 29 10:05:51 2023
+ Connections: accepted: 10.0.0.11::34964
+ SConnection: Client needs protocol version 3.8
+ SConnection: Client requests security type VeNCrypt(19)
+ SVeNCrypt:   Client requests security type VncAuth (2)
+
+Wed Nov 29 10:05:55 2023
+ VNCSConnST:  Server default pixel format depth 24 (32bpp) little-endian rgb888
+
+Wed Nov 29 10:06:01 2023
+ VNCSConnST:  closing 10.0.0.11::34964: Clean disconnection
+ EncodeManager: Framebuffer updates: 6
+ EncodeManager:   Tight:
+ EncodeManager:     Solid: 13 rects, 742.113 kpixels
+ EncodeManager:            208 B (1:14272.2 ratio)
+ EncodeManager:     Indexed RLE: 6 rects, 12.869 kpixels
+ EncodeManager:                  1.26855 KiB (1:39.6828 ratio)
+ EncodeManager:   Tight (JPEG):
+ EncodeManager:     Full Colour: 10 rects, 69.7 kpixels
+ EncodeManager:                  48.6758 KiB (1:5.59586 ratio)
+ EncodeManager:   Total: 29 rects, 824.682 kpixels
+ EncodeManager:          50.1475 KiB (1:64.2456 ratio)
+ Connections: closed: 10.0.0.11::34964
+ ComparingUpdateTracker: 0 pixels in / 0 pixels out
+ ComparingUpdateTracker: (1:-nan ratio)
+X connection to :1 broken (explicit kill or server shutdown).
+
+Wed Nov 29 10:06:13 2023
+ ComparingUpdateTracker: 0 pixels in / 0 pixels out
+ ComparingUpdateTracker: (1:-nan ratio)
+The Xtigervnc server cleanly exited!
+tigervncserver: No matching VNC server running for this user!
+
+Xvnc TigerVNC 1.12.0 - built 2023-01-06 16:01
+Copyright (C) 1999-2021 TigerVNC Team and many others (see README.rst)
+See https://www.tigervnc.org for information on TigerVNC.
+Underlying X server release 12101006, X.Org
+
+
+Wed Nov 29 10:11:57 2023
+ vncext:      VNC extension running!
+ vncext:      Listening for VNC connections on all interface(s), port 5901
+ vncext:      created VNC server for screen 0
+3NI3X0 New Xtigervnc server 'ls4-lab-desktop:1 (ls4)' on port 5901 for display :1.
+3NI3X0 Use xtigervncviewer -SecurityTypes VncAuth,TLSVnc -passwd /tmp/tigervnc.C6HfIT/passwd ls4-lab-desktop:1 to connect to the VNC server.
+[mi] mieq: warning: overriding existing handler (nil) with 0x557e37366490 for event 2
+[mi] mieq: warning: overriding existing handler (nil) with 0x557e37366490 for event 3
+
+Wed Nov 29 10:12:20 2023
+ Connections: accepted: 10.0.0.11::58052
+ SConnection: Client needs protocol version 3.8
+ SConnection: Client requests security type VeNCrypt(19)
+ SVeNCrypt:   Client requests security type VncAuth (2)
+
+Wed Nov 29 10:12:23 2023
+ VNCSConnST:  Server default pixel format depth 24 (32bpp) little-endian rgb888
+ ComparingUpdateTracker: 0 pixels in / 0 pixels out
+ ComparingUpdateTracker: (1:-nan ratio)
+
+Wed Nov 29 10:12:30 2023
+ VNCSConnST:  closing 10.0.0.11::58052: Clean disconnection
+ EncodeManager: Framebuffer updates: 6
+ EncodeManager:   Tight:
+ EncodeManager:     Solid: 13 rects, 742.113 kpixels
+ EncodeManager:            208 B (1:14272.2 ratio)
+ EncodeManager:     Indexed RLE: 5 rects, 10.395 kpixels
+ EncodeManager:                  857 B (1:48.5881 ratio)
+ EncodeManager:   Tight (JPEG):
+ EncodeManager:     Full Colour: 11 rects, 72.174 kpixels
+ EncodeManager:                  50.1152 KiB (1:5.6282 ratio)
+ EncodeManager:   Total: 29 rects, 824.682 kpixels
+ EncodeManager:          51.1553 KiB (1:62.9799 ratio)
+ Connections: closed: 10.0.0.11::58052
+ ComparingUpdateTracker: 0 pixels in / 0 pixels out
+ ComparingUpdateTracker: (1:-nan ratio)
+X connection to :1 broken (explicit kill or server shutdown).
+
+Wed Nov 29 10:15:10 2023
+ ComparingUpdateTracker: 0 pixels in / 0 pixels out
+ ComparingUpdateTracker: (1:-nan ratio)
+The Xtigervnc server cleanly exited!
+tigervncserver: No matching VNC server running for this user!
+
+Xvnc TigerVNC 1.12.0 - built 2023-01-06 16:01
+Copyright (C) 1999-2021 TigerVNC Team and many others (see README.rst)
+See https://www.tigervnc.org for information on TigerVNC.
+Underlying X server release 12101006, X.Org
+
+
+Wed Nov 29 10:30:58 2023
+ vncext:      VNC extension running!
+ vncext:      Listening for VNC connections on all interface(s), port 5901
+ vncext:      created VNC server for screen 0
+3NI3X0 New Xtigervnc server 'ls4-lab-desktop:1 (ls4)' on port 5901 for display :1.
+3NI3X0 Use xtigervncviewer -SecurityTypes VncAuth,TLSVnc -passwd /tmp/tigervnc.sVNJ60/passwd ls4-lab-desktop:1 to connect to the VNC server.
+[mi] mieq: warning: overriding existing handler (nil) with 0x564afc9a0490 for event 2
+[mi] mieq: warning: overriding existing handler (nil) with 0x564afc9a0490 for event 3
+Terminated
+X connection to :1 broken (explicit kill or server shutdown).
+ ComparingUpdateTracker: 0 pixels in / 0 pixels out
+ ComparingUpdateTracker: (1:-nan ratio)
+Killing Xtigervnc process ID 6102... success!
+
+Xvnc TigerVNC 1.12.0 - built 2023-01-06 16:01
+Copyright (C) 1999-2021 TigerVNC Team and many others (see README.rst)
+See https://www.tigervnc.org for information on TigerVNC.
+Underlying X server release 12101006, X.Org
+
+
+Wed Nov 29 10:32:14 2023
+ vncext:      VNC extension running!
+ vncext:      Listening for VNC connections on all interface(s), port 5901
+ vncext:      created VNC server for screen 0
+3NI3X0 New Xtigervnc server 'ls4-lab-desktop:1 (ls4)' on port 5901 for display :1.
+3NI3X0 Use xtigervncviewer -SecurityTypes VncAuth,TLSVnc -passwd /tmp/tigervnc.OE7LpM/passwd ls4-lab-desktop:1 to connect to the VNC server.
+[mi] mieq: warning: overriding existing handler (nil) with 0x560d1493c490 for event 2
+[mi] mieq: warning: overriding existing handler (nil) with 0x560d1493c490 for event 3
+Terminated
+X connection to :1 broken (explicit kill or server shutdown).
+ ComparingUpdateTracker: 0 pixels in / 0 pixels out
+ ComparingUpdateTracker: (1:-nan ratio)
+Killing Xtigervnc process ID 6367... success!
+
+Xvnc TigerVNC 1.12.0 - built 2023-01-06 16:01
+Copyright (C) 1999-2021 TigerVNC Team and many others (see README.rst)
+See https://www.tigervnc.org for information on TigerVNC.
+Underlying X server release 12101006, X.Org
+
+
+Wed Nov 29 10:32:40 2023
+ vncext:      VNC extension running!
+ vncext:      Listening for VNC connections on all interface(s), port 5901
+ vncext:      created VNC server for screen 0
+3NI3X0 New Xtigervnc server 'ls4-lab-desktop:1 (ls4)' on port 5901 for display :1.
+3NI3X0 Use xtigervncviewer -SecurityTypes VncAuth,TLSVnc -passwd /tmp/tigervnc.fR7tG0/passwd ls4-lab-desktop:1 to connect to the VNC server.
+[mi] mieq: warning: overriding existing handler (nil) with 0x562bb971b490 for event 2
+[mi] mieq: warning: overriding existing handler (nil) with 0x562bb971b490 for event 3
+Terminated
+X connection to :1 broken (explicit kill or server shutdown).
+
+Wed Nov 29 10:32:41 2023
+ ComparingUpdateTracker: 0 pixels in / 0 pixels out
+ ComparingUpdateTracker: (1:-nan ratio)
+Killing Xtigervnc process ID 6566... success!
+
+Xvnc TigerVNC 1.12.0 - built 2023-01-06 16:01
+Copyright (C) 1999-2021 TigerVNC Team and many others (see README.rst)
+See https://www.tigervnc.org for information on TigerVNC.
+Underlying X server release 12101006, X.Org
+
+
+Wed Nov 29 10:33:49 2023
+ vncext:      VNC extension running!
+ vncext:      Listening for VNC connections on all interface(s), port 5901
+ vncext:      created VNC server for screen 0
+[mi] mieq: warning: overriding existing handler (nil) with 0x557dc9e1e490 for event 2
+[mi] mieq: warning: overriding existing handler (nil) with 0x557dc9e1e490 for event 3
+3NI3X0 New Xtigervnc server 'ls4-lab-desktop:1 (ls4)' on port 5901 for display :1.
+3NI3X0 Use xtigervncviewer -SecurityTypes VncAuth,TLSVnc -passwd /tmp/tigervnc.tAy7vp/passwd ls4-lab-desktop:1 to connect to the VNC server.
+Terminated
+X connection to :1 broken (explicit kill or server shutdown).
+
+Wed Nov 29 10:33:50 2023
+ ComparingUpdateTracker: 0 pixels in / 0 pixels out
+ ComparingUpdateTracker: (1:-nan ratio)
+Killing Xtigervnc process ID 7723... success!
+
+Xvnc TigerVNC 1.12.0 - built 2023-01-06 16:01
+Copyright (C) 1999-2021 TigerVNC Team and many others (see README.rst)
+See https://www.tigervnc.org for information on TigerVNC.
+Underlying X server release 12101006, X.Org
+
+
+Thu Dec  7 10:14:49 2023
+ vncext:      VNC extension running!
+ vncext:      Listening for VNC connections on all interface(s), port 5901
+ vncext:      created VNC server for screen 0
+[mi] mieq: warning: overriding existing handler (nil) with 0x55943b8fb490 for event 2
+[mi] mieq: warning: overriding existing handler (nil) with 0x55943b8fb490 for event 3
+3NI3X0 New Xtigervnc server 'ls4-lab-desktop:1 (ls4)' on port 5901 for display :1.
+3NI3X0 Use xtigervncviewer -SecurityTypes VncAuth,TLSVnc -passwd /tmp/tigervnc.Qdu_Se/passwd ls4-lab-desktop:1 to connect to the VNC server.
+Can't exec "/home/ls4/.vnc/xstartup": Permission denied at /usr/share/perl5/TigerVNC/Wrapper.pm line 1270.
+ ComparingUpdateTracker: 0 pixels in / 0 pixels out
+ ComparingUpdateTracker: (1:-nan ratio)
+
+Xvnc TigerVNC 1.12.0 - built 2023-01-06 16:01
+Copyright (C) 1999-2021 TigerVNC Team and many others (see README.rst)
+See https://www.tigervnc.org for information on TigerVNC.
+Underlying X server release 12101006, X.Org
+
+
+Thu Dec  7 10:18:15 2023
+ vncext:      VNC extension running!
+ vncext:      Listening for VNC connections on all interface(s), port 5901
+ vncext:      created VNC server for screen 0
+[mi] mieq: warning: overriding existing handler (nil) with 0x560e6f1b2490 for event 2
+[mi] mieq: warning: overriding existing handler (nil) with 0x560e6f1b2490 for event 3
+3NI3X0 New Xtigervnc server 'ls4-lab-desktop:1 (ls4)' on port 5901 for display :1.
+3NI3X0 Use xtigervncviewer -SecurityTypes VncAuth,TLSVnc -passwd /tmp/tigervnc.JMetI1/passwd ls4-lab-desktop:1 to connect to the VNC server.
+Can't exec "/home/ls4/.vnc/xstartup": Permission denied at /usr/share/perl5/TigerVNC/Wrapper.pm line 1270.
+ ComparingUpdateTracker: 0 pixels in / 0 pixels out
+ ComparingUpdateTracker: (1:-nan ratio)
+
+Xvnc TigerVNC 1.12.0 - built 2023-01-06 16:01
+Copyright (C) 1999-2021 TigerVNC Team and many others (see README.rst)
+See https://www.tigervnc.org for information on TigerVNC.
+Underlying X server release 12101006, X.Org
+
+
+Thu Dec  7 10:35:53 2023
+ vncext:      VNC extension running!
+ vncext:      Listening for VNC connections on all interface(s), port 5901
+ vncext:      created VNC server for screen 0
+3NI3X0 New Xtigervnc server 'ls4-lab-desktop:1 (ls4)' on port 5901 for display :1.
+3NI3X0 Use xtigervncviewer -SecurityTypes VncAuth,TLSVnc -passwd /tmp/tigervnc.XWQElC/passwd ls4-lab-desktop:1 to connect to the VNC server.
+[mi] mieq: warning: overriding existing handler (nil) with 0x5608e6eee490 for event 2
+[mi] mieq: warning: overriding existing handler (nil) with 0x5608e6eee490 for event 3
+
+Thu Dec  7 10:36:07 2023
+ Connections: accepted: 10.0.0.11::40910
+ SConnection: Client needs protocol version 3.8
+ SConnection: Client requests security type VeNCrypt(19)
+ SVeNCrypt:   Client requests security type VncAuth (2)
+
+Thu Dec  7 10:36:10 2023
+ VNCSConnST:  Server default pixel format depth 24 (32bpp) little-endian rgb888
+ ComparingUpdateTracker: 0 pixels in / 0 pixels out
+ ComparingUpdateTracker: (1:-nan ratio)
+ ComparingUpdateTracker: 0 pixels in / 0 pixels out
+ ComparingUpdateTracker: (1:-nan ratio)
+
+Thu Dec  7 10:36:20 2023
+ ComparingUpdateTracker: 1.57286 Mpixels in / 1.06914 Mpixels out
+ ComparingUpdateTracker: (1:1.47114 ratio)
+
+Thu Dec  7 10:36:32 2023
+ ComparingUpdateTracker: 786.432 kpixels in / 786.432 kpixels out
+ ComparingUpdateTracker: (1:1 ratio)
+ ComparingUpdateTracker: 0 pixels in / 0 pixels out
+ ComparingUpdateTracker: (1:-nan ratio)
+
+Thu Dec  7 10:36:59 2023
+ ComparingUpdateTracker: 23.6511 Mpixels in / 5.16583 Mpixels out
+ ComparingUpdateTracker: (1:4.57837 ratio)
+
+Thu Dec  7 10:38:29 2023
+ ComparingUpdateTracker: 101.552 Mpixels in / 14.0619 Mpixels out
+ ComparingUpdateTracker: (1:7.22173 ratio)
+ ComparingUpdateTracker: 0 pixels in / 0 pixels out
+ ComparingUpdateTracker: (1:-nan ratio)
+
+Thu Dec  7 16:33:52 2023
+ VNCSConnST:  closing 10.0.0.11::40910: Clean disconnection
+ EncodeManager: Framebuffer updates: 2554
+ EncodeManager:   Tight:
+ EncodeManager:     Solid: 2.532 krects, 22.9914 Mpixels
+ EncodeManager:            39.5625 KiB (1:2270.83 ratio)
+ EncodeManager:     Bitmap RLE: 631 rects, 212.987 kpixels
+ EncodeManager:                 19.1221 KiB (1:43.8956 ratio)
+ EncodeManager:     Indexed RLE: 5.489 krects, 6.58037 Mpixels
+ EncodeManager:                  885.336 KiB (1:29.1063 ratio)
+ EncodeManager:   Tight (JPEG):
+ EncodeManager:     Full Colour: 3.302 krects, 19.9763 Mpixels
+ EncodeManager:                  19.2238 MiB (1:3.96599 ratio)
+ EncodeManager:   Total: 11.954 krects, 49.761 Mpixels
+ EncodeManager:          20.1457 MiB (1:9.42932 ratio)
+ Connections: closed: 10.0.0.11::40910
+ ComparingUpdateTracker: 142.102 Mpixels in / 14.4201 Mpixels out
+ ComparingUpdateTracker: (1:9.85446 ratio)
+Killing Xtigervnc process ID 24772...Warning: VNC extension does not support -reset, terminating instead. Use -noreset to prevent termination.
+
+Mon Dec 11 14:49:18 2023
+ ComparingUpdateTracker: 0 pixels in / 0 pixels out
+ ComparingUpdateTracker: (1:-nan ratio)
+ success!
+
+Xvnc TigerVNC 1.12.0 - built 2023-01-06 16:01
+Copyright (C) 1999-2021 TigerVNC Team and many others (see README.rst)
+See https://www.tigervnc.org for information on TigerVNC.
+Underlying X server release 12101006, X.Org
+
+
+Mon Dec 11 16:43:55 2023
+ vncext:      VNC extension running!
+ vncext:      Listening for VNC connections on all interface(s), port 5901
+ vncext:      created VNC server for screen 0
+3NI3X0 New Xtigervnc server 'ls4-lab-desktop:1 (ls4)' on port 5901 for display :1.
+3NI3X0 Use xtigervncviewer -SecurityTypes VncAuth,TLSVnc -passwd /tmp/tigervnc.xYAble/passwd ls4-lab-desktop:1 to connect to the VNC server.
+[mi] mieq: warning: overriding existing handler (nil) with 0x55fd4b6f9490 for event 2
+[mi] mieq: warning: overriding existing handler (nil) with 0x55fd4b6f9490 for event 3
+
+Mon Dec 11 16:50:10 2023
+ Connections: accepted: 10.0.0.1::50112
+ SConnection: Client needs protocol version 3.8
+ SConnection: Client requests security type VeNCrypt(19)
+ SVeNCrypt:   Client requests security type VncAuth (2)
+
+Mon Dec 11 16:50:14 2023
+ VNCSConnST:  Server default pixel format depth 24 (32bpp) little-endian rgb888
+ ComparingUpdateTracker: 0 pixels in / 0 pixels out
+ ComparingUpdateTracker: (1:-nan ratio)
+ ComparingUpdateTracker: 0 pixels in / 0 pixels out
+ ComparingUpdateTracker: (1:-nan ratio)
+
+Mon Dec 11 16:50:25 2023
+ ComparingUpdateTracker: 791.04 kpixels in / 790.576 kpixels out
+ ComparingUpdateTracker: (1:1.00059 ratio)
+ ComparingUpdateTracker: 0 pixels in / 0 pixels out
+ ComparingUpdateTracker: (1:-nan ratio)
+
+Mon Dec 11 16:50:30 2023
+ ComparingUpdateTracker: 631.808 kpixels in / 274.688 kpixels out
+ ComparingUpdateTracker: (1:2.30009 ratio)
+
+Mon Dec 11 17:06:17 2023
+ ComparingUpdateTracker: 63.9965 Mpixels in / 7.38958 Mpixels out
+ ComparingUpdateTracker: (1:8.66037 ratio)
+
+Mon Dec 11 17:06:18 2023
+ ComparingUpdateTracker: 1.35168 Mpixels in / 1.24067 Mpixels out
+ ComparingUpdateTracker: (1:1.08947 ratio)
+ ComparingUpdateTracker: 0 pixels in / 0 pixels out
+ ComparingUpdateTracker: (1:-nan ratio)
+
+Mon Dec 11 17:06:20 2023
+ VNCSConnST:  closing 10.0.0.1::50112: Clean disconnection
+ EncodeManager: Framebuffer updates: 400
+ EncodeManager:   Tight:
+ EncodeManager:     Solid: 488 rects, 14.7947 Mpixels
+ EncodeManager:            7.625 KiB (1:7580 ratio)
+ EncodeManager:     Bitmap RLE: 130 rects, 115.116 kpixels
+ EncodeManager:                 4.46875 KiB (1:100.967 ratio)
+ EncodeManager:     Indexed RLE: 855 rects, 2.63034 Mpixels
+ EncodeManager:                  176.815 KiB (1:58.1669 ratio)
+ EncodeManager:   Tight (JPEG):
+ EncodeManager:     Full Colour: 310 rects, 2.16945 Mpixels
+ EncodeManager:                  1.66938 MiB (1:4.95952 ratio)
+ EncodeManager:   Total: 1.783 krects, 19.7096 Mpixels
+ EncodeManager:          1.85387 MiB (1:40.5674 ratio)
+ Connections: closed: 10.0.0.1::50112
+ ComparingUpdateTracker: 4.9322 Mpixels in / 1.22535 Mpixels out
+ ComparingUpdateTracker: (1:4.02514 ratio)
+Warning: VNC extension does not support -reset, terminating instead. Use -noreset to prevent termination.
+Killing Xtigervnc process ID 2414...
+Wed Jan  3 16:30:33 2024
+ ComparingUpdateTracker: 0 pixels in / 0 pixels out
+ ComparingUpdateTracker: (1:-nan ratio)
+ success!
+
+Xvnc TigerVNC 1.12.0 - built 2023-01-06 16:01
+Copyright (C) 1999-2021 TigerVNC Team and many others (see README.rst)
+See https://www.tigervnc.org for information on TigerVNC.
+Underlying X server release 12101006, X.Org
+
+
+Tue Jan  9 14:30:03 2024
+ vncext:      VNC extension running!
+ vncext:      Listening for VNC connections on all interface(s), port 5901
+ vncext:      created VNC server for screen 0
+3NI3X0 New Xtigervnc server 'ls4-lab-desktop:1 (ls4)' on port 5901 for display :1.
+3NI3X0 Use xtigervncviewer -SecurityTypes VncAuth,TLSVnc -passwd /tmp/tigervnc.wp2nro/passwd ls4-lab-desktop:1 to connect to the VNC server.
+[mi] mieq: warning: overriding existing handler (nil) with 0x55762fbe1490 for event 2
+[mi] mieq: warning: overriding existing handler (nil) with 0x55762fbe1490 for event 3
+
+** (process:19069): WARNING **: 14:30:03.963: Could not make bus activated clients aware of XDG_CURRENT_DESKTOP=GNOME environment variable: Failed to execute child process ?dbus-launch? (No such file or directory)
+
+Tue Jan  9 14:30:04 2024
+ ComparingUpdateTracker: 0 pixels in / 0 pixels out
+ ComparingUpdateTracker: (1:-nan ratio)
+
+Xvnc TigerVNC 1.12.0 - built 2023-01-06 16:01
+Copyright (C) 1999-2021 TigerVNC Team and many others (see README.rst)
+See https://www.tigervnc.org for information on TigerVNC.
+Underlying X server release 12101006, X.Org
+
+
+Tue Jan  9 14:32:28 2024
+ vncext:      VNC extension running!
+ vncext:      Listening for VNC connections on all interface(s), port 5901
+ vncext:      created VNC server for screen 0
+3NI3X0 New Xtigervnc server 'ls4-lab-desktop:1 (ls4)' on port 5901 for display :1.
+3NI3X0 Use xtigervncviewer -SecurityTypes VncAuth,TLSVnc -passwd /tmp/tigervnc.DJW6jh/passwd ls4-lab-desktop:1 to connect to the VNC server.
+[mi] mieq: warning: overriding existing handler (nil) with 0x55ca327ab490 for event 2
+[mi] mieq: warning: overriding existing handler (nil) with 0x55ca327ab490 for event 3
+
+Tue Jan  9 14:32:44 2024
+ Connections: accepted: 10.66.77.222::55734
+ SConnection: Client needs protocol version 3.8
+ SConnection: Client requests security type VncAuth(2)
+
+Tue Jan  9 14:32:52 2024
+ VNCSConnST:  Server default pixel format depth 24 (32bpp) little-endian rgb888
+ VNCSConnST:  Client pixel format depth 24 (32bpp) little-endian rgb888
+
+Tue Jan  9 15:06:10 2024
+ VNCSConnST:  closing 10.66.77.222::55734: Clean disconnection
+ EncodeManager: Framebuffer updates: 2957
+ EncodeManager:   RRE:
+ EncodeManager:     Solid: 10.365 krects, 11.6484 Mpixels
+ EncodeManager:            202.441 KiB (1:225.365 ratio)
+ EncodeManager:   Hextile:
+ EncodeManager:     Bitmap RLE: 3.131 krects, 1.15208 Mpixels
+ EncodeManager:                 108.687 KiB (1:41.7438 ratio)
+ EncodeManager:     Indexed RLE: 17.431 krects, 21.7975 Mpixels
+ EncodeManager:                  4.55308 MiB (1:18.3064 ratio)
+ EncodeManager:     Full Colour: 20.22 krects, 90.0433 Mpixels
+ EncodeManager:                  79.9034 MiB (1:4.30169 ratio)
+ EncodeManager:   Total: 51.147 krects, 124.641 Mpixels
+ EncodeManager:          84.7603 MiB (1:5.61648 ratio)
+ Connections: closed: 10.66.77.222::55734
+ ComparingUpdateTracker: 1.19955 Gpixels in / 125.21 Mpixels out
+ ComparingUpdateTracker: (1:9.58032 ratio)
+
+Wed Jan 10 09:47:59 2024
+ Connections: accepted: 10.66.77.222::57813
+ SConnection: Client needs protocol version 3.8
+ SConnection: Client requests security type VncAuth(2)
+
+Wed Jan 10 09:48:05 2024
+ VNCSConnST:  Server default pixel format depth 24 (32bpp) little-endian rgb888
+ VNCSConnST:  Client pixel format depth 24 (32bpp) little-endian rgb888
+
+Wed Jan 10 10:22:19 2024
+ VNCSConnST:  closing 10.66.77.222::57813: Clean disconnection
+ EncodeManager: Framebuffer updates: 6208
+ EncodeManager:   RRE:
+ EncodeManager:     Solid: 8.339 krects, 9.59548 Mpixels
+ EncodeManager:            162.871 KiB (1:230.735 ratio)
+ EncodeManager:   Hextile:
+ EncodeManager:     Bitmap RLE: 1.859 krects, 676.813 kpixels
+ EncodeManager:                 64.6709 KiB (1:41.2177 ratio)
+ EncodeManager:     Indexed RLE: 19.884 krects, 33.4326 Mpixels
+ EncodeManager:                  11.1106 MiB (1:11.4991 ratio)
+ EncodeManager:     Full Colour: 22.344 krects, 115.136 Mpixels
+ EncodeManager:                  104.389 MiB (1:4.20988 ratio)
+ EncodeManager:   Total: 52.426 krects, 158.841 Mpixels
+ EncodeManager:          115.721 MiB (1:5.24128 ratio)
+ Connections: closed: 10.66.77.222::57813
+ ComparingUpdateTracker: 1.7449 Gpixels in / 159.49 Mpixels out
+ ComparingUpdateTracker: (1:10.9405 ratio)
+
+Wed Jan 10 10:23:15 2024
+ ComparingUpdateTracker: 0 pixels in / 0 pixels out
+ ComparingUpdateTracker: (1:-nan ratio)
+The Xtigervnc server cleanly exited!
+
+Xvnc TigerVNC 1.12.0 - built 2023-01-06 16:01
+Copyright (C) 1999-2021 TigerVNC Team and many others (see README.rst)
+See https://www.tigervnc.org for information on TigerVNC.
+Underlying X server release 12101006, X.Org
+
+
+Wed Jan 10 10:23:21 2024
+ vncext:      VNC extension running!
+ vncext:      Listening for VNC connections on all interface(s), port 5901
+ vncext:      created VNC server for screen 0
+3NI3X0 New Xtigervnc server 'ls4-lab-desktop:1 (ls4)' on port 5901 for display :1.
+3NI3X0 Use xtigervncviewer -SecurityTypes VncAuth,TLSVnc -passwd /tmp/tigervnc.JhS56L/passwd ls4-lab-desktop:1 to connect to the VNC server.
+[mi] mieq: warning: overriding existing handler (nil) with 0x55f4c0e59490 for event 2
+[mi] mieq: warning: overriding existing handler (nil) with 0x55f4c0e59490 for event 3
+
+Wed Jan 10 10:23:35 2024
+ Connections: accepted: 10.66.77.222::57897
+ SConnection: Client needs protocol version 3.8
+ SConnection: Client requests security type VncAuth(2)
+
+Wed Jan 10 10:23:40 2024
+ VNCSConnST:  Server default pixel format depth 24 (32bpp) little-endian rgb888
+
+Wed Jan 10 10:23:41 2024
+ VNCSConnST:  Client pixel format depth 24 (32bpp) little-endian rgb888
+
+Wed Jan 10 17:08:46 2024
+ VNCSConnST:  closing 10.66.77.222::57897: Clean disconnection
+ EncodeManager: Framebuffer updates: 62577
+ EncodeManager:   RRE:
+ EncodeManager:     Solid: 152.884 krects, 97.9698 Mpixels
+ EncodeManager:            2.91603 MiB (1:128.762 ratio)
+ EncodeManager:   Hextile:
+ EncodeManager:     Bitmap RLE: 55.613 krects, 21.2289 Mpixels
+ EncodeManager:                 1.77382 MiB (1:46.0126 ratio)
+ EncodeManager:     Indexed RLE: 209.557 krects, 244.286 Mpixels
+ EncodeManager:                  51.1428 MiB (1:18.268 ratio)
+ EncodeManager:     Full Colour: 184.462 krects, 1.03222 Gpixels
+ EncodeManager:                  790.312 MiB (1:4.98501 ratio)
+ EncodeManager:   Total: 602.516 krects, 1.3957 Gpixels
+ EncodeManager:          846.144 MiB (1:6.30044 ratio)
+ Connections: closed: 10.66.77.222::57897
+ ComparingUpdateTracker: 21.6339 Gpixels in / 1.39477 Gpixels out
+ ComparingUpdateTracker: (1:15.5108 ratio)
+
+Fri Jan 12 14:53:35 2024
+ Connections: accepted: 172.25.145.238::55549
+ SConnection: Client needs protocol version 3.8
+ SConnection: Client requests security type VncAuth(2)
+
+Fri Jan 12 14:53:44 2024
+ VNCSConnST:  Server default pixel format depth 24 (32bpp) little-endian rgb888
+ VNCSConnST:  Client pixel format depth 24 (32bpp) little-endian rgb888
+
+Fri Jan 12 18:15:59 2024
+ VNCSConnST:  closing 172.25.145.238::55549: Clean disconnection
+ EncodeManager: Framebuffer updates: 35935
+ EncodeManager:   RRE:
+ EncodeManager:     Solid: 97.602 krects, 63.9903 Mpixels
+ EncodeManager:            1.86161 MiB (1:131.725 ratio)
+ EncodeManager:   Hextile:
+ EncodeManager:     Bitmap RLE: 34.495 krects, 9.66377 Mpixels
+ EncodeManager:                 1.07531 MiB (1:34.6496 ratio)
+ EncodeManager:     Indexed RLE: 109.794 krects, 122.142 Mpixels
+ EncodeManager:                  23.3667 MiB (1:19.9939 ratio)
+ EncodeManager:     Full Colour: 103.57 krects, 530.89 Mpixels
+ EncodeManager:                  435.689 MiB (1:4.65095 ratio)
+ EncodeManager:   Total: 345.461 krects, 726.686 Mpixels
+ EncodeManager:          461.993 MiB (1:6.00884 ratio)
+ Connections: closed: 172.25.145.238::55549
+ ComparingUpdateTracker: 14.2704 Gpixels in / 733.562 Mpixels out
+ ComparingUpdateTracker: (1:19.4536 ratio)
+
+Sun Jan 14 14:22:05 2024
+ Connections: accepted: 172.25.141.180::59717
+ SConnection: Client needs protocol version 3.8
+ SConnection: Client requests security type VncAuth(2)
+
+Sun Jan 14 14:22:09 2024
+ VNCSConnST:  Server default pixel format depth 24 (32bpp) little-endian rgb888
+ VNCSConnST:  Client pixel format depth 24 (32bpp) little-endian rgb888
+
+Sun Jan 14 16:08:27 2024
+ VNCSConnST:  closing 172.25.141.180::59717: Clean disconnection
+ EncodeManager: Framebuffer updates: 18421
+ EncodeManager:   RRE:
+ EncodeManager:     Solid: 115.067 krects, 77.6341 Mpixels
+ EncodeManager:            2.19473 MiB (1:135.537 ratio)
+ EncodeManager:   Hextile:
+ EncodeManager:     Bitmap RLE: 38.022 krects, 8.94347 Mpixels
+ EncodeManager:                 1.15835 MiB (1:29.8285 ratio)
+ EncodeManager:     Indexed RLE: 113.915 krects, 120.316 Mpixels
+ EncodeManager:                  25.2645 MiB (1:18.2182 ratio)
+ EncodeManager:     Full Colour: 106.514 krects, 626.464 Mpixels
+ EncodeManager:                  496.673 MiB (1:4.81402 ratio)
+ EncodeManager:   Total: 373.518 krects, 833.358 Mpixels
+ EncodeManager:          525.29 MiB (1:6.06005 ratio)
+ Connections: closed: 172.25.141.180::59717
+ ComparingUpdateTracker: 7.70428 Gpixels in / 832.688 Mpixels out
+ ComparingUpdateTracker: (1:9.2523 ratio)
+
+Mon Jan 15 09:15:55 2024
+ Connections: accepted: 172.25.167.62::60887
+ SConnection: Client needs protocol version 3.8
+ SConnection: Client requests security type VncAuth(2)
+
+Mon Jan 15 09:16:00 2024
+ VNCSConnST:  Server default pixel format depth 24 (32bpp) little-endian rgb888
+ VNCSConnST:  Client pixel format depth 24 (32bpp) little-endian rgb888
+
+Mon Jan 15 11:14:09 2024
+ Input:       Added unknown keysym 0x10025ca to keycode 248
+ Input:       Added unknown keysym 0x2b9 to keycode 230
+
+Mon Jan 15 18:02:01 2024
+ VNCSConnST:  closing 172.25.167.62::60887: Clean disconnection
+ EncodeManager: Framebuffer updates: 66481
+ EncodeManager:   RRE:
+ EncodeManager:     Solid: 304.245 krects, 175.954 Mpixels
+ EncodeManager:            5.80301 MiB (1:116.266 ratio)
+ EncodeManager:   Hextile:
+ EncodeManager:     Bitmap RLE: 114.895 krects, 48.3805 Mpixels
+ EncodeManager:                 3.83548 MiB (1:48.4612 ratio)
+ EncodeManager:     Indexed RLE: 443.632 krects, 414.299 Mpixels
+ EncodeManager:                  102.757 MiB (1:15.4297 ratio)
+ EncodeManager:     Full Colour: 361.635 krects, 2.40561 Gpixels
+ EncodeManager:                  1.95764 GiB (1:4.57981 ratio)
+ EncodeManager:   Total: 1.22441 Mrects, 3.04425 Gpixels
+ EncodeManager:          2.0674 GiB (1:5.49209 ratio)
+ Connections: closed: 172.25.167.62::60887
+ ComparingUpdateTracker: 31.5843 Gpixels in / 3.1999 Gpixels out
+ ComparingUpdateTracker: (1:9.87041 ratio)
+
+Mon Jan 15 19:41:43 2024
+ Connections: accepted: 172.25.137.166::61483
+ SConnection: Client needs protocol version 3.8
+ SConnection: Client requests security type VncAuth(2)
+
+Mon Jan 15 19:41:48 2024
+ VNCSConnST:  Server default pixel format depth 24 (32bpp) little-endian rgb888
+ VNCSConnST:  Client pixel format depth 24 (32bpp) little-endian rgb888
+
+Mon Jan 15 22:18:24 2024
+ VNCSConnST:  closing 172.25.137.166::61483: Clean disconnection
+ EncodeManager: Framebuffer updates: 26489
+ EncodeManager:   RRE:
+ EncodeManager:     Solid: 92.748 krects, 60.1458 Mpixels
+ EncodeManager:            1.76903 MiB (1:130.297 ratio)
+ EncodeManager:   Hextile:
+ EncodeManager:     Bitmap RLE: 35.245 krects, 15.189 Mpixels
+ EncodeManager:                 1.17895 MiB (1:49.489 ratio)
+ EncodeManager:     Indexed RLE: 125.02 krects, 125.511 Mpixels
+ EncodeManager:                  29.0975 MiB (1:16.5038 ratio)
+ EncodeManager:     Full Colour: 103.35 krects, 709.376 Mpixels
+ EncodeManager:                  576.904 MiB (1:4.6927 ratio)
+ EncodeManager:   Total: 356.363 krects, 910.222 Mpixels
+ EncodeManager:          608.95 MiB (1:5.70868 ratio)
+ Connections: closed: 172.25.137.166::61483
+ ComparingUpdateTracker: 10.3578 Gpixels in / 978.422 Mpixels out
+ ComparingUpdateTracker: (1:10.5862 ratio)
+
+Tue Jan 16 09:36:28 2024
+ Connections: accepted: 10.66.77.222::64383
+ SConnection: Client needs protocol version 3.8
+ SConnection: Client requests security type VncAuth(2)
+
+Tue Jan 16 09:36:35 2024
+ VNCSConnST:  Server default pixel format depth 24 (32bpp) little-endian rgb888
+ VNCSConnST:  Client pixel format depth 24 (32bpp) little-endian rgb888
+
+Tue Jan 16 14:54:05 2024
+ Connections: accepted: 10.66.77.222::64886
+ SConnection: Client needs protocol version 3.8
+ SConnection: Client requests security type VncAuth(2)
+
+Tue Jan 16 14:54:16 2024
+ VNCSConnST:  Server default pixel format depth 24 (32bpp) little-endian rgb888
+ VNCSConnST:  Client pixel format depth 24 (32bpp) little-endian rgb888
+
+Tue Jan 16 14:54:39 2024
+ VNCSConnST:  closing 10.66.77.222::64886: Clean disconnection
+ EncodeManager: Framebuffer updates: 34
+ EncodeManager:   RRE:
+ EncodeManager:     Solid: 21 rects, 637.573 kpixels
+ EncodeManager:            420 B (1:6072.72 ratio)
+ EncodeManager:   Hextile:
+ EncodeManager:     Bitmap RLE: 1 rects, 330 pixels
+ EncodeManager:                 25 B (1:53.28 ratio)
+ EncodeManager:     Indexed RLE: 17 rects, 220.013 kpixels
+ EncodeManager:                  19.998 KiB (1:42.9854 ratio)
+ EncodeManager:     Full Colour: 60 rects, 1.58806 Mpixels
+ EncodeManager:                  596.504 KiB (1:10.4007 ratio)
+ EncodeManager:   Total: 99 rects, 2.44597 Mpixels
+ EncodeManager:          616.937 KiB (1:15.489 ratio)
+ Connections: closed: 10.66.77.222::64886
+ ComparingUpdateTracker: 7.30689 Gpixels in / 1.09936 Gpixels out
+ ComparingUpdateTracker: (1:6.64652 ratio)
+
+Tue Jan 16 15:09:11 2024
+ VNCSConnST:  closing 10.66.77.222::64383: Clean disconnection
+ EncodeManager: Framebuffer updates: 17280
+ EncodeManager:   RRE:
+ EncodeManager:     Solid: 91.847 krects, 42.7228 Mpixels
+ EncodeManager:            1.75184 MiB (1:93.6303 ratio)
+ EncodeManager:   Hextile:
+ EncodeManager:     Bitmap RLE: 27.771 krects, 12.8612 Mpixels
+ EncodeManager:                 960.478 KiB (1:52.6453 ratio)
+ EncodeManager:     Indexed RLE: 149.77 krects, 178.683 Mpixels
+ EncodeManager:                  49.4803 MiB (1:13.8102 ratio)
+ EncodeManager:     Full Colour: 196.908 krects, 931.976 Mpixels
+ EncodeManager:                  853.127 MiB (1:4.1699 ratio)
+ EncodeManager:   Total: 466.296 krects, 1.16624 Gpixels
+ EncodeManager:          905.298 MiB (1:4.92015 ratio)
+ Connections: closed: 10.66.77.222::64383
+ ComparingUpdateTracker: 1.33078 Gpixels in / 70.8846 Mpixels out
+ ComparingUpdateTracker: (1:18.774 ratio)
+
+Thu Jan 18 16:30:33 2024
+ Connections: accepted: 10.66.31.89::35668
+ SConnection: Client needs protocol version 3.8
+ SConnection: Client requests security type VeNCrypt(19)
+ SVeNCrypt:   Client requests security type VncAuth (2)
+
+Thu Jan 18 16:30:37 2024
+ VNCSConnST:  Server default pixel format depth 24 (32bpp) little-endian rgb888
+ ComparingUpdateTracker: 2.304 Mpixels in / 1.12 kpixels out
+ ComparingUpdateTracker: (1:2057.14 ratio)
+ ComparingUpdateTracker: 0 pixels in / 0 pixels out
+ ComparingUpdateTracker: (1:-nan ratio)
+
+Thu Jan 18 16:50:56 2024
+ ComparingUpdateTracker: 591.853 Mpixels in / 77.4171 Mpixels out
+ ComparingUpdateTracker: (1:7.64499 ratio)
+
+Thu Jan 18 17:04:10 2024
+ VNCSConnST:  closing 10.66.31.89::35668: Clean disconnection
+ EncodeManager: Framebuffer updates: 12343
+ EncodeManager:   Tight:
+ EncodeManager:     Solid: 12.768 krects, 78.5336 Mpixels
+ EncodeManager:            199.5 KiB (1:1538.45 ratio)
+ EncodeManager:     Bitmap RLE: 3.811 krects, 1.81614 Mpixels
+ EncodeManager:                 115.362 KiB (1:61.883 ratio)
+ EncodeManager:     Indexed RLE: 44.249 krects, 106.394 Mpixels
+ EncodeManager:                  36.6873 MiB (1:11.0765 ratio)
+ EncodeManager:   Tight (JPEG):
+ EncodeManager:     Full Colour: 23.344 krects, 199.299 Mpixels
+ EncodeManager:                  122.041 MiB (1:6.23179 ratio)
+ EncodeManager:   Total: 84.172 krects, 386.043 Mpixels
+ EncodeManager:          159.036 MiB (1:9.26585 ratio)
+ Connections: closed: 10.66.31.89::35668
+ ComparingUpdateTracker: 3.63549 Gpixels in / 248.148 Mpixels out
+ ComparingUpdateTracker: (1:14.6505 ratio)
+
+Fri Jan 19 13:44:24 2024
+ Connections: accepted: 10.66.31.89::38948
+ SConnection: Client needs protocol version 3.8
+ SConnection: Client requests security type VeNCrypt(19)
+ SVeNCrypt:   Client requests security type VncAuth (2)
+
+Fri Jan 19 13:44:27 2024
+ VNCSConnST:  Server default pixel format depth 24 (32bpp) little-endian rgb888
+ ComparingUpdateTracker: 1.27908 Mpixels in / 480 pixels out
+ ComparingUpdateTracker: (1:2664.75 ratio)
+ ComparingUpdateTracker: 0 pixels in / 0 pixels out
+ ComparingUpdateTracker: (1:-nan ratio)
+
+Fri Jan 19 14:10:15 2024
+ VNCSConnST:  closing 10.66.31.89::38948: Clean disconnection
+ EncodeManager: Framebuffer updates: 1854
+ EncodeManager:   Tight:
+ EncodeManager:     Solid: 1.797 krects, 9.81614 Mpixels
+ EncodeManager:            28.0781 KiB (1:1366.38 ratio)
+ EncodeManager:     Bitmap RLE: 708 rects, 361.202 kpixels
+ EncodeManager:                 20.7695 KiB (1:68.3329 ratio)
+ EncodeManager:     Indexed RLE: 4.549 krects, 6.1926 Mpixels
+ EncodeManager:                  1.51118 MiB (1:15.6665 ratio)
+ EncodeManager:   Tight (JPEG):
+ EncodeManager:     Full Colour: 3.193 krects, 19.1559 Mpixels
+ EncodeManager:                  14.8765 MiB (1:4.91449 ratio)
+ EncodeManager:   Total: 10.247 krects, 35.5258 Mpixels
+ EncodeManager:          16.4354 MiB (1:8.25278 ratio)
+ Connections: closed: 10.66.31.89::38948
+ ComparingUpdateTracker: 413.57 Mpixels in / 27.4131 Mpixels out
+ ComparingUpdateTracker: (1:15.0866 ratio)
+
+Fri Jan 19 14:10:22 2024
+ Connections: accepted: 10.66.31.89::40646
+ SConnection: Client needs protocol version 3.8
+ SConnection: Client requests security type VeNCrypt(19)
+ SVeNCrypt:   Client requests security type VncAuth (2)
+
+Fri Jan 19 14:10:25 2024
+ VNCSConnST:  Server default pixel format depth 24 (32bpp) little-endian rgb888
+
+Fri Jan 19 14:10:29 2024
+ ComparingUpdateTracker: 29.8704 Mpixels in / 1.01866 Mpixels out
+ ComparingUpdateTracker: (1:29.3231 ratio)
+
+Fri Jan 19 14:20:11 2024
+ ComparingUpdateTracker: 1.0807 Gpixels in / 176.069 Mpixels out
+ ComparingUpdateTracker: (1:6.13794 ratio)
+ ComparingUpdateTracker: 0 pixels in / 0 pixels out
+ ComparingUpdateTracker: (1:-nan ratio)
+
+Fri Jan 19 14:27:19 2024
+ ComparingUpdateTracker: 408.602 Mpixels in / 62.6627 Mpixels out
+ ComparingUpdateTracker: (1:6.52066 ratio)
+
+Fri Jan 19 14:27:28 2024
+ ComparingUpdateTracker: 16.5524 Mpixels in / 5.23161 Mpixels out
+ ComparingUpdateTracker: (1:3.16393 ratio)
+
+Fri Jan 19 15:20:42 2024
+ VNCSConnST:  closing 10.66.31.89::40646: Clean disconnection
+ EncodeManager: Framebuffer updates: 30458
+ EncodeManager:   Tight:
+ EncodeManager:     Solid: 117.789 krects, 183.983 Mpixels
+ EncodeManager:            1.79732 MiB (1:391.243 ratio)
+ EncodeManager:     Bitmap RLE: 26.477 krects, 5.14387 Mpixels
+ EncodeManager:                 761.475 KiB (1:26.7947 ratio)
+ EncodeManager:     Indexed RLE: 171.768 krects, 162.801 Mpixels
+ EncodeManager:                  44.1481 MiB (1:14.1116 ratio)
+ EncodeManager:   Tight (JPEG):
+ EncodeManager:     Full Colour: 115.542 krects, 698.79 Mpixels
+ EncodeManager:                  633.793 MiB (1:4.20799 ratio)
+ EncodeManager:   Total: 431.576 krects, 1.05072 Gpixels
+ EncodeManager:          680.482 MiB (1:5.89745 ratio)
+ Connections: closed: 10.66.31.89::40646
+ ComparingUpdateTracker: 4.92704 Gpixels in / 575.706 Mpixels out
+ ComparingUpdateTracker: (1:8.55825 ratio)
+
+Mon Jan 22 11:44:40 2024
+ Connections: accepted: 10.66.31.89::45088
+ SConnection: Client needs protocol version 3.8
+ SConnection: Client requests security type VeNCrypt(19)
+ SVeNCrypt:   Client requests security type VncAuth (2)
+
+Mon Jan 22 11:44:44 2024
+ VNCSConnST:  Server default pixel format depth 24 (32bpp) little-endian rgb888
+ ComparingUpdateTracker: 1.27908 Mpixels in / 9.376 kpixels out
+ ComparingUpdateTracker: (1:136.421 ratio)
+ ComparingUpdateTracker: 0 pixels in / 0 pixels out
+ ComparingUpdateTracker: (1:-nan ratio)
+
+Mon Jan 22 12:08:48 2024
+ ComparingUpdateTracker: 1.78277 Gpixels in / 333.693 Mpixels out
+ ComparingUpdateTracker: (1:5.34256 ratio)
+
+Mon Jan 22 14:23:00 2024
+ VNCSConnST:  closing 10.66.31.89::45088: Clean disconnection
+ EncodeManager: Framebuffer updates: 46028
+ EncodeManager:   Tight:
+ EncodeManager:     Solid: 167.723 krects, 266.838 Mpixels
+ EncodeManager:            2.55925 MiB (1:398.486 ratio)
+ EncodeManager:     Bitmap RLE: 38.127 krects, 7.96704 Mpixels
+ EncodeManager:                 1.08929 MiB (1:28.3011 ratio)
+ EncodeManager:     Indexed RLE: 245.13 krects, 179.825 Mpixels
+ EncodeManager:                  45.0029 MiB (1:15.3053 ratio)
+ EncodeManager:   Tight (JPEG):
+ EncodeManager:     Full Colour: 194.174 krects, 1.13185 Gpixels
+ EncodeManager:                  1.04784 GiB (1:4.02604 ratio)
+ EncodeManager:   Total: 645.154 krects, 1.58648 Gpixels
+ EncodeManager:          1.09535 GiB (1:5.40221 ratio)
+ Connections: closed: 10.66.31.89::45088
+ ComparingUpdateTracker: 5.65868 Gpixels in / 861.493 Mpixels out
+ ComparingUpdateTracker: (1:6.56846 ratio)
+
+Mon Jan 22 14:23:47 2024
+ Connections: accepted: 10.66.31.89::50582
+ SConnection: Client needs protocol version 3.8
+ SConnection: Client requests security type VeNCrypt(19)
+ SVeNCrypt:   Client requests security type VncAuth (2)
+
+Mon Jan 22 14:23:50 2024
+ VNCSConnST:  Server default pixel format depth 24 (32bpp) little-endian rgb888
+ ComparingUpdateTracker: 0 pixels in / 0 pixels out
+ ComparingUpdateTracker: (1:-nan ratio)
+ ComparingUpdateTracker: 0 pixels in / 0 pixels out
+ ComparingUpdateTracker: (1:-nan ratio)
+
+Mon Jan 22 14:23:54 2024
+ ComparingUpdateTracker: 793.216 kpixels in / 791.944 kpixels out
+ ComparingUpdateTracker: (1:1.00161 ratio)
+
+Mon Jan 22 15:27:18 2024
+ ComparingUpdateTracker: 4.65556 Gpixels in / 680.377 Mpixels out
+ ComparingUpdateTracker: (1:6.84261 ratio)
+ ComparingUpdateTracker: 0 pixels in / 0 pixels out
+ ComparingUpdateTracker: (1:-nan ratio)
+
+Mon Jan 22 15:28:02 2024
+ Connections: accepted: 10.66.31.89::47546
+ SConnection: Client needs protocol version 3.8
+ SConnection: Client requests security type VeNCrypt(19)
+ SVeNCrypt:   Client requests security type VncAuth (2)
+
+Mon Jan 22 15:28:05 2024
+ VNCSConnST:  Server default pixel format depth 24 (32bpp) little-endian rgb888
+ VNCSConnST:  closing 10.66.31.89::50582: Non-shared connection requested
+ EncodeManager: Framebuffer updates: 30228
+ EncodeManager:   Tight:
+ EncodeManager:     Solid: 105.661 krects, 166.776 Mpixels
+ EncodeManager:            1.61226 MiB (1:395.352 ratio)
+ EncodeManager:     Bitmap RLE: 24.922 krects, 5.09677 Mpixels
+ EncodeManager:                 723.373 KiB (1:27.9266 ratio)
+ EncodeManager:     Indexed RLE: 141.393 krects, 115.077 Mpixels
+ EncodeManager:                  28.0248 MiB (1:15.7219 ratio)
+ EncodeManager:   Tight (JPEG):
+ EncodeManager:     Full Colour: 104.201 krects, 627.177 Mpixels
+ EncodeManager:                  589.546 MiB (1:4.06022 ratio)
+ EncodeManager:   Total: 376.177 krects, 914.128 Mpixels
+ EncodeManager:          619.89 MiB (1:5.63234 ratio)
+ Connections: closed: 10.66.31.89::50582
+ ComparingUpdateTracker: 9.12039 Mpixels in / 1.63937 Mpixels out
+ ComparingUpdateTracker: (1:5.56336 ratio)
+
+Mon Jan 22 15:28:08 2024
+ ComparingUpdateTracker: 21.44 kpixels in / 14.092 kpixels out
+ ComparingUpdateTracker: (1:1.52143 ratio)
+
+Mon Jan 22 15:30:56 2024
+ ComparingUpdateTracker: 179.179 Mpixels in / 22.1282 Mpixels out
+ ComparingUpdateTracker: (1:8.09735 ratio)
+ ComparingUpdateTracker: 0 pixels in / 0 pixels out
+ ComparingUpdateTracker: (1:-nan ratio)
+
+Mon Jan 22 15:55:46 2024
+ ComparingUpdateTracker: 3.20263 Mpixels in / 1.58051 Mpixels out
+ ComparingUpdateTracker: (1:2.02632 ratio)
+
+Mon Jan 22 16:08:55 2024
+ ComparingUpdateTracker: 1.22543 Gpixels in / 155.988 Mpixels out
+ ComparingUpdateTracker: (1:7.85592 ratio)
+ ComparingUpdateTracker: 0 pixels in / 0 pixels out
+ ComparingUpdateTracker: (1:-nan ratio)
+
+Mon Jan 22 16:11:51 2024
+ ComparingUpdateTracker: 5.82888 Mpixels in / 1.48129 Mpixels out
+ ComparingUpdateTracker: (1:3.935 ratio)
+
+Tue Jan 23 10:14:13 2024
+ ComparingUpdateTracker: 8.85753 Gpixels in / 1.14113 Gpixels out
+ ComparingUpdateTracker: (1:7.76205 ratio)
+
+Tue Jan 23 11:03:24 2024
+ VNCSConnST:  closing 10.66.31.89::47546: Clean disconnection
+ EncodeManager: Framebuffer updates: 95801
+ EncodeManager:   Tight:
+ EncodeManager:     Solid: 207.949 krects, 455.089 Mpixels
+ EncodeManager:            3.17305 MiB (1:547.866 ratio)
+ EncodeManager:     Bitmap RLE: 55.718 krects, 14.5063 Mpixels
+ EncodeManager:                 1.63111 MiB (1:34.3171 ratio)
+ EncodeManager:     Indexed RLE: 394.228 krects, 608.055 Mpixels
+ EncodeManager:                  181.108 MiB (1:12.8324 ratio)
+ EncodeManager:   Tight (JPEG):
+ EncodeManager:     Full Colour: 278.624 krects, 1.60504 Gpixels
+ EncodeManager:                  1.30162 GiB (1:4.59611 ratio)
+ EncodeManager:   Total: 936.519 krects, 2.68269 Gpixels
+ EncodeManager:          1.48317 GiB (1:6.74519 ratio)
+ Connections: closed: 10.66.31.89::47546
+ ComparingUpdateTracker: 10.186 Gpixels in / 799.743 Mpixels out
+ ComparingUpdateTracker: (1:12.7366 ratio)
+
+Tue Jan 23 11:42:50 2024
+ Connections: accepted: 10.66.77.222::64424
+ SConnection: Client needs protocol version 3.8
+ SConnection: Client requests security type VncAuth(2)
+
+Tue Jan 23 11:42:54 2024
+ VNCSConnST:  Server default pixel format depth 24 (32bpp) little-endian rgb888
+ VNCSConnST:  Client pixel format depth 24 (32bpp) little-endian rgb888
+
+Tue Jan 23 12:23:50 2024
+ VNCSConnST:  closing 10.66.77.222::64424: Clean disconnection
+ EncodeManager: Framebuffer updates: 7343
+ EncodeManager:   RRE:
+ EncodeManager:     Solid: 9.084 krects, 6.01335 Mpixels
+ EncodeManager:            177.422 KiB (1:132.994 ratio)
+ EncodeManager:   Hextile:
+ EncodeManager:     Bitmap RLE: 4.991 krects, 1.81676 Mpixels
+ EncodeManager:                 163.72 KiB (1:43.7041 ratio)
+ EncodeManager:     Indexed RLE: 17.614 krects, 18.0198 Mpixels
+ EncodeManager:                  3.97003 MiB (1:17.3656 ratio)
+ EncodeManager:     Full Colour: 21.024 krects, 146.093 Mpixels
+ EncodeManager:                  128.151 MiB (1:4.35067 ratio)
+ EncodeManager:   Total: 52.713 krects, 171.943 Mpixels
+ EncodeManager:          132.454 MiB (1:4.95654 ratio)
+ Connections: closed: 10.66.77.222::64424
+ ComparingUpdateTracker: 2.03342 Gpixels in / 170.75 Mpixels out
+ ComparingUpdateTracker: (1:11.9088 ratio)
+
+Tue Jan 23 16:35:26 2024
+ Connections: accepted: 10.66.31.89::33240
+ SConnection: Client needs protocol version 3.8
+ SConnection: Client requests security type VeNCrypt(19)
+ SVeNCrypt:   Client requests security type VncAuth (2)
+
+Tue Jan 23 16:35:30 2024
+ VNCSConnST:  Server default pixel format depth 24 (32bpp) little-endian rgb888
+ ComparingUpdateTracker: 1.27908 Mpixels in / 320 pixels out
+ ComparingUpdateTracker: (1:3997.12 ratio)
+ ComparingUpdateTracker: 0 pixels in / 0 pixels out
+ ComparingUpdateTracker: (1:-nan ratio)
+
+Tue Jan 23 16:35:33 2024
+ ComparingUpdateTracker: 1.57286 Mpixels in / 824.616 kpixels out
+ ComparingUpdateTracker: (1:1.90739 ratio)
+
+Wed Jan 24 10:49:16 2024
+ Connections: accepted: 10.66.77.222::63195
+ SConnection: Client needs protocol version 3.8
+ SConnection: Client requests security type VncAuth(2)
+
+Wed Jan 24 10:49:18 2024
+ VNCSConnST:  closing 10.66.77.222::63195: Clean disconnection
+ EncodeManager: Framebuffer updates: 0
+ EncodeManager:   Total: 0 rects, 0 pixels
+ EncodeManager:          0 B (1:-nan ratio)
+ Connections: closed: 10.66.77.222::63195
+ ComparingUpdateTracker: 363.146 Mpixels in / 39.6052 Mpixels out
+ ComparingUpdateTracker: (1:9.16917 ratio)
+
+Wed Jan 24 13:44:53 2024
+ Connections: accepted: 10.66.77.222::65340
+ SConnection: Client needs protocol version 3.8
+ SConnection: Client requests security type VncAuth(2)
+
+Wed Jan 24 13:45:00 2024
+ VNCSConnST:  Server default pixel format depth 24 (32bpp) little-endian rgb888
+ VNCSConnST:  Client pixel format depth 24 (32bpp) little-endian rgb888
+
+Wed Jan 24 17:01:52 2024
+ VNCSConnST:  closing 10.66.77.222::65340: Clean disconnection
+ EncodeManager: Framebuffer updates: 216
+ EncodeManager:   RRE:
+ EncodeManager:     Solid: 3 rects, 186.66 kpixels
+ EncodeManager:            60 B (1:12444.6 ratio)
+ EncodeManager:   Hextile:
+ EncodeManager:     Indexed RLE: 7 rects, 130.68 kpixels
+ EncodeManager:                  21.8125 KiB (1:23.4063 ratio)
+ EncodeManager:     Full Colour: 217 rects, 1.02676 Mpixels
+ EncodeManager:                  445.779 KiB (1:9.00294 ratio)
+ EncodeManager:   Total: 227 rects, 1.3441 Mpixels
+ EncodeManager:          467.65 KiB (1:11.2329 ratio)
+ Connections: closed: 10.66.77.222::65340
+ ComparingUpdateTracker: 8.90881 Gpixels in / 930.799 Mpixels out
+ ComparingUpdateTracker: (1:9.57114 ratio)
+
+Thu Jan 25 10:30:29 2024
+ Connections: accepted: 10.66.77.222::55515
+ SConnection: Client needs protocol version 3.8
+ SConnection: Client requests security type VncAuth(2)
+
+Thu Jan 25 10:30:33 2024
+ VNCSConnST:  Server default pixel format depth 24 (32bpp) little-endian rgb888
+ VNCSConnST:  Client pixel format depth 24 (32bpp) little-endian rgb888
+
+Thu Jan 25 16:31:27 2024
+ VNCSConnST:  closing 10.66.31.89::33240: Clean disconnection
+ EncodeManager: Framebuffer updates: 168474
+ EncodeManager:   Tight:
+ EncodeManager:     Solid: 375.525 krects, 746.462 Mpixels
+ EncodeManager:            5.73006 MiB (1:497.695 ratio)
+ EncodeManager:     Bitmap RLE: 47.049 krects, 13.1333 Mpixels
+ EncodeManager:                 1.35761 MiB (1:37.2993 ratio)
+ EncodeManager:     Indexed RLE: 639.843 krects, 555.547 Mpixels
+ EncodeManager:                  139.316 MiB (1:15.2643 ratio)
+ EncodeManager:   Tight (JPEG):
+ EncodeManager:     Full Colour: 580.989 krects, 3.51953 Gpixels
+ EncodeManager:                  3.33845 GiB (1:3.9293 ratio)
+ EncodeManager:   Total: 1.64341 Mrects, 4.83468 Gpixels
+ EncodeManager:          3.48142 GiB (1:5.17861 ratio)
+ Connections: closed: 10.66.31.89::33240
+ ComparingUpdateTracker: 17.5356 Gpixels in / 2.58283 Gpixels out
+ ComparingUpdateTracker: (1:6.78928 ratio)
+
+Thu Jan 25 16:54:28 2024
+ Connections: accepted: 10.66.31.89::51134
+ SConnection: Client needs protocol version 3.8
+ SConnection: Client requests security type VeNCrypt(19)
+ SVeNCrypt:   Client requests security type VncAuth (2)
+
+Thu Jan 25 16:54:31 2024
+ SConnection: AuthFailureException: Authentication failure
+ VNCSConnST:  closing 10.66.31.89::51134: Authentication failure
+ EncodeManager: Framebuffer updates: 0
+ EncodeManager:   Total: 0 rects, 0 pixels
+ EncodeManager:          0 B (1:-nan ratio)
+ Connections: closed: 10.66.31.89::51134
+ ComparingUpdateTracker: 764.867 Mpixels in / 111.209 Mpixels out
+ ComparingUpdateTracker: (1:6.87775 ratio)
+
+Thu Jan 25 16:54:42 2024
+ Connections: accepted: 10.66.31.89::33378
+ SConnection: Client needs protocol version 3.8
+ SConnection: Client requests security type VeNCrypt(19)
+ SVeNCrypt:   Client requests security type VncAuth (2)
+
+Thu Jan 25 16:54:46 2024
+ VNCSConnST:  Server default pixel format depth 24 (32bpp) little-endian rgb888
+ VNCSConnST:  closing 10.66.77.222::55515: Non-shared connection requested
+ EncodeManager: Framebuffer updates: 47299
+ EncodeManager:   RRE:
+ EncodeManager:     Solid: 115.845 krects, 60.902 Mpixels
+ EncodeManager:            2.20957 MiB (1:105.744 ratio)
+ EncodeManager:   Hextile:
+ EncodeManager:     Bitmap RLE: 18.85 krects, 12.525 Mpixels
+ EncodeManager:                 714.003 KiB (1:68.8327 ratio)
+ EncodeManager:     Indexed RLE: 241.033 krects, 242.729 Mpixels
+ EncodeManager:                  98.2688 MiB (1:9.45057 ratio)
+ EncodeManager:     Full Colour: 297.309 krects, 2.02328 Gpixels
+ EncodeManager:                  1.85899 GiB (1:4.05631 ratio)
+ EncodeManager:   Total: 673.037 krects, 2.33944 Gpixels
+ EncodeManager:          1.95779 GiB (1:4.45532 ratio)
+ Connections: closed: 10.66.77.222::55515
+ ComparingUpdateTracker: 0 pixels in / 0 pixels out
+ ComparingUpdateTracker: (1:-nan ratio)
+ ComparingUpdateTracker: 0 pixels in / 0 pixels out
+ ComparingUpdateTracker: (1:-nan ratio)
+ ComparingUpdateTracker: 0 pixels in / 0 pixels out
+ ComparingUpdateTracker: (1:-nan ratio)
+
+Thu Jan 25 16:54:50 2024
+ ComparingUpdateTracker: 3.15251 Mpixels in / 1.32143 Mpixels out
+ ComparingUpdateTracker: (1:2.38568 ratio)
+
+Fri Jan 26 10:43:42 2024
+ Connections: accepted: 10.66.31.89::53880
+ SConnection: Client needs protocol version 3.8
+ SConnection: Client requests security type VeNCrypt(19)
+ SVeNCrypt:   Client requests security type VncAuth (2)
+
+Fri Jan 26 10:43:47 2024
+ VNCSConnST:  Server default pixel format depth 24 (32bpp) little-endian rgb888
+ VNCSConnST:  closing 10.66.31.89::33378: Non-shared connection requested
+ EncodeManager: Framebuffer updates: 2624
+ EncodeManager:   Tight:
+ EncodeManager:     Solid: 2.617 krects, 4.79918 Mpixels
+ EncodeManager:            40.8906 KiB (1:459.212 ratio)
+ EncodeManager:     Bitmap RLE: 565 rects, 135.851 kpixels
+ EncodeManager:                 16.9639 KiB (1:31.6726 ratio)
+ EncodeManager:     Indexed RLE: 7.537 krects, 3.36023 Mpixels
+ EncodeManager:                  1.243 MiB (1:10.3817 ratio)
+ EncodeManager:   Tight (JPEG):
+ EncodeManager:     Full Colour: 8.435 krects, 42.7991 Mpixels
+ EncodeManager:                  41.8621 MiB (1:3.90238 ratio)
+ EncodeManager:   Total: 19.154 krects, 51.0943 Mpixels
+ EncodeManager:          43.1616 MiB (1:4.52088 ratio)
+ Connections: closed: 10.66.31.89::33378
+ ComparingUpdateTracker: 152.376 Mpixels in / 33.1586 Mpixels out
+ ComparingUpdateTracker: (1:4.59537 ratio)
+ ComparingUpdateTracker: 0 pixels in / 0 pixels out
+ ComparingUpdateTracker: (1:-nan ratio)
+ ComparingUpdateTracker: 0 pixels in / 0 pixels out
+ ComparingUpdateTracker: (1:-nan ratio)
+
+Fri Jan 26 12:06:15 2024
+ VNCSConnST:  closing 10.66.31.89::53880: Clean disconnection
+ EncodeManager: Framebuffer updates: 13072
+ EncodeManager:   Tight:
+ EncodeManager:     Solid: 24.425 krects, 31.7824 Mpixels
+ EncodeManager:            381.641 KiB (1:326.056 ratio)
+ EncodeManager:     Bitmap RLE: 7.073 krects, 1.53082 Mpixels
+ EncodeManager:                 210.962 KiB (1:28.7381 ratio)
+ EncodeManager:     Indexed RLE: 51.348 krects, 25.3476 Mpixels
+ EncodeManager:                  9.01544 MiB (1:10.7905 ratio)
+ EncodeManager:   Tight (JPEG):
+ EncodeManager:     Full Colour: 71.241 krects, 363.002 Mpixels
+ EncodeManager:                  356.265 MiB (1:3.88912 ratio)
+ EncodeManager:   Total: 154.087 krects, 421.663 Mpixels
+ EncodeManager:          365.86 MiB (1:4.40136 ratio)
+ Connections: closed: 10.66.31.89::53880
+ ComparingUpdateTracker: 1.27426 Gpixels in / 298.418 Mpixels out
+ ComparingUpdateTracker: (1:4.27006 ratio)
+
+Fri Jan 26 12:07:34 2024
+ Connections: accepted: 10.66.77.222::52073
+ SConnection: Client needs protocol version 3.8
+ SConnection: Client requests security type VncAuth(2)
+
+Fri Jan 26 12:07:38 2024
+ VNCSConnST:  Server default pixel format depth 24 (32bpp) little-endian rgb888
+ VNCSConnST:  Client pixel format depth 24 (32bpp) little-endian rgb888
+
+Fri Jan 26 13:50:41 2024
+ Connections: accepted: 10.66.31.89::45262
+ SConnection: Client needs protocol version 3.8
+ SConnection: Client requests security type VeNCrypt(19)
+ SVeNCrypt:   Client requests security type VncAuth (2)
+
+Fri Jan 26 13:50:47 2024
+ VNCSConnST:  Server default pixel format depth 24 (32bpp) little-endian rgb888
+ VNCSConnST:  closing 10.66.77.222::52073: Non-shared connection requested
+ EncodeManager: Framebuffer updates: 6547
+ EncodeManager:   RRE:
+ EncodeManager:     Solid: 8.622 krects, 3.16704 Mpixels
+ EncodeManager:            168.398 KiB (1:74.0641 ratio)
+ EncodeManager:   Hextile:
+ EncodeManager:     Bitmap RLE: 4.353 krects, 1.29988 Mpixels
+ EncodeManager:                 134.31 KiB (1:38.1855 ratio)
+ EncodeManager:     Indexed RLE: 20.088 krects, 23.2086 Mpixels
+ EncodeManager:                  9.41231 MiB (1:9.43059 ratio)
+ EncodeManager:     Full Colour: 46.662 krects, 185.461 Mpixels
+ EncodeManager:                  190.098 MiB (1:3.72447 ratio)
+ EncodeManager:   Total: 79.725 krects, 213.137 Mpixels
+ EncodeManager:          199.806 MiB (1:4.07378 ratio)
+ Connections: closed: 10.66.77.222::52073
+ ComparingUpdateTracker: 1.59622 Gpixels in / 215.65 Mpixels out
+ ComparingUpdateTracker: (1:7.40187 ratio)
+
+Fri Jan 26 13:53:09 2024
+ ComparingUpdateTracker: 317.463 Mpixels in / 53.2281 Mpixels out
+ ComparingUpdateTracker: (1:5.9642 ratio)
+
+Fri Jan 26 13:57:50 2024
+ ComparingUpdateTracker: 398.882 Mpixels in / 31.788 Mpixels out
+ ComparingUpdateTracker: (1:12.5482 ratio)
+ ComparingUpdateTracker: 0 pixels in / 0 pixels out
+ ComparingUpdateTracker: (1:-nan ratio)
+
+Fri Jan 26 13:59:56 2024
+ ComparingUpdateTracker: 128.412 Mpixels in / 11.1136 Mpixels out
+ ComparingUpdateTracker: (1:11.5545 ratio)
+
+Fri Jan 26 14:01:38 2024
+ ComparingUpdateTracker: 255.265 Mpixels in / 25.594 Mpixels out
+ ComparingUpdateTracker: (1:9.97364 ratio)
+ ComparingUpdateTracker: 0 pixels in / 0 pixels out
+ ComparingUpdateTracker: (1:-nan ratio)
+
+Fri Jan 26 14:01:49 2024
+ ComparingUpdateTracker: 3.27053 Mpixels in / 1.28276 Mpixels out
+ ComparingUpdateTracker: (1:2.54959 ratio)
+
+Fri Jan 26 14:07:03 2024
+ ComparingUpdateTracker: 255.158 Mpixels in / 19.5399 Mpixels out
+ ComparingUpdateTracker: (1:13.0583 ratio)
+ ComparingUpdateTracker: 0 pixels in / 0 pixels out
+ ComparingUpdateTracker: (1:-nan ratio)
+
+Fri Jan 26 14:07:12 2024
+ ComparingUpdateTracker: 3.96231 Mpixels in / 1.27213 Mpixels out
+ ComparingUpdateTracker: (1:3.11469 ratio)
+
+Fri Jan 26 16:54:31 2024
+ VNCSConnST:  closing 10.66.31.89::45262: Clean disconnection
+ EncodeManager: Framebuffer updates: 66568
+ EncodeManager:   Tight:
+ EncodeManager:     Solid: 144.108 krects, 362.205 Mpixels
+ EncodeManager:            2.19891 MiB (1:629.106 ratio)
+ EncodeManager:     Bitmap RLE: 20.894 krects, 6.8354 Mpixels
+ EncodeManager:                 625.53 KiB (1:43.0765 ratio)
+ EncodeManager:     Indexed RLE: 236.115 krects, 180.168 Mpixels
+ EncodeManager:                  40.3479 MiB (1:17.1009 ratio)
+ EncodeManager:   Tight (JPEG):
+ EncodeManager:     Full Colour: 242.93 krects, 1.5079 Gpixels
+ EncodeManager:                  1.45585 GiB (1:3.86033 ratio)
+ EncodeManager:   Total: 644.047 krects, 2.05711 Gpixels
+ EncodeManager:          1.498 GiB (1:5.12051 ratio)
+ Connections: closed: 10.66.31.89::45262
+ ComparingUpdateTracker: 10.3209 Gpixels in / 1.40231 Gpixels out
+ ComparingUpdateTracker: (1:7.35997 ratio)
+
+Fri Jan 26 19:54:24 2024
+ Connections: accepted: 172.25.144.39::52330
+ SConnection: Client needs protocol version 3.8
+ SConnection: Client requests security type VncAuth(2)
+
+Fri Jan 26 19:54:29 2024
+ VNCSConnST:  Server default pixel format depth 24 (32bpp) little-endian rgb888
+ VNCSConnST:  Client pixel format depth 24 (32bpp) little-endian rgb888
+
+Fri Jan 26 20:09:15 2024
+ VNCSConnST:  closing 172.25.144.39::52330: Clean disconnection
+ EncodeManager: Framebuffer updates: 71
+ EncodeManager:   RRE:
+ EncodeManager:     Solid: 35 rects, 34.694 kpixels
+ EncodeManager:            700 B (1:198.851 ratio)
+ EncodeManager:   Hextile:
+ EncodeManager:     Bitmap RLE: 20 rects, 3.984 kpixels
+ EncodeManager:                 525 B (1:30.8114 ratio)
+ EncodeManager:     Indexed RLE: 34 rects, 86.416 kpixels
+ EncodeManager:                  20.2422 KiB (1:16.6959 ratio)
+ EncodeManager:     Full Colour: 91 rects, 1.58674 Mpixels
+ EncodeManager:                  819.407 KiB (1:7.56558 ratio)
+ EncodeManager:   Total: 180 rects, 1.71184 Mpixels
+ EncodeManager:          840.846 KiB (1:7.95506 ratio)
+ Connections: closed: 172.25.144.39::52330
+ ComparingUpdateTracker: 6.9926 Mpixels in / 432.72 kpixels out
+ ComparingUpdateTracker: (1:16.1596 ratio)
+
+Mon Jan 29 09:49:41 2024
+ Connections: accepted: 10.66.31.89::50378
+ SConnection: Client needs protocol version 3.8
+ SConnection: Client requests security type VeNCrypt(19)
+ SVeNCrypt:   Client requests security type VncAuth (2)
+
+Mon Jan 29 09:49:44 2024
+ VNCSConnST:  Server default pixel format depth 24 (32bpp) little-endian rgb888
+ ComparingUpdateTracker: 1.27908 Mpixels in / 560 pixels out
+ ComparingUpdateTracker: (1:2284.07 ratio)
+ ComparingUpdateTracker: 0 pixels in / 0 pixels out
+ ComparingUpdateTracker: (1:-nan ratio)
+
+Mon Jan 29 09:49:48 2024
+ ComparingUpdateTracker: 5.55213 Mpixels in / 1.37751 Mpixels out
+ ComparingUpdateTracker: (1:4.03055 ratio)
+
+Mon Jan 29 12:09:24 2024
+ Connections: accepted: 10.66.77.222::63353
+ SConnection: Client needs protocol version 3.8
+ SConnection: Client requests security type VncAuth(2)
+
+Mon Jan 29 12:09:27 2024
+ VNCSConnST:  closing 10.66.77.222::63353: Clean disconnection
+ EncodeManager: Framebuffer updates: 0
+ EncodeManager:   Total: 0 rects, 0 pixels
+ EncodeManager:          0 B (1:-nan ratio)
+ Connections: closed: 10.66.77.222::63353
+ ComparingUpdateTracker: 4.64075 Gpixels in / 705.713 Mpixels out
+ ComparingUpdateTracker: (1:6.57598 ratio)
+
+Mon Jan 29 13:35:33 2024
+ ComparingUpdateTracker: 1.86016 Gpixels in / 312.179 Mpixels out
+ ComparingUpdateTracker: (1:5.95865 ratio)
+ ComparingUpdateTracker: 0 pixels in / 0 pixels out
+ ComparingUpdateTracker: (1:-nan ratio)
+
+Mon Jan 29 13:35:34 2024
+ VNCSConnST:  closing 10.66.31.89::50378: Clean disconnection
+ EncodeManager: Framebuffer updates: 40824
+ EncodeManager:   Tight:
+ EncodeManager:     Solid: 91.185 krects, 189.868 Mpixels
+ EncodeManager:            1.39137 MiB (1:521.307 ratio)
+ EncodeManager:     Bitmap RLE: 13.038 krects, 4.34661 Mpixels
+ EncodeManager:                 390.245 KiB (1:43.8999 ratio)
+ EncodeManager:     Indexed RLE: 152.078 krects, 130.109 Mpixels
+ EncodeManager:                  37.8167 MiB (1:13.1706 ratio)
+ EncodeManager:   Tight (JPEG):
+ EncodeManager:     Full Colour: 168.302 krects, 1.03819 Gpixels
+ EncodeManager:                  989.594 MiB (1:4.00396 ratio)
+ EncodeManager:   Total: 424.603 krects, 1.36251 Gpixels
+ EncodeManager:          1.00506 GiB (1:5.05491 ratio)
+ Connections: closed: 10.66.31.89::50378
+ ComparingUpdateTracker: 5.50502 Mpixels in / 1.33251 Mpixels out
+ ComparingUpdateTracker: (1:4.13131 ratio)
+
+Mon Jan 29 13:42:43 2024
+ Connections: accepted: 10.66.77.222::49635
+ SConnection: Client needs protocol version 3.8
+ SConnection: Client requests security type VncAuth(2)
+
+Mon Jan 29 13:42:47 2024
+ VNCSConnST:  Server default pixel format depth 24 (32bpp) little-endian rgb888
+ VNCSConnST:  Client pixel format depth 24 (32bpp) little-endian rgb888
+
+Mon Jan 29 16:21:58 2024
+ Connections: accepted: 10.66.31.89::53192
+ SConnection: Client needs protocol version 3.8
+ SConnection: Client requests security type VeNCrypt(19)
+ SVeNCrypt:   Client requests security type VncAuth (2)
+
+Mon Jan 29 16:22:01 2024
+ VNCSConnST:  Server default pixel format depth 24 (32bpp) little-endian rgb888
+ VNCSConnST:  closing 10.66.77.222::49635: Non-shared connection requested
+ EncodeManager: Framebuffer updates: 3837
+ EncodeManager:   RRE:
+ EncodeManager:     Solid: 6.015 krects, 2.39154 Mpixels
+ EncodeManager:            117.48 KiB (1:80.1193 ratio)
+ EncodeManager:   Hextile:
+ EncodeManager:     Bitmap RLE: 2.967 krects, 1.24068 Mpixels
+ EncodeManager:                 101.171 KiB (1:48.2468 ratio)
+ EncodeManager:     Indexed RLE: 15 krects, 15.8431 Mpixels
+ EncodeManager:                  5.08887 MiB (1:11.91 ratio)
+ EncodeManager:     Full Colour: 24.075 krects, 149.633 Mpixels
+ EncodeManager:                  139.158 MiB (1:4.10381 ratio)
+ EncodeManager:   Total: 48.057 krects, 169.108 Mpixels
+ EncodeManager:          144.461 MiB (1:4.46936 ratio)
+ Connections: closed: 10.66.77.222::49635
+ ComparingUpdateTracker: 819.949 Mpixels in / 171.571 Mpixels out
+ ComparingUpdateTracker: (1:4.77907 ratio)
+
+Mon Jan 29 16:22:05 2024
+ ComparingUpdateTracker: 10.176 kpixels in / 8.268 kpixels out
+ ComparingUpdateTracker: (1:1.23077 ratio)
+
+Mon Jan 29 16:23:11 2024
+ ComparingUpdateTracker: 89.5654 Mpixels in / 28.2163 Mpixels out
+ ComparingUpdateTracker: (1:3.17424 ratio)
+ ComparingUpdateTracker: 0 pixels in / 0 pixels out
+ ComparingUpdateTracker: (1:-nan ratio)
+
+Mon Jan 29 16:50:37 2024
+ VNCSConnST:  closing 10.66.31.89::53192: Clean disconnection
+ EncodeManager: Framebuffer updates: 941
+ EncodeManager:   Tight:
+ EncodeManager:     Solid: 3.142 krects, 8.15779 Mpixels
+ EncodeManager:            49.0938 KiB (1:649.842 ratio)
+ EncodeManager:     Bitmap RLE: 638 rects, 199.271 kpixels
+ EncodeManager:                 18.8379 KiB (1:41.718 ratio)
+ EncodeManager:     Indexed RLE: 3.59 krects, 3.86149 Mpixels
+ EncodeManager:                  535.045 KiB (1:28.2705 ratio)
+ EncodeManager:   Tight (JPEG):
+ EncodeManager:     Full Colour: 3.802 krects, 31.462 Mpixels
+ EncodeManager:                  28.9646 MiB (1:4.14511 ratio)
+ EncodeManager:   Total: 11.172 krects, 43.6806 Mpixels
+ EncodeManager:          29.5535 MiB (1:5.64251 ratio)
+ Connections: closed: 10.66.31.89::53192
+ ComparingUpdateTracker: 4.07259 Mpixels in / 1.33165 Mpixels out
+ ComparingUpdateTracker: (1:3.05831 ratio)
+
+Tue Jan 30 11:34:29 2024
+ Connections: accepted: 10.66.31.89::57384
+ SConnection: Client needs protocol version 3.8
+ SConnection: Client requests security type VeNCrypt(19)
+ SVeNCrypt:   Client requests security type VncAuth (2)
+
+Tue Jan 30 11:34:32 2024
+ VNCSConnST:  Server default pixel format depth 24 (32bpp) little-endian rgb888
+
+Tue Jan 30 11:34:36 2024
+ ComparingUpdateTracker: 796.608 kpixels in / 8.908 kpixels out
+ ComparingUpdateTracker: (1:89.4261 ratio)
+
+Tue Jan 30 11:57:14 2024
+ ComparingUpdateTracker: 1.77623 Gpixels in / 193.429 Mpixels out
+ ComparingUpdateTracker: (1:9.18285 ratio)
+ ComparingUpdateTracker: 0 pixels in / 0 pixels out
+ ComparingUpdateTracker: (1:-nan ratio)
+
+Tue Jan 30 14:44:10 2024
+ ComparingUpdateTracker: 139.482 Mpixels in / 14.4011 Mpixels out
+ ComparingUpdateTracker: (1:9.68551 ratio)
+
+Tue Jan 30 14:44:28 2024
+ ComparingUpdateTracker: 786.432 kpixels in / 786.432 kpixels out
+ ComparingUpdateTracker: (1:1 ratio)
+ ComparingUpdateTracker: 0 pixels in / 0 pixels out
+ ComparingUpdateTracker: (1:-nan ratio)
+
+Tue Jan 30 14:44:32 2024
+ ComparingUpdateTracker: 1.58528 Mpixels in / 601.928 kpixels out
+ ComparingUpdateTracker: (1:2.63367 ratio)
+
+Tue Jan 30 15:44:20 2024
+ ComparingUpdateTracker: 3.2219 Gpixels in / 419.452 Mpixels out
+ ComparingUpdateTracker: (1:7.6812 ratio)
+ ComparingUpdateTracker: 0 pixels in / 0 pixels out
+ ComparingUpdateTracker: (1:-nan ratio)
+
+Tue Jan 30 15:48:29 2024
+ ComparingUpdateTracker: 22.3898 Mpixels in / 2.67134 Mpixels out
+ ComparingUpdateTracker: (1:8.38147 ratio)
+
+Tue Jan 30 16:27:48 2024
+ ComparingUpdateTracker: 3.1932 Gpixels in / 314.443 Mpixels out
+ ComparingUpdateTracker: (1:10.1551 ratio)
+ ComparingUpdateTracker: 0 pixels in / 0 pixels out
+ ComparingUpdateTracker: (1:-nan ratio)
+
+Tue Jan 30 16:27:49 2024
+ VNCSConnST:  closing 10.66.31.89::57384: Clean disconnection
+ EncodeManager: Framebuffer updates: 50192
+ EncodeManager:   Tight:
+ EncodeManager:     Solid: 94.397 krects, 231.087 Mpixels
+ EncodeManager:            1.44038 MiB (1:612.76 ratio)
+ EncodeManager:     Bitmap RLE: 16.225 krects, 5.17996 Mpixels
+ EncodeManager:                 490.03 KiB (1:41.6798 ratio)
+ EncodeManager:     Indexed RLE: 154.774 krects, 154.094 Mpixels
+ EncodeManager:                  43.7239 MiB (1:13.4845 ratio)
+ EncodeManager:   Tight (JPEG):
+ EncodeManager:     Full Colour: 145.999 krects, 865.551 Mpixels
+ EncodeManager:                  836.31 MiB (1:3.95007 ratio)
+ EncodeManager:   Total: 411.395 krects, 1.25591 Gpixels
+ EncodeManager:          881.953 MiB (1:5.43752 ratio)
+ Connections: closed: 10.66.31.89::57384
+ ComparingUpdateTracker: 14.1558 Mpixels in / 1.49101 Mpixels out
+ ComparingUpdateTracker: (1:9.4941 ratio)
+
+Wed Jan 31 09:59:11 2024
+ Connections: accepted: 10.66.77.222::57075
+ SConnection: Client needs protocol version 3.8
+ SConnection: Client requests security type VncAuth(2)
+
+Wed Jan 31 09:59:15 2024
+ VNCSConnST:  Server default pixel format depth 24 (32bpp) little-endian rgb888
+ VNCSConnST:  Client pixel format depth 24 (32bpp) little-endian rgb888
+
+Wed Jan 31 17:09:07 2024
+ VNCSConnST:  closing 10.66.77.222::57075: Clean disconnection
+ EncodeManager: Framebuffer updates: 54436
+ EncodeManager:   RRE:
+ EncodeManager:     Solid: 68.901 krects, 36.6053 Mpixels
+ EncodeManager:            1.31418 MiB (1:106.855 ratio)
+ EncodeManager:   Hextile:
+ EncodeManager:     Bitmap RLE: 31.366 krects, 9.83336 Mpixels
+ EncodeManager:                 1010.71 KiB (1:38.3684 ratio)
+ EncodeManager:     Indexed RLE: 165.93 krects, 202.157 Mpixels
+ EncodeManager:                  76.9575 MiB (1:10.0454 ratio)
+ EncodeManager:     Full Colour: 248.542 krects, 1.38215 Gpixels
+ EncodeManager:                  1.25378 GiB (1:4.10891 ratio)
+ EncodeManager:   Total: 514.739 krects, 1.63075 Gpixels
+ EncodeManager:          1.33118 GiB (1:4.56793 ratio)
+ Connections: closed: 10.66.77.222::57075
+ ComparingUpdateTracker: 12.24 Gpixels in / 1.65463 Gpixels out
+ ComparingUpdateTracker: (1:7.39742 ratio)
+
+Fri Feb  2 11:05:54 2024
+ Connections: accepted: 10.66.77.222::53026
+ SConnection: Client needs protocol version 3.8
+ SConnection: Client requests security type VncAuth(2)
+
+Fri Feb  2 11:05:58 2024
+ VNCSConnST:  Server default pixel format depth 24 (32bpp) little-endian rgb888
+ VNCSConnST:  Client pixel format depth 24 (32bpp) little-endian rgb888
+
+Fri Feb  2 17:12:02 2024
+ VNCSConnST:  closing 10.66.77.222::53026: Clean disconnection
+ EncodeManager: Framebuffer updates: 30396
+ EncodeManager:   RRE:
+ EncodeManager:     Solid: 65.031 krects, 33.5476 Mpixels
+ EncodeManager:            1.24037 MiB (1:103.774 ratio)
+ EncodeManager:   Hextile:
+ EncodeManager:     Bitmap RLE: 25.514 krects, 9.54307 Mpixels
+ EncodeManager:                 828.513 KiB (1:45.3543 ratio)
+ EncodeManager:     Indexed RLE: 131.193 krects, 138.248 Mpixels
+ EncodeManager:                  63.2664 MiB (1:8.35949 ratio)
+ EncodeManager:     Full Colour: 182.233 krects, 1.50602 Gpixels
+ EncodeManager:                  1.46626 GiB (1:3.82769 ratio)
+ EncodeManager:   Total: 403.971 krects, 1.68736 Gpixels
+ EncodeManager:          1.53005 GiB (1:4.11125 ratio)
+ Connections: closed: 10.66.77.222::53026
+ ComparingUpdateTracker: 9.58715 Gpixels in / 1.71719 Gpixels out
+ ComparingUpdateTracker: (1:5.58304 ratio)
+
+Thu Feb 15 14:30:32 2024
+ Connections: accepted: 10.66.31.89::40170
+ SConnection: Client needs protocol version 3.8
+ SConnection: Client requests security type VeNCrypt(19)
+ SVeNCrypt:   Client requests security type VncAuth (2)
+
+Thu Feb 15 14:30:41 2024
+ VNCSConnST:  Server default pixel format depth 24 (32bpp) little-endian rgb888
+
+Thu Feb 15 14:53:13 2024
+ ComparingUpdateTracker: 1.78836 Gpixels in / 171.645 Mpixels out
+ ComparingUpdateTracker: (1:10.419 ratio)
+
+Thu Feb 15 15:02:19 2024
+ VNCSConnST:  closing 10.66.31.89::40170: Clean disconnection
+ EncodeManager: Framebuffer updates: 13297
+ EncodeManager:   Tight:
+ EncodeManager:     Solid: 31.308 krects, 71.7722 Mpixels
+ EncodeManager:            489.188 KiB (1:573.864 ratio)
+ EncodeManager:     Bitmap RLE: 3.24 krects, 931.479 kpixels
+ EncodeManager:                 93.9199 KiB (1:39.1457 ratio)
+ EncodeManager:     Indexed RLE: 47.923 krects, 34.4256 Mpixels
+ EncodeManager:                  7.78911 MiB (1:16.9302 ratio)
+ EncodeManager:   Tight (JPEG):
+ EncodeManager:     Full Colour: 47.861 krects, 300.624 Mpixels
+ EncodeManager:                  297.765 MiB (1:3.85316 ratio)
+ EncodeManager:   Total: 130.332 krects, 407.754 Mpixels
+ EncodeManager:          306.124 MiB (1:5.08601 ratio)
+ Connections: closed: 10.66.31.89::40170
+ ComparingUpdateTracker: 961.414 Mpixels in / 125.338 Mpixels out
+ ComparingUpdateTracker: (1:7.67054 ratio)
+
+Thu Feb 15 15:05:04 2024
+ Connections: accepted: 10.66.77.222::54948
+ SConnection: Client needs protocol version 3.8
+ SConnection: Client requests security type VncAuth(2)
+
+Thu Feb 15 15:05:08 2024
+ VNCSConnST:  Server default pixel format depth 24 (32bpp) little-endian rgb888
+ VNCSConnST:  Client pixel format depth 24 (32bpp) little-endian rgb888
+
+Thu Feb 15 15:09:14 2024
+ VNCSConnST:  closing 10.66.77.222::54948: Clean disconnection
+ EncodeManager: Framebuffer updates: 863
+ EncodeManager:   RRE:
+ EncodeManager:     Solid: 1.34 krects, 2.15215 Mpixels
+ EncodeManager:            26.1719 KiB (1:321.816 ratio)
+ EncodeManager:   Hextile:
+ EncodeManager:     Bitmap RLE: 522 rects, 233.352 kpixels
+ EncodeManager:                 18.9834 KiB (1:48.3395 ratio)
+ EncodeManager:     Indexed RLE: 2.324 krects, 2.47578 Mpixels
+ EncodeManager:                  538.756 KiB (1:18.0012 ratio)
+ EncodeManager:     Full Colour: 5.061 krects, 13.0491 Mpixels
+ EncodeManager:                  12.9879 MiB (1:3.83712 ratio)
+ EncodeManager:   Total: 9.247 krects, 17.9104 Mpixels
+ EncodeManager:          13.5582 MiB (1:5.04704 ratio)
+ Connections: closed: 10.66.77.222::54948
+ ComparingUpdateTracker: 216.609 Mpixels in / 16.6312 Mpixels out
+ ComparingUpdateTracker: (1:13.0243 ratio)
+
+Wed Feb 28 12:03:56 2024
+ Connections: accepted: 10.66.77.222::51616
+ SConnection: Client needs protocol version 3.8
+ SConnection: Client requests security type VncAuth(2)
+
+Wed Feb 28 12:04:01 2024
+ VNCSConnST:  Server default pixel format depth 24 (32bpp) little-endian rgb888
+ VNCSConnST:  Client pixel format depth 24 (32bpp) little-endian rgb888
+
+Wed Feb 28 17:32:16 2024
+ VNCSConnST:  closing 10.66.77.222::51616: Clean disconnection
+ EncodeManager: Framebuffer updates: 35783
+ EncodeManager:   RRE:
+ EncodeManager:     Solid: 171.409 krects, 69.7872 Mpixels
+ EncodeManager:            3.26937 MiB (1:82.0277 ratio)
+ EncodeManager:   Hextile:
+ EncodeManager:     Bitmap RLE: 56.235 krects, 17.9148 Mpixels
+ EncodeManager:                 1.79746 MiB (1:38.378 ratio)
+ EncodeManager:     Indexed RLE: 317.198 krects, 300.439 Mpixels
+ EncodeManager:                  103.502 MiB (1:11.1081 ratio)
+ EncodeManager:     Full Colour: 310.677 krects, 1.77883 Gpixels
+ EncodeManager:                  1.61715 GiB (1:4.09988 ratio)
+ EncodeManager:   Total: 855.519 krects, 2.16697 Gpixels
+ EncodeManager:          1.72318 GiB (1:4.69027 ratio)
+ Connections: closed: 10.66.77.222::51616
+ ComparingUpdateTracker: 12.949 Gpixels in / 2.21304 Gpixels out
+ ComparingUpdateTracker: (1:5.8512 ratio)
+
+Thu Feb 29 09:45:28 2024
+ Connections: accepted: 10.66.77.222::53988
+ SConnection: Client needs protocol version 3.8
+ SConnection: Client requests security type VncAuth(2)
+
+Thu Feb 29 09:45:32 2024
+ VNCSConnST:  Server default pixel format depth 24 (32bpp) little-endian rgb888
+
+Thu Feb 29 09:45:33 2024
+ VNCSConnST:  Client pixel format depth 24 (32bpp) little-endian rgb888
+
+Thu Feb 29 17:17:29 2024
+ VNCSConnST:  closing 10.66.77.222::53988: Clean disconnection
+ EncodeManager: Framebuffer updates: 23299
+ EncodeManager:   RRE:
+ EncodeManager:     Solid: 120.727 krects, 66.0092 Mpixels
+ EncodeManager:            2.30268 MiB (1:109.953 ratio)
+ EncodeManager:   Hextile:
+ EncodeManager:     Bitmap RLE: 43.9 krects, 18.8412 Mpixels
+ EncodeManager:                 1.4506 MiB (1:49.8938 ratio)
+ EncodeManager:     Indexed RLE: 178.24 krects, 161.918 Mpixels
+ EncodeManager:                  42.5651 MiB (1:14.559 ratio)
+ EncodeManager:     Full Colour: 156.485 krects, 1.05861 Gpixels
+ EncodeManager:                  902.99 MiB (1:4.47411 ratio)
+ EncodeManager:   Total: 499.352 krects, 1.30538 Gpixels
+ EncodeManager:          949.308 MiB (1:5.25155 ratio)
+ Connections: closed: 10.66.77.222::53988
+ ComparingUpdateTracker: 8.32165 Gpixels in / 1.3166 Gpixels out
+ ComparingUpdateTracker: (1:6.32054 ratio)
+
+Fri Mar  1 10:06:53 2024
+ Connections: accepted: 10.66.77.222::61821
+ SConnection: Client needs protocol version 3.8
+ SConnection: Client requests security type VncAuth(2)
+
+Fri Mar  1 10:06:57 2024
+ VNCSConnST:  Server default pixel format depth 24 (32bpp) little-endian rgb888
+
+Fri Mar  1 10:06:58 2024
+ VNCSConnST:  Client pixel format depth 24 (32bpp) little-endian rgb888
+
+Fri Mar  1 16:52:55 2024
+ VNCSConnST:  closing 10.66.77.222::61821: Clean disconnection
+ EncodeManager: Framebuffer updates: 58892
+ EncodeManager:   RRE:
+ EncodeManager:     Solid: 77.808 krects, 44.9807 Mpixels
+ EncodeManager:            1.48407 MiB (1:116.22 ratio)
+ EncodeManager:   Hextile:
+ EncodeManager:     Bitmap RLE: 47.229 krects, 16.4799 Mpixels
+ EncodeManager:                 1.50502 MiB (1:42.13 ratio)
+ EncodeManager:     Indexed RLE: 137.272 krects, 138.834 Mpixels
+ EncodeManager:                  33.8462 MiB (1:15.6939 ratio)
+ EncodeManager:     Full Colour: 178.923 krects, 1.21738 Gpixels
+ EncodeManager:                  1.00743 GiB (1:4.50363 ratio)
+ EncodeManager:   Total: 441.232 krects, 1.41767 Gpixels
+ EncodeManager:          1.0434 GiB (1:5.06629 ratio)
+ Connections: closed: 10.66.77.222::61821
+ ComparingUpdateTracker: 15.5334 Gpixels in / 1.42455 Gpixels out
+ ComparingUpdateTracker: (1:10.9041 ratio)
+
+Mon Mar  4 09:25:34 2024
+ Connections: accepted: 10.66.77.222::49273
+ SConnection: Client needs protocol version 3.8
+ SConnection: Client requests security type VncAuth(2)
+
+Mon Mar  4 09:25:38 2024
+ SConnection: AuthFailureException: Authentication failure
+ VNCSConnST:  closing 10.66.77.222::49273: Authentication failure
+ EncodeManager: Framebuffer updates: 0
+ EncodeManager:   Total: 0 rects, 0 pixels
+ EncodeManager:          0 B (1:-nan ratio)
+ Connections: closed: 10.66.77.222::49273
+ ComparingUpdateTracker: 0 pixels in / 0 pixels out
+ ComparingUpdateTracker: (1:-nan ratio)
+
+Mon Mar  4 09:25:41 2024
+ Connections: accepted: 10.66.77.222::49274
+ SConnection: Client needs protocol version 3.8
+ SConnection: Client requests security type VncAuth(2)
+
+Mon Mar  4 09:25:44 2024
+ VNCSConnST:  Server default pixel format depth 24 (32bpp) little-endian rgb888
+ VNCSConnST:  Client pixel format depth 24 (32bpp) little-endian rgb888
+
+Mon Mar  4 17:11:40 2024
+ VNCSConnST:  closing 10.66.77.222::49274: Clean disconnection
+ EncodeManager: Framebuffer updates: 57112
+ EncodeManager:   RRE:
+ EncodeManager:     Solid: 92.948 krects, 44.0118 Mpixels
+ EncodeManager:            1.77284 MiB (1:95.302 ratio)
+ EncodeManager:   Hextile:
+ EncodeManager:     Bitmap RLE: 50.514 krects, 17.7172 Mpixels
+ EncodeManager:                 1.64422 MiB (1:41.4565 ratio)
+ EncodeManager:     Indexed RLE: 205.494 krects, 240.474 Mpixels
+ EncodeManager:                  73.045 MiB (1:12.5907 ratio)
+ EncodeManager:     Full Colour: 279.906 krects, 1.9801 Gpixels
+ EncodeManager:                  1.71489 GiB (1:4.30324 ratio)
+ EncodeManager:   Total: 628.862 krects, 2.2823 Gpixels
+ EncodeManager:          1.78956 GiB (1:4.75495 ratio)
+ Connections: closed: 10.66.77.222::49274
+ ComparingUpdateTracker: 16.8718 Gpixels in / 2.31594 Gpixels out
+ ComparingUpdateTracker: (1:7.28509 ratio)
+
+Tue Mar  5 09:43:01 2024
+ Connections: accepted: 10.66.77.222::63618
+ SConnection: Client needs protocol version 3.8
+ SConnection: Client requests security type VncAuth(2)
+
+Tue Mar  5 09:43:06 2024
+ SConnection: AuthFailureException: Authentication failure
+ VNCSConnST:  closing 10.66.77.222::63618: Authentication failure
+ EncodeManager: Framebuffer updates: 0
+ EncodeManager:   Total: 0 rects, 0 pixels
+ EncodeManager:          0 B (1:-nan ratio)
+ Connections: closed: 10.66.77.222::63618
+ ComparingUpdateTracker: 0 pixels in / 0 pixels out
+ ComparingUpdateTracker: (1:-nan ratio)
+
+Tue Mar  5 11:37:03 2024
+ Connections: accepted: 10.66.77.222::64749
+ SConnection: Client needs protocol version 3.8
+ SConnection: Client requests security type VncAuth(2)
+
+Tue Mar  5 11:37:07 2024
+ SConnection: AuthFailureException: Authentication failure
+ VNCSConnST:  closing 10.66.77.222::64749: Authentication failure
+ EncodeManager: Framebuffer updates: 0
+ EncodeManager:   Total: 0 rects, 0 pixels
+ EncodeManager:          0 B (1:-nan ratio)
+ Connections: closed: 10.66.77.222::64749
+ ComparingUpdateTracker: 0 pixels in / 0 pixels out
+ ComparingUpdateTracker: (1:-nan ratio)
+
+Tue Mar  5 11:37:10 2024
+ Connections: accepted: 10.66.77.222::64754
+ SConnection: Client needs protocol version 3.8
+ SConnection: Client requests security type VncAuth(2)
+
+Tue Mar  5 11:37:17 2024
+ VNCSConnST:  Server default pixel format depth 24 (32bpp) little-endian rgb888
+ VNCSConnST:  Client pixel format depth 24 (32bpp) little-endian rgb888
+
+Tue Mar  5 16:10:12 2024
+ Input:       Added unknown keysym 0xa2 to keycode 222
+
+Tue Mar  5 17:09:36 2024
+ VNCSConnST:  closing 10.66.77.222::64754: Clean disconnection
+ EncodeManager: Framebuffer updates: 44568
+ EncodeManager:   RRE:
+ EncodeManager:     Solid: 72.034 krects, 37.0123 Mpixels
+ EncodeManager:            1.37394 MiB (1:103.363 ratio)
+ EncodeManager:   Hextile:
+ EncodeManager:     Bitmap RLE: 31.569 krects, 11.7354 Mpixels
+ EncodeManager:                 1.01654 MiB (1:44.3939 ratio)
+ EncodeManager:     Indexed RLE: 133.36 krects, 168.724 Mpixels
+ EncodeManager:                  48.2334 MiB (1:13.3758 ratio)
+ EncodeManager:     Full Colour: 189.179 krects, 1.2996 Gpixels
+ EncodeManager:                  1.07629 GiB (1:4.50017 ratio)
+ EncodeManager:   Total: 426.142 krects, 1.51707 Gpixels
+ EncodeManager:          1.12573 GiB (1:5.02455 ratio)
+ Connections: closed: 10.66.77.222::64754
+ ComparingUpdateTracker: 11.9881 Gpixels in / 1.52476 Gpixels out
+ ComparingUpdateTracker: (1:7.86229 ratio)
+
+Wed Mar  6 10:00:54 2024
+ Connections: accepted: 10.66.77.222::62783
+ SConnection: Client needs protocol version 3.8
+ SConnection: Client requests security type VncAuth(2)
+
+Wed Mar  6 10:01:01 2024
+ VNCSConnST:  Server default pixel format depth 24 (32bpp) little-endian rgb888
+ VNCSConnST:  Client pixel format depth 24 (32bpp) little-endian rgb888
+
+Wed Mar  6 17:24:32 2024
+ VNCSConnST:  closing 10.66.77.222::62783: Clean disconnection
+ EncodeManager: Framebuffer updates: 70778
+ EncodeManager:   RRE:
+ EncodeManager:     Solid: 96.617 krects, 63.9844 Mpixels
+ EncodeManager:            1.84282 MiB (1:133.05 ratio)
+ EncodeManager:   Hextile:
+ EncodeManager:     Bitmap RLE: 40.312 krects, 20.0017 Mpixels
+ EncodeManager:                 1.3503 MiB (1:56.8478 ratio)
+ EncodeManager:     Indexed RLE: 176.754 krects, 221.195 Mpixels
+ EncodeManager:                  50.5763 MiB (1:16.7235 ratio)
+ EncodeManager:     Full Colour: 204.808 krects, 1.4961 Gpixels
+ EncodeManager:                  1.16991 GiB (1:4.76592 ratio)
+ EncodeManager:   Total: 518.491 krects, 1.80128 Gpixels
+ EncodeManager:          1.22242 GiB (1:5.49409 ratio)
+ Connections: closed: 10.66.77.222::62783
+ ComparingUpdateTracker: 19.7866 Gpixels in / 1.81281 Gpixels out
+ ComparingUpdateTracker: (1:10.9148 ratio)
+
+Xvnc TigerVNC 1.12.0 - built 2024-01-23 17:21
+Copyright (C) 1999-2021 TigerVNC Team and many others (see README.rst)
+See https://www.tigervnc.org for information on TigerVNC.
+Underlying X server release 12101007, X.Org
+
+
+Thu Mar  7 09:36:16 2024
+ vncext:      VNC extension running!
+ vncext:      Listening for VNC connections on all interface(s), port 5901
+ vncext:      created VNC server for screen 0
+3NI3X0 New Xtigervnc server 'ls4-lab-desktop:1 (ls4)' on port 5901 for display :1.
+3NI3X0 Use xtigervncviewer -SecurityTypes VncAuth,TLSVnc -passwd /tmp/tigervnc.3_mmg8/passwd ls4-lab-desktop:1 to connect to the VNC server.
+[mi] mieq: warning: overriding existing handler (nil) with 0x555e65dc9cf0 for event 2
+[mi] mieq: warning: overriding existing handler (nil) with 0x555e65dc9cf0 for event 3
+
+Thu Mar  7 09:40:34 2024
+ Connections: accepted: 10.66.77.222::59543
+ SConnection: Client needs protocol version 3.8
+ SConnection: Client requests security type VncAuth(2)
+
+Thu Mar  7 09:40:36 2024
+ VNCSConnST:  closing 10.66.77.222::59543: Clean disconnection
+ EncodeManager: Framebuffer updates: 0
+ EncodeManager:   Total: 0 rects, 0 pixels
+ EncodeManager:          0 B (1:-nan ratio)
+ Connections: closed: 10.66.77.222::59543
+ ComparingUpdateTracker: 0 pixels in / 0 pixels out
+ ComparingUpdateTracker: (1:-nan ratio)
+
+Thu Mar  7 09:51:34 2024
+ Connections: accepted: 10.66.77.222::59620
+ SConnection: Client needs protocol version 3.8
+ SConnection: Client requests security type VncAuth(2)
+
+Thu Mar  7 09:51:39 2024
+ VNCSConnST:  Server default pixel format depth 24 (32bpp) little-endian rgb888
+ VNCSConnST:  Client pixel format depth 24 (32bpp) little-endian rgb888
+
+Thu Mar  7 16:29:10 2024
+ VNCSConnST:  closing 10.66.77.222::59620: Clean disconnection
+ EncodeManager: Framebuffer updates: 38909
+ EncodeManager:   RRE:
+ EncodeManager:     Solid: 264.529 krects, 158.848 Mpixels
+ EncodeManager:            5.04549 MiB (1:120.699 ratio)
+ EncodeManager:   Hextile:
+ EncodeManager:     Bitmap RLE: 77.598 krects, 40.0127 Mpixels
+ EncodeManager:                 2.7039 MiB (1:56.779 ratio)
+ EncodeManager:     Indexed RLE: 399.073 krects, 446.286 Mpixels
+ EncodeManager:                  116.594 MiB (1:14.6407 ratio)
+ EncodeManager:     Full Colour: 322.558 krects, 2.28073 Gpixels
+ EncodeManager:                  1.8688 GiB (1:4.54835 ratio)
+ EncodeManager:   Total: 1.06376 Mrects, 2.92588 Gpixels
+ EncodeManager:          1.99023 GiB (1:5.48259 ratio)
+ Connections: closed: 10.66.77.222::59620
+ ComparingUpdateTracker: 20.9876 Gpixels in / 3.01895 Gpixels out
+ ComparingUpdateTracker: (1:6.95195 ratio)
+
+Fri Mar  8 08:25:33 2024
+ Connections: accepted: 172.22.146.161::61678
+ SConnection: Client needs protocol version 3.8
+ SConnection: Client requests security type VncAuth(2)
+
+Fri Mar  8 08:25:35 2024
+ VNCSConnST:  closing 172.22.146.161::61678: Clean disconnection
+ EncodeManager: Framebuffer updates: 0
+ EncodeManager:   Total: 0 rects, 0 pixels
+ EncodeManager:          0 B (1:-nan ratio)
+ Connections: closed: 172.22.146.161::61678
+ ComparingUpdateTracker: 0 pixels in / 0 pixels out
+ ComparingUpdateTracker: (1:-nan ratio)
+
+Fri Mar  8 08:27:02 2024
+ Connections: accepted: 172.22.146.161::61776
+ SConnection: Client needs protocol version 3.8
+ SConnection: Client requests security type VncAuth(2)
+
+Fri Mar  8 08:27:10 2024
+ VNCSConnST:  Server default pixel format depth 24 (32bpp) little-endian rgb888
+ VNCSConnST:  Client pixel format depth 24 (32bpp) little-endian rgb888
+
+Fri Mar  8 16:23:02 2024
+ Input:       Added unknown keysym 0x8ef to keycode 248
+
+Fri Mar  8 17:49:24 2024
+ VNCSConnST:  closing 172.22.146.161::61776: Clean disconnection
+ EncodeManager: Framebuffer updates: 61247
+ EncodeManager:   RRE:
+ EncodeManager:     Solid: 456.169 krects, 403.674 Mpixels
+ EncodeManager:            8.70073 MiB (1:177.584 ratio)
+ EncodeManager:   Hextile:
+ EncodeManager:     Bitmap RLE: 125.08 krects, 89.0284 Mpixels
+ EncodeManager:                 4.67736 MiB (1:72.9146 ratio)
+ EncodeManager:     Indexed RLE: 641.982 krects, 1.00487 Gpixels
+ EncodeManager:                  213.38 MiB (1:17.9989 ratio)
+ EncodeManager:     Full Colour: 479.51 krects, 4.20354 Gpixels
+ EncodeManager:                  3.00101 GiB (1:5.21982 ratio)
+ EncodeManager:   Total: 1.70274 Mrects, 5.70111 Gpixels
+ EncodeManager:          3.22245 GiB (1:6.59662 ratio)
+ Connections: closed: 172.22.146.161::61776
+ ComparingUpdateTracker: 48.3592 Gpixels in / 5.96481 Gpixels out
+ ComparingUpdateTracker: (1:8.10742 ratio)
+
+Sun Mar 10 13:43:52 2024
+ Connections: accepted: 172.25.148.60::63542
+ SConnection: Client needs protocol version 3.8
+ SConnection: Client requests security type VncAuth(2)
+
+Sun Mar 10 13:44:01 2024
+ VNCSConnST:  Server default pixel format depth 24 (32bpp) little-endian rgb888
+ VNCSConnST:  Client pixel format depth 24 (32bpp) little-endian rgb888
+
+Sun Mar 10 17:33:09 2024
+ VNCSConnST:  closing 172.25.148.60::63542: Clean disconnection
+ EncodeManager: Framebuffer updates: 37381
+ EncodeManager:   RRE:
+ EncodeManager:     Solid: 221.812 krects, 199.695 Mpixels
+ EncodeManager:            4.23073 MiB (1:180.658 ratio)
+ EncodeManager:   Hextile:
+ EncodeManager:     Bitmap RLE: 58.522 krects, 36.8083 Mpixels
+ EncodeManager:                 2.05359 MiB (1:68.7005 ratio)
+ EncodeManager:     Indexed RLE: 300.828 krects, 474.46 Mpixels
+ EncodeManager:                  103.683 MiB (1:17.4895 ratio)
+ EncodeManager:     Full Colour: 237.344 krects, 2.03031 Gpixels
+ EncodeManager:                  1.38751 GiB (1:5.45304 ratio)
+ EncodeManager:   Total: 818.506 krects, 2.74128 Gpixels
+ EncodeManager:          1.4949 GiB (1:6.83737 ratio)
+ Connections: closed: 172.25.148.60::63542
+ ComparingUpdateTracker: 29.1444 Gpixels in / 3.00196 Gpixels out
+ ComparingUpdateTracker: (1:9.70847 ratio)
+
+Mon Mar 11 11:25:28 2024
+ Connections: accepted: 10.66.77.222::61664
+ SConnection: Client needs protocol version 3.8
+ SConnection: Client requests security type VncAuth(2)
+
+Mon Mar 11 11:25:33 2024
+ VNCSConnST:  Server default pixel format depth 24 (32bpp) little-endian rgb888
+ VNCSConnST:  Client pixel format depth 24 (32bpp) little-endian rgb888
+
+Mon Mar 11 17:45:08 2024
+ VNCSConnST:  closing 10.66.77.222::61664: Clean disconnection
+ EncodeManager: Framebuffer updates: 55816
+ EncodeManager:   RRE:
+ EncodeManager:     Solid: 143.148 krects, 92.7573 Mpixels
+ EncodeManager:            2.73033 MiB (1:130.196 ratio)
+ EncodeManager:   Hextile:
+ EncodeManager:     Bitmap RLE: 41.309 krects, 23.117 Mpixels
+ EncodeManager:                 1.49965 MiB (1:59.1187 ratio)
+ EncodeManager:     Indexed RLE: 273.626 krects, 322.201 Mpixels
+ EncodeManager:                  87.9112 MiB (1:14.0168 ratio)
+ EncodeManager:     Full Colour: 262.838 krects, 1.76328 Gpixels
+ EncodeManager:                  1.43458 GiB (1:4.58089 ratio)
+ EncodeManager:   Total: 720.921 krects, 2.20136 Gpixels
+ EncodeManager:          1.52457 GiB (1:5.38432 ratio)
+ Connections: closed: 10.66.77.222::61664
+ ComparingUpdateTracker: 24.2491 Gpixels in / 2.23399 Gpixels out
+ ComparingUpdateTracker: (1:10.8546 ratio)
+
+Tue Mar 12 09:49:37 2024
+ Connections: accepted: 10.66.77.222::49342
+ SConnection: Client needs protocol version 3.8
+ SConnection: Client requests security type VncAuth(2)
+
+Tue Mar 12 09:49:43 2024
+ VNCSConnST:  Server default pixel format depth 24 (32bpp) little-endian rgb888
+ VNCSConnST:  Client pixel format depth 24 (32bpp) little-endian rgb888
+
+Tue Mar 12 17:09:25 2024
+ VNCSConnST:  closing 10.66.77.222::49342: Clean disconnection
+ EncodeManager: Framebuffer updates: 15465
+ EncodeManager:   RRE:
+ EncodeManager:     Solid: 75.344 krects, 44.9197 Mpixels
+ EncodeManager:            1.43707 MiB (1:119.839 ratio)
+ EncodeManager:   Hextile:
+ EncodeManager:     Bitmap RLE: 29.078 krects, 15.1019 Mpixels
+ EncodeManager:                 1.01917 MiB (1:56.852 ratio)
+ EncodeManager:     Indexed RLE: 130.827 krects, 138.563 Mpixels
+ EncodeManager:                  64.8407 MiB (1:8.17501 ratio)
+ EncodeManager:     Full Colour: 116.608 krects, 807.966 Mpixels
+ EncodeManager:                  725.755 MiB (1:4.24865 ratio)
+ EncodeManager:   Total: 351.857 krects, 1.00655 Gpixels
+ EncodeManager:          793.052 MiB (1:4.84674 ratio)
+ Connections: closed: 10.66.77.222::49342
+ ComparingUpdateTracker: 9.86264 Gpixels in / 1.01169 Gpixels out
+ ComparingUpdateTracker: (1:9.74865 ratio)
+
+Wed Mar 13 11:04:26 2024
+ Connections: accepted: 10.66.77.222::54632
+ SConnection: Client needs protocol version 3.8
+ SConnection: Client requests security type VncAuth(2)
+
+Wed Mar 13 11:04:32 2024
+ VNCSConnST:  Server default pixel format depth 24 (32bpp) little-endian rgb888
+ VNCSConnST:  Client pixel format depth 24 (32bpp) little-endian rgb888
+
+Wed Mar 13 17:22:02 2024
+ VNCSConnST:  closing 10.66.77.222::54632: Clean disconnection
+ EncodeManager: Framebuffer updates: 55299
+ EncodeManager:   RRE:
+ EncodeManager:     Solid: 210.681 krects, 121.881 Mpixels
+ EncodeManager:            4.01842 MiB (1:116.302 ratio)
+ EncodeManager:   Hextile:
+ EncodeManager:     Bitmap RLE: 83.09 krects, 42.8309 Mpixels
+ EncodeManager:                 2.86417 MiB (1:57.3771 ratio)
+ EncodeManager:     Indexed RLE: 388.751 krects, 443.93 Mpixels
+ EncodeManager:                  129.73 MiB (1:13.088 ratio)
+ EncodeManager:     Full Colour: 453.201 krects, 2.25883 Gpixels
+ EncodeManager:                  1.92994 GiB (1:4.36275 ratio)
+ EncodeManager:   Total: 1.13572 Mrects, 2.86747 Gpixels
+ EncodeManager:          2.06335 GiB (1:5.18323 ratio)
+ Connections: closed: 10.66.77.222::54632
+ ComparingUpdateTracker: 28.3586 Gpixels in / 2.8842 Gpixels out
+ ComparingUpdateTracker: (1:9.83239 ratio)
+
+Thu Mar 14 09:39:52 2024
+ Connections: accepted: 10.66.77.222::51041
+ SConnection: Client needs protocol version 3.8
+ SConnection: Client requests security type VncAuth(2)
+
+Thu Mar 14 09:39:56 2024
+ SConnection: AuthFailureException: Authentication failure
+ VNCSConnST:  closing 10.66.77.222::51041: Authentication failure
+ EncodeManager: Framebuffer updates: 0
+ EncodeManager:   Total: 0 rects, 0 pixels
+ EncodeManager:          0 B (1:-nan ratio)
+ Connections: closed: 10.66.77.222::51041
+ ComparingUpdateTracker: 0 pixels in / 0 pixels out
+ ComparingUpdateTracker: (1:-nan ratio)
+
+Thu Mar 14 09:40:55 2024
+ Connections: accepted: 10.66.77.222::51043
+ SConnection: Client needs protocol version 3.8
+ SConnection: Client requests security type VncAuth(2)
+
+Thu Mar 14 09:40:59 2024
+ VNCSConnST:  Server default pixel format depth 24 (32bpp) little-endian rgb888
+ VNCSConnST:  Client pixel format depth 24 (32bpp) little-endian rgb888
+
+Thu Mar 14 17:04:25 2024
+ VNCSConnST:  closing 10.66.77.222::51043: Clean disconnection
+ EncodeManager: Framebuffer updates: 61779
+ EncodeManager:   RRE:
+ EncodeManager:     Solid: 113.596 krects, 66.1421 Mpixels
+ EncodeManager:            2.16667 MiB (1:117.051 ratio)
+ EncodeManager:   Hextile:
+ EncodeManager:     Bitmap RLE: 27.448 krects, 26.5767 Mpixels
+ EncodeManager:                 1.23058 MiB (1:82.6408 ratio)
+ EncodeManager:     Indexed RLE: 251.229 krects, 335.536 Mpixels
+ EncodeManager:                  88.8782 MiB (1:14.4337 ratio)
+ EncodeManager:     Full Colour: 272.151 krects, 1.98365 Gpixels
+ EncodeManager:                  1.67667 GiB (1:4.40916 ratio)
+ EncodeManager:   Total: 664.424 krects, 2.4119 Gpixels
+ EncodeManager:          1.76678 GiB (1:5.08974 ratio)
+ Connections: closed: 10.66.77.222::51043
+ ComparingUpdateTracker: 29.4645 Gpixels in / 2.42639 Gpixels out
+ ComparingUpdateTracker: (1:12.1434 ratio)
+
+Fri Mar 15 10:09:35 2024
+ Connections: accepted: 10.66.77.222::59942
+ SConnection: Client needs protocol version 3.8
+ SConnection: Client requests security type VncAuth(2)
+
+Fri Mar 15 10:09:39 2024
+ VNCSConnST:  Server default pixel format depth 24 (32bpp) little-endian rgb888
+ VNCSConnST:  Client pixel format depth 24 (32bpp) little-endian rgb888
+
+Fri Mar 15 15:35:54 2024
+ Connections: accepted: 10.66.31.89::47244
+ SConnection: Client needs protocol version 3.8
+ SConnection: Client requests security type VeNCrypt(19)
+ SVeNCrypt:   Client requests security type VncAuth (2)
+
+Fri Mar 15 15:35:58 2024
+ VNCSConnST:  Server default pixel format depth 24 (32bpp) little-endian rgb888
+ VNCSConnST:  closing 10.66.77.222::59942: Non-shared connection requested
+ EncodeManager: Framebuffer updates: 39866
+ EncodeManager:   RRE:
+ EncodeManager:     Solid: 63.336 krects, 46.9843 Mpixels
+ EncodeManager:            1.20804 MiB (1:148.965 ratio)
+ EncodeManager:   Hextile:
+ EncodeManager:     Bitmap RLE: 14.895 krects, 16.4254 Mpixels
+ EncodeManager:                 771.234 KiB (1:83.4197 ratio)
+ EncodeManager:     Indexed RLE: 139.069 krects, 195.287 Mpixels
+ EncodeManager:                  45.2769 MiB (1:16.4886 ratio)
+ EncodeManager:     Full Colour: 131.782 krects, 988.601 Mpixels
+ EncodeManager:                  813.615 MiB (1:4.63699 ratio)
+ EncodeManager:   Total: 349.082 krects, 1.2473 Gpixels
+ EncodeManager:          860.853 MiB (1:5.53179 ratio)
+ Connections: closed: 10.66.77.222::59942
+ ComparingUpdateTracker: 15.7372 Gpixels in / 1.2481 Gpixels out
+ ComparingUpdateTracker: (1:12.6089 ratio)
+ ComparingUpdateTracker: 0 pixels in / 0 pixels out
+ ComparingUpdateTracker: (1:-nan ratio)
+ ComparingUpdateTracker: 0 pixels in / 0 pixels out
+ ComparingUpdateTracker: (1:-nan ratio)
+
+Fri Mar 15 15:36:02 2024
+ ComparingUpdateTracker: 4.00662 Mpixels in / 1.57788 Mpixels out
+ ComparingUpdateTracker: (1:2.53924 ratio)
+
+Fri Mar 15 15:41:16 2024
+ VNCSConnST:  closing 10.66.31.89::47244: Clean disconnection
+ EncodeManager: Framebuffer updates: 1496
+ EncodeManager:   Tight:
+ EncodeManager:     Solid: 2.739 krects, 10.6184 Mpixels
+ EncodeManager:            42.7969 KiB (1:969.94 ratio)
+ EncodeManager:     Bitmap RLE: 459 rects, 504.658 kpixels
+ EncodeManager:                 14.5645 KiB (1:135.721 ratio)
+ EncodeManager:     Indexed RLE: 4.744 krects, 3.02003 Mpixels
+ EncodeManager:                  715.355 KiB (1:16.5688 ratio)
+ EncodeManager:   Tight (JPEG):
+ EncodeManager:     Full Colour: 4.918 krects, 30.0616 Mpixels
+ EncodeManager:                  32.5715 MiB (1:3.52247 ratio)
+ EncodeManager:   Total: 12.86 krects, 44.2047 Mpixels
+ EncodeManager:          33.3261 MiB (1:5.06434 ratio)
+ Connections: closed: 10.66.31.89::47244
+ ComparingUpdateTracker: 325.145 Mpixels in / 26.7726 Mpixels out
+ ComparingUpdateTracker: (1:12.1447 ratio)
+
+Fri Mar 15 15:43:16 2024
+ Connections: accepted: 10.66.77.222::51963
+ SConnection: Client needs protocol version 3.8
+ SConnection: Client requests security type VncAuth(2)
+
+Fri Mar 15 15:43:20 2024
+ SConnection: AuthFailureException: Authentication failure
+
+Fri Mar 15 15:43:21 2024
+ VNCSConnST:  closing 10.66.77.222::51963: Authentication failure
+ EncodeManager: Framebuffer updates: 0
+ EncodeManager:   Total: 0 rects, 0 pixels
+ EncodeManager:          0 B (1:-nan ratio)
+ Connections: closed: 10.66.77.222::51963
+ ComparingUpdateTracker: 0 pixels in / 0 pixels out
+ ComparingUpdateTracker: (1:-nan ratio)
+
+Fri Mar 15 15:43:23 2024
+ Connections: accepted: 10.66.77.222::51975
+ SConnection: Client needs protocol version 3.8
+
+Fri Mar 15 15:43:24 2024
+ SConnection: Client requests security type VncAuth(2)
+
+Fri Mar 15 15:43:27 2024
+ VNCSConnST:  Server default pixel format depth 24 (32bpp) little-endian rgb888
+ VNCSConnST:  Client pixel format depth 24 (32bpp) little-endian rgb888
+
+Fri Mar 15 16:40:09 2024
+ VNCSConnST:  closing 10.66.77.222::51975: Clean disconnection
+ EncodeManager: Framebuffer updates: 17641
+ EncodeManager:   RRE:
+ EncodeManager:     Solid: 23.206 krects, 11.7966 Mpixels
+ EncodeManager:            453.242 KiB (1:102.269 ratio)
+ EncodeManager:   Hextile:
+ EncodeManager:     Bitmap RLE: 8.075 krects, 3.85069 Mpixels
+ EncodeManager:                 272.028 KiB (1:55.6427 ratio)
+ EncodeManager:     Indexed RLE: 94.324 krects, 196.381 Mpixels
+ EncodeManager:                  232.153 MiB (1:3.23155 ratio)
+ EncodeManager:     Full Colour: 140.448 krects, 898.766 Mpixels
+ EncodeManager:                  1.19484 GiB (1:2.8035 ratio)
+ EncodeManager:   Total: 266.053 krects, 1.11079 Gpixels
+ EncodeManager:          1.42224 GiB (1:2.9116 ratio)
+ Connections: closed: 10.66.77.222::51975
+ ComparingUpdateTracker: 6.70158 Gpixels in / 1.12998 Gpixels out
+ ComparingUpdateTracker: (1:5.93073 ratio)
+
+Mon Mar 18 09:22:55 2024
+ Connections: accepted: 10.66.77.222::55151
+ SConnection: Client needs protocol version 3.8
+ SConnection: Client requests security type VncAuth(2)
+
+Mon Mar 18 09:22:59 2024
+ SConnection: AuthFailureException: Authentication failure
+ VNCSConnST:  closing 10.66.77.222::55151: Authentication failure
+ EncodeManager: Framebuffer updates: 0
+ EncodeManager:   Total: 0 rects, 0 pixels
+ EncodeManager:          0 B (1:-nan ratio)
+ Connections: closed: 10.66.77.222::55151
+ ComparingUpdateTracker: 0 pixels in / 0 pixels out
+ ComparingUpdateTracker: (1:-nan ratio)
+
+Mon Mar 18 09:23:02 2024
+ Connections: accepted: 10.66.77.222::55153
+ SConnection: Client needs protocol version 3.8
+ SConnection: Client requests security type VncAuth(2)
+
+Mon Mar 18 09:23:10 2024
+ VNCSConnST:  Server default pixel format depth 24 (32bpp) little-endian rgb888
+ VNCSConnST:  Client pixel format depth 24 (32bpp) little-endian rgb888
+
+Mon Mar 18 13:48:59 2024
+ Connections: accepted: 10.66.31.89::46634
+ SConnection: Client needs protocol version 3.8
+ SConnection: Client requests security type VeNCrypt(19)
+ SVeNCrypt:   Client requests security type VncAuth (2)
+
+Mon Mar 18 13:49:03 2024
+ VNCSConnST:  Server default pixel format depth 24 (32bpp) little-endian rgb888
+ VNCSConnST:  closing 10.66.77.222::55153: Non-shared connection requested
+ EncodeManager: Framebuffer updates: 9057
+ EncodeManager:   RRE:
+ EncodeManager:     Solid: 12.623 krects, 4.48707 Mpixels
+ EncodeManager:            246.543 KiB (1:71.6936 ratio)
+ EncodeManager:   Hextile:
+ EncodeManager:     Bitmap RLE: 1.866 krects, 871.092 kpixels
+ EncodeManager:                 65.583 KiB (1:52.2173 ratio)
+ EncodeManager:     Indexed RLE: 37.811 krects, 72.1157 Mpixels
+ EncodeManager:                  78.5827 MiB (1:3.50627 ratio)
+ EncodeManager:     Full Colour: 54.751 krects, 259.069 Mpixels
+ EncodeManager:                  278.758 MiB (1:3.5475 ratio)
+ EncodeManager:   Total: 107.051 krects, 336.542 Mpixels
+ EncodeManager:          357.646 MiB (1:3.59303 ratio)
+ Connections: closed: 10.66.77.222::55153
+ ComparingUpdateTracker: 2.42884 Gpixels in / 342.551 Mpixels out
+ ComparingUpdateTracker: (1:7.09046 ratio)
+ ComparingUpdateTracker: 0 pixels in / 0 pixels out
+ ComparingUpdateTracker: (1:-nan ratio)
+ ComparingUpdateTracker: 0 pixels in / 0 pixels out
+ ComparingUpdateTracker: (1:-nan ratio)
+
+Mon Mar 18 13:49:06 2024
+ ComparingUpdateTracker: 15.7546 Mpixels in / 1.24107 Mpixels out
+ ComparingUpdateTracker: (1:12.6943 ratio)
+
+Mon Mar 18 15:43:12 2024
+ ComparingUpdateTracker: 10.059 Gpixels in / 1.17221 Gpixels out
+ ComparingUpdateTracker: (1:8.58119 ratio)
+ ComparingUpdateTracker: 0 pixels in / 0 pixels out
+ ComparingUpdateTracker: (1:-nan ratio)
+
+Mon Mar 18 15:43:15 2024
+ VNCSConnST:  closing 10.66.31.89::46634: Clean disconnection
+ EncodeManager: Framebuffer updates: 48872
+ EncodeManager:   Tight:
+ EncodeManager:     Solid: 102.93 krects, 184.286 Mpixels
+ EncodeManager:            1.57059 MiB (1:448.352 ratio)
+ EncodeManager:     Bitmap RLE: 20.577 krects, 7.6447 Mpixels
+ EncodeManager:                 607.021 KiB (1:49.5918 ratio)
+ EncodeManager:     Indexed RLE: 237.12 krects, 182.196 Mpixels
+ EncodeManager:                  52.6987 MiB (1:13.2401 ratio)
+ EncodeManager:   Tight (JPEG):
+ EncodeManager:     Full Colour: 219.556 krects, 1.22864 Gpixels
+ EncodeManager:                  1.17608 GiB (1:3.89389 ratio)
+ EncodeManager:   Total: 580.183 krects, 1.60277 Gpixels
+ EncodeManager:          1.22965 GiB (1:4.86095 ratio)
+ Connections: closed: 10.66.31.89::46634
+ ComparingUpdateTracker: 6.29934 Mpixels in / 1.26464 Mpixels out
+ ComparingUpdateTracker: (1:4.98115 ratio)
+
+Mon Mar 18 15:46:40 2024
+ Connections: accepted: 10.66.77.222::53062
+ SConnection: Client needs protocol version 3.8
+ SConnection: Client requests security type VncAuth(2)
+
+Mon Mar 18 15:46:45 2024
+ VNCSConnST:  Server default pixel format depth 24 (32bpp) little-endian rgb888
+ VNCSConnST:  Client pixel format depth 24 (32bpp) little-endian rgb888
+
+Mon Mar 18 17:35:04 2024
+ VNCSConnST:  closing 10.66.77.222::53062: Clean disconnection
+ EncodeManager: Framebuffer updates: 15793
+ EncodeManager:   RRE:
+ EncodeManager:     Solid: 12.737 krects, 6.88335 Mpixels
+ EncodeManager:            248.77 KiB (1:108.684 ratio)
+ EncodeManager:   Hextile:
+ EncodeManager:     Bitmap RLE: 7.958 krects, 3.39518 Mpixels
+ EncodeManager:                 267.128 KiB (1:49.9973 ratio)
+ EncodeManager:     Indexed RLE: 49.516 krects, 94.9247 Mpixels
+ EncodeManager:                  62.2353 MiB (1:5.82749 ratio)
+ EncodeManager:     Full Colour: 87.335 krects, 400.02 Mpixels
+ EncodeManager:                  455.295 MiB (1:3.35377 ratio)
+ EncodeManager:   Total: 157.546 krects, 505.223 Mpixels
+ EncodeManager:          518.034 MiB (1:3.72384 ratio)
+ Connections: closed: 10.66.77.222::53062
+ ComparingUpdateTracker: 3.34907 Gpixels in / 509.606 Mpixels out
+ ComparingUpdateTracker: (1:6.57187 ratio)
+
+Tue Mar 19 09:43:43 2024
+ Connections: accepted: 10.66.77.222::60521
+ SConnection: Client needs protocol version 3.8
+ SConnection: Client requests security type VncAuth(2)
+
+Tue Mar 19 09:43:47 2024
+ VNCSConnST:  Server default pixel format depth 24 (32bpp) little-endian rgb888
+ VNCSConnST:  Client pixel format depth 24 (32bpp) little-endian rgb888
+
+Tue Mar 19 17:20:32 2024
+ VNCSConnST:  closing 10.66.77.222::60521: Clean disconnection
+ EncodeManager: Framebuffer updates: 18468
+ EncodeManager:   RRE:
+ EncodeManager:     Solid: 18.662 krects, 11.1369 Mpixels
+ EncodeManager:            364.492 KiB (1:119.953 ratio)
+ EncodeManager:   Hextile:
+ EncodeManager:     Bitmap RLE: 17.778 krects, 7.78688 Mpixels
+ EncodeManager:                 580.241 KiB (1:52.7812 ratio)
+ EncodeManager:     Indexed RLE: 115.621 krects, 214.821 Mpixels
+ EncodeManager:                  207.954 MiB (1:3.94702 ratio)
+ EncodeManager:     Full Colour: 152.558 krects, 921.856 Mpixels
+ EncodeManager:                  1.47134 GiB (1:2.33522 ratio)
+ EncodeManager:   Total: 304.619 krects, 1.1556 Gpixels
+ EncodeManager:          1.67532 GiB (1:2.57166 ratio)
+ Connections: closed: 10.66.77.222::60521
+ ComparingUpdateTracker: 5.00114 Gpixels in / 1.19412 Gpixels out
+ ComparingUpdateTracker: (1:4.18814 ratio)
+
+Wed Mar 20 10:10:39 2024
+ Connections: accepted: 10.66.77.222::64959
+ SConnection: Client needs protocol version 3.8
+ SConnection: Client requests security type VncAuth(2)
+
+Wed Mar 20 10:10:41 2024
+ VNCSConnST:  closing 10.66.77.222::64959: Clean disconnection
+ EncodeManager: Framebuffer updates: 0
+ EncodeManager:   Total: 0 rects, 0 pixels
+ EncodeManager:          0 B (1:-nan ratio)
+ Connections: closed: 10.66.77.222::64959
+ ComparingUpdateTracker: 0 pixels in / 0 pixels out
+ ComparingUpdateTracker: (1:-nan ratio)
+
+Wed Mar 20 10:11:00 2024
+ Connections: accepted: 10.66.77.222::64961
+ SConnection: Client needs protocol version 3.8
+ SConnection: Client requests security type VncAuth(2)
+
+Wed Mar 20 10:11:04 2024
+ VNCSConnST:  Server default pixel format depth 24 (32bpp) little-endian rgb888
+ VNCSConnST:  Client pixel format depth 24 (32bpp) little-endian rgb888
+
+Wed Mar 20 10:12:03 2024
+ VNCSConnST:  closing 10.66.77.222::64961: Clean disconnection
+ EncodeManager: Framebuffer updates: 166
+ EncodeManager:   RRE:
+ EncodeManager:     Solid: 38 rects, 9.416 kpixels
+ EncodeManager:            760 B (1:50.1579 ratio)
+ EncodeManager:   Hextile:
+ EncodeManager:     Bitmap RLE: 33 rects, 16.888 kpixels
+ EncodeManager:                 1.19727 KiB (1:55.4225 ratio)
+ EncodeManager:     Indexed RLE: 140 rects, 167.306 kpixels
+ EncodeManager:                  58.5078 KiB (1:11.1982 ratio)
+ EncodeManager:     Full Colour: 116 rects, 1.65236 Mpixels
+ EncodeManager:                  1.27525 MiB (1:4.94379 ratio)
+ EncodeManager:   Total: 327 rects, 1.84597 Mpixels
+ EncodeManager:          1.33428 MiB (1:5.2804 ratio)
+ Connections: closed: 10.66.77.222::64961
+ ComparingUpdateTracker: 38.806 Mpixels in / 1.05989 Mpixels out
+ ComparingUpdateTracker: (1:36.6131 ratio)
+
+Wed Mar 20 10:14:43 2024
+ ComparingUpdateTracker: 0 pixels in / 0 pixels out
+ ComparingUpdateTracker: (1:-nan ratio)
+The Xtigervnc server cleanly exited!
+cannot fetch initial working directory: No such file or directory at /usr/lib/x86_64-linux-gnu/perl-base/File/Temp.pm line 2632.
+
+Xvnc TigerVNC 1.12.0 - built 2024-01-23 17:21
+Copyright (C) 1999-2021 TigerVNC Team and many others (see README.rst)
+See https://www.tigervnc.org for information on TigerVNC.
+Underlying X server release 12101007, X.Org
+
+
+Wed Mar 20 10:14:50 2024
+ vncext:      VNC extension running!
+ vncext:      Listening for VNC connections on all interface(s), port 5901
+ vncext:      created VNC server for screen 0
+3NI3X0 New Xtigervnc server 'ls4-lab-desktop:1 (ls4)' on port 5901 for display :1.
+3NI3X0 Use xtigervncviewer -SecurityTypes VncAuth,TLSVnc -passwd /tmp/tigervnc.JJXlxz/passwd ls4-lab-desktop:1 to connect to the VNC server.
+[mi] mieq: warning: overriding existing handler (nil) with 0x563e602bacf0 for event 2
+[mi] mieq: warning: overriding existing handler (nil) with 0x563e602bacf0 for event 3
+
+Wed Mar 20 10:15:00 2024
+ Connections: accepted: 10.66.77.222::64970
+ SConnection: Client needs protocol version 3.8
+ SConnection: Client requests security type VncAuth(2)
+
+Wed Mar 20 10:15:04 2024
+ VNCSConnST:  Server default pixel format depth 24 (32bpp) little-endian rgb888
+ VNCSConnST:  Client pixel format depth 24 (32bpp) little-endian rgb888
+
+Wed Mar 20 11:05:47 2024
+ Connections: accepted: 10.66.31.89::44254
+ SConnection: Client needs protocol version 3.8
+ SConnection: Client requests security type VeNCrypt(19)
+ SVeNCrypt:   Client requests security type VncAuth (2)
+
+Wed Mar 20 11:05:51 2024
+ VNCSConnST:  Server default pixel format depth 24 (32bpp) little-endian rgb888
+ VNCSConnST:  closing 10.66.77.222::64970: Non-shared connection requested
+ EncodeManager: Framebuffer updates: 79
+ EncodeManager:   RRE:
+ EncodeManager:     Solid: 54 rects, 1.56497 Mpixels
+ EncodeManager:            1.05469 KiB (1:5796.79 ratio)
+ EncodeManager:   Hextile:
+ EncodeManager:     Indexed RLE: 57 rects, 2.56398 Mpixels
+ EncodeManager:                  71.6621 KiB (1:139.77 ratio)
+ EncodeManager:     Full Colour: 74 rects, 789.178 kpixels
+ EncodeManager:                  174.897 KiB (1:17.6309 ratio)
+ EncodeManager:   Total: 185 rects, 4.91813 Mpixels
+ EncodeManager:          247.614 KiB (1:77.5949 ratio)
+ Connections: closed: 10.66.77.222::64970
+ ComparingUpdateTracker: 9.10786 Mpixels in / 2.6138 Mpixels out
+ ComparingUpdateTracker: (1:3.48453 ratio)
+ ComparingUpdateTracker: 0 pixels in / 0 pixels out
+ ComparingUpdateTracker: (1:-nan ratio)
+ ComparingUpdateTracker: 0 pixels in / 0 pixels out
+ ComparingUpdateTracker: (1:-nan ratio)
+
+Wed Mar 20 11:05:55 2024
+ ComparingUpdateTracker: 793.216 kpixels in / 791.944 kpixels out
+ ComparingUpdateTracker: (1:1.00161 ratio)
+
+Wed Mar 20 11:30:16 2024
+ ComparingUpdateTracker: 2.48222 Gpixels in / 596.88 Mpixels out
+ ComparingUpdateTracker: (1:4.15866 ratio)
+ ComparingUpdateTracker: 0 pixels in / 0 pixels out
+ ComparingUpdateTracker: (1:-nan ratio)
+
+Wed Mar 20 11:31:21 2024
+ ComparingUpdateTracker: 125.07 Mpixels in / 56.3543 Mpixels out
+ ComparingUpdateTracker: (1:2.21935 ratio)
+
+Wed Mar 20 12:01:53 2024
+ VNCSConnST:  closing 10.66.31.89::44254: Clean disconnection
+ EncodeManager: Framebuffer updates: 26903
+ EncodeManager:   Tight:
+ EncodeManager:     Solid: 115.935 krects, 264.992 Mpixels
+ EncodeManager:            1.76903 MiB (1:572.175 ratio)
+ EncodeManager:     Bitmap RLE: 27.706 krects, 5.72314 Mpixels
+ EncodeManager:                 803.227 KiB (1:28.237 ratio)
+ EncodeManager:     Indexed RLE: 209.829 krects, 316.23 Mpixels
+ EncodeManager:                  87.5216 MiB (1:13.8106 ratio)
+ EncodeManager:   Tight (JPEG):
+ EncodeManager:     Full Colour: 98.694 krects, 782.657 Mpixels
+ EncodeManager:                  645.697 MiB (1:4.62559 ratio)
+ EncodeManager:   Total: 452.164 krects, 1.3696 Gpixels
+ EncodeManager:          735.772 MiB (1:7.10791 ratio)
+ Connections: closed: 10.66.31.89::44254
+ ComparingUpdateTracker: 2.87024 Gpixels in / 569.827 Mpixels out
+ ComparingUpdateTracker: (1:5.03703 ratio)
+
+Wed Mar 20 12:03:40 2024
+ Connections: accepted: 10.66.77.222::65183
+ SConnection: Client needs protocol version 3.8
+ SConnection: Client requests security type VncAuth(2)
+
+Wed Mar 20 12:03:46 2024
+ VNCSConnST:  Server default pixel format depth 24 (32bpp) little-endian rgb888
+ VNCSConnST:  Client pixel format depth 24 (32bpp) little-endian rgb888
+
+Wed Mar 20 15:30:42 2024
+ VNCSConnST:  closing 10.66.77.222::65183: Clean disconnection
+ EncodeManager: Framebuffer updates: 16674
+ EncodeManager:   RRE:
+ EncodeManager:     Solid: 42.924 krects, 18.3542 Mpixels
+ EncodeManager:            838.359 KiB (1:86.1196 ratio)
+ EncodeManager:   Hextile:
+ EncodeManager:     Bitmap RLE: 20.226 krects, 6.32954 Mpixels
+ EncodeManager:                 638.021 KiB (1:39.1238 ratio)
+ EncodeManager:     Indexed RLE: 112.839 krects, 217.336 Mpixels
+ EncodeManager:                  276.312 MiB (1:3.00516 ratio)
+ EncodeManager:     Full Colour: 145.541 krects, 711.891 Mpixels
+ EncodeManager:                  1.01081 GiB (1:2.62524 ratio)
+ EncodeManager:   Total: 321.53 krects, 953.911 Mpixels
+ EncodeManager:          1.28206 GiB (1:2.77459 ratio)
+ Connections: closed: 10.66.77.222::65183
+ ComparingUpdateTracker: 5.98955 Gpixels in / 1.01579 Gpixels out
+ ComparingUpdateTracker: (1:5.89644 ratio)
+
+Wed Mar 20 15:30:54 2024
+ Connections: accepted: 10.66.77.222::51141
+ SConnection: Client needs protocol version 3.8
+ SConnection: Client requests security type VncAuth(2)
+
+Wed Mar 20 15:30:58 2024
+ VNCSConnST:  Server default pixel format depth 24 (32bpp) little-endian rgb888
+ VNCSConnST:  Client pixel format depth 24 (32bpp) little-endian rgb888
+
+Wed Mar 20 16:42:59 2024
+ VNCSConnST:  closing 10.66.77.222::51141: Clean disconnection
+ EncodeManager: Framebuffer updates: 2985
+ EncodeManager:   RRE:
+ EncodeManager:     Solid: 2.515 krects, 2.3447 Mpixels
+ EncodeManager:            49.1211 KiB (1:187.057 ratio)
+ EncodeManager:   Hextile:
+ EncodeManager:     Bitmap RLE: 2.335 krects, 1.15862 Mpixels
+ EncodeManager:                 75.7861 KiB (1:60.0799 ratio)
+ EncodeManager:     Indexed RLE: 14.138 krects, 31.1598 Mpixels
+ EncodeManager:                  32.9669 MiB (1:3.61051 ratio)
+ EncodeManager:     Full Colour: 20.223 krects, 104.435 Mpixels
+ EncodeManager:                  136.999 MiB (1:2.90964 ratio)
+ EncodeManager:   Total: 39.211 krects, 139.098 Mpixels
+ EncodeManager:          170.088 MiB (1:3.12229 ratio)
+ Connections: closed: 10.66.77.222::51141
+ ComparingUpdateTracker: 694.293 Mpixels in / 143.302 Mpixels out
+ ComparingUpdateTracker: (1:4.84497 ratio)
+
+Thu Mar 21 09:36:04 2024
+ Connections: accepted: 10.66.31.89::43740
+ SConnection: Client needs protocol version 3.8
+ SConnection: Client requests security type VeNCrypt(19)
+ SVeNCrypt:   Client requests security type VncAuth (2)
+
+Thu Mar 21 09:36:08 2024
+ VNCSConnST:  Server default pixel format depth 24 (32bpp) little-endian rgb888
+ ComparingUpdateTracker: 16.96 kpixels in / 760 pixels out
+ ComparingUpdateTracker: (1:22.3158 ratio)
+ ComparingUpdateTracker: 0 pixels in / 0 pixels out
+ ComparingUpdateTracker: (1:-nan ratio)
+
+Thu Mar 21 09:36:12 2024
+ ComparingUpdateTracker: 4.47932 Mpixels in / 1.48893 Mpixels out
+ ComparingUpdateTracker: (1:3.00842 ratio)
+
+Thu Mar 21 09:39:05 2024
+ ComparingUpdateTracker: 306.462 Mpixels in / 74.4336 Mpixels out
+ ComparingUpdateTracker: (1:4.11726 ratio)
+ ComparingUpdateTracker: 0 pixels in / 0 pixels out
+ ComparingUpdateTracker: (1:-nan ratio)
+
+Thu Mar 21 09:53:47 2024
+ ComparingUpdateTracker: 1.06012 Gpixels in / 121.937 Mpixels out
+ ComparingUpdateTracker: (1:8.69402 ratio)
+
+Thu Mar 21 09:53:49 2024
+ ComparingUpdateTracker: 30.6239 Mpixels in / 3.55844 Mpixels out
+ ComparingUpdateTracker: (1:8.60599 ratio)
+ ComparingUpdateTracker: 0 pixels in / 0 pixels out
+ ComparingUpdateTracker: (1:-nan ratio)
+
+Thu Mar 21 09:53:54 2024
+ ComparingUpdateTracker: 8.2587 Mpixels in / 1.36423 Mpixels out
+ ComparingUpdateTracker: (1:6.05374 ratio)
+
+Thu Mar 21 10:33:35 2024
+ VNCSConnST:  closing 10.66.31.89::43740: Clean disconnection
+ EncodeManager: Framebuffer updates: 20393
+ EncodeManager:   Tight:
+ EncodeManager:     Solid: 39.943 krects, 75.0579 Mpixels
+ EncodeManager:            624.109 KiB (1:470.531 ratio)
+ EncodeManager:     Bitmap RLE: 9.274 krects, 1.78819 Mpixels
+ EncodeManager:                 270.044 KiB (1:26.269 ratio)
+ EncodeManager:     Indexed RLE: 97.772 krects, 53.0403 Mpixels
+ EncodeManager:                  19.8557 MiB (1:10.2465 ratio)
+ EncodeManager:   Tight (JPEG):
+ EncodeManager:     Full Colour: 72.614 krects, 366.449 Mpixels
+ EncodeManager:                  360.648 MiB (1:3.87836 ratio)
+ EncodeManager:   Total: 219.603 krects, 496.335 Mpixels
+ EncodeManager:          381.377 MiB (1:4.97115 ratio)
+ Connections: closed: 10.66.31.89::43740
+ ComparingUpdateTracker: 2.38717 Gpixels in / 170.215 Mpixels out
+ ComparingUpdateTracker: (1:14.0245 ratio)
+
+Thu Mar 21 10:54:23 2024
+ Connections: accepted: 10.66.77.222::53356
+ SConnection: Client needs protocol version 3.8
+ SConnection: Client requests security type VncAuth(2)
+
+Thu Mar 21 10:54:26 2024
+ VNCSConnST:  Server default pixel format depth 24 (32bpp) little-endian rgb888
+ VNCSConnST:  Client pixel format depth 24 (32bpp) little-endian rgb888
+
+Thu Mar 21 16:54:54 2024
+ VNCSConnST:  closing 10.66.77.222::53356: Clean disconnection
+ EncodeManager: Framebuffer updates: 50769
+ EncodeManager:   RRE:
+ EncodeManager:     Solid: 35.617 krects, 18.0456 Mpixels
+ EncodeManager:            695.645 KiB (1:101.932 ratio)
+ EncodeManager:   Hextile:
+ EncodeManager:     Bitmap RLE: 30.345 krects, 23.4671 Mpixels
+ EncodeManager:                 1.08086 MiB (1:83.1441 ratio)
+ EncodeManager:     Indexed RLE: 173.609 krects, 585.423 Mpixels
+ EncodeManager:                  741.366 MiB (1:3.01498 ratio)
+ EncodeManager:     Full Colour: 293.396 krects, 1.08548 Gpixels
+ EncodeManager:                  1.96062 GiB (1:2.06415 ratio)
+ EncodeManager:   Total: 532.967 krects, 1.71242 Gpixels
+ EncodeManager:          2.68633 GiB (1:2.37693 ratio)
+ Connections: closed: 10.66.77.222::53356
+ ComparingUpdateTracker: 13.6944 Gpixels in / 1.8189 Gpixels out
+ ComparingUpdateTracker: (1:7.52894 ratio)
+
+Fri Mar 22 09:39:00 2024
+ Connections: accepted: 10.66.77.222::50539
+ SConnection: Client needs protocol version 3.8
+ SConnection: Client requests security type VncAuth(2)
+
+Fri Mar 22 09:39:05 2024
+ VNCSConnST:  Server default pixel format depth 24 (32bpp) little-endian rgb888
+ VNCSConnST:  Client pixel format depth 24 (32bpp) little-endian rgb888
+
+Fri Mar 22 16:49:36 2024
+ VNCSConnST:  closing 10.66.77.222::50539: Clean disconnection
+ EncodeManager: Framebuffer updates: 80438
+ EncodeManager:   RRE:
+ EncodeManager:     Solid: 92.97 krects, 38.8125 Mpixels
+ EncodeManager:            1.77326 MiB (1:84.0948 ratio)
+ EncodeManager:   Hextile:
+ EncodeManager:     Bitmap RLE: 52.431 krects, 25.513 Mpixels
+ EncodeManager:                 1.83839 MiB (1:53.2664 ratio)
+ EncodeManager:     Indexed RLE: 363.386 krects, 968.813 Mpixels
+ EncodeManager:                  1.26734 GiB (1:2.85099 ratio)
+ EncodeManager:     Full Colour: 783.664 krects, 2.47207 Gpixels
+ EncodeManager:                  4.55443 GiB (1:2.02395 ratio)
+ EncodeManager:   Total: 1.29245 Mrects, 3.50521 Gpixels
+ EncodeManager:          5.8253 GiB (1:2.24407 ratio)
+ Connections: closed: 10.66.77.222::50539
+ ComparingUpdateTracker: 21.4978 Gpixels in / 3.77518 Gpixels out
+ ComparingUpdateTracker: (1:5.69451 ratio)
+
+Tue Mar 26 09:55:05 2024
+ Connections: accepted: 10.66.77.222::51220
+ SConnection: Client needs protocol version 3.8
+ SConnection: Client requests security type VncAuth(2)
+
+Tue Mar 26 09:55:10 2024
+ VNCSConnST:  Server default pixel format depth 24 (32bpp) little-endian rgb888
+ VNCSConnST:  Client pixel format depth 24 (32bpp) little-endian rgb888
+
+Tue Mar 26 17:13:57 2024
+ VNCSConnST:  closing 10.66.77.222::51220: Clean disconnection
+ EncodeManager: Framebuffer updates: 61812
+ EncodeManager:   RRE:
+ EncodeManager:     Solid: 60.987 krects, 24.3292 Mpixels
+ EncodeManager:            1.16323 MiB (1:80.3849 ratio)
+ EncodeManager:   Hextile:
+ EncodeManager:     Bitmap RLE: 30.132 krects, 13.0832 Mpixels
+ EncodeManager:                 974.396 KiB (1:52.8115 ratio)
+ EncodeManager:     Indexed RLE: 142.928 krects, 234.994 Mpixels
+ EncodeManager:                  235.76 MiB (1:3.80923 ratio)
+ EncodeManager:     Full Colour: 346.672 krects, 1.06256 Gpixels
+ EncodeManager:                  1.3317 GiB (1:2.97531 ratio)
+ EncodeManager:   Total: 580.719 krects, 1.33497 Gpixels
+ EncodeManager:          1.564 GiB (1:3.1839 ratio)
+ Connections: closed: 10.66.77.222::51220
+ ComparingUpdateTracker: 17.1887 Gpixels in / 1.35981 Gpixels out
+ ComparingUpdateTracker: (1:12.6406 ratio)
+
+Wed Mar 27 10:15:59 2024
+ Connections: accepted: 10.66.77.222::52411
+ SConnection: Client needs protocol version 3.8
+ SConnection: Client requests security type VncAuth(2)
+
+Wed Mar 27 10:16:03 2024
+ VNCSConnST:  Server default pixel format depth 24 (32bpp) little-endian rgb888
+ VNCSConnST:  Client pixel format depth 24 (32bpp) little-endian rgb888

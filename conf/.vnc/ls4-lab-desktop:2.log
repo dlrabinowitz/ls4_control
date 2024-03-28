@@ -1,0 +1,22 @@
+
+Xvnc TigerVNC 1.12.0 - built 2023-01-06 16:01
+Copyright (C) 1999-2021 TigerVNC Team and many others (see README.rst)
+See https://www.tigervnc.org for information on TigerVNC.
+Underlying X server release 12101006, X.Org
+
+
+Mon Nov 27 16:37:19 2023
+ vncext:      VNC extension running!
+ vncext:      Listening for VNC connections on all interface(s), port 5902
+ vncext:      created VNC server for screen 0
+3NI3X0 New Xtigervnc server 'ls4-lab-desktop:2 (ls4)' on port 5902 for display :2.
+3NI3X0 Use xtigervncviewer -SecurityTypes VncAuth,TLSVnc -passwd /tmp/tigervnc.cqpx0H/passwd ls4-lab-desktop:2 to connect to the VNC server.
+
+** (process:6780): WARNING **: 16:37:19.777: Could not make bus activated clients aware of XDG_CURRENT_DESKTOP=GNOME environment variable: Could not connect: Permission denied
+[mi] mieq: warning: overriding existing handler (nil) with 0x55a97975e490 for event 2
+[mi] mieq: warning: overriding existing handler (nil) with 0x55a97975e490 for event 3
+(EE) Failed to open authorization file "/run/user/1000/.mutter-Xwaylandauth.S28HF2": Permission denied
+
+Mon Nov 27 16:37:20 2023
+ ComparingUpdateTracker: 0 pixels in / 0 pixels out
+ ComparingUpdateTracker: (1:-nan ratio)
