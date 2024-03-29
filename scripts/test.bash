@@ -2,13 +2,14 @@
 source ~/ls4_venv/bin/activate
 LOG_LEVEL="INFO"
 EXPTIME=0.0
-EXPINCR=0.02 
+EXPINCR=0.2 
 NUM_EXPOSURES=51
 IMG_PREFIX=ls4_sw_eng
 CONF_PATH=$LS4_CONTROL_ROOT/conf
 SCRIPTS=$LS4_CONTROL_ROOT/scripts
 PYTHON=$LS4_CONTROL_ROOT/python 
-ARCHON_CFG_LIST="test_ne_20240118.acf,test_se_20240118.acf,test_nw_20240118.acf,test_sw_20240118.acf"
+#ARCHON_CFG_LIST="test_ne.acf,test_se.acf,test_nw.acf,test_sw.acf"
+ARCHON_CFG_LIST="test_ne_unconnected.acf,test_se_unconnected.acf,test_nw_unconnected.acf,test_sw_unconnected.acf"
 JSON_CFG_LIST="test_ne.json,test_se.json,test_nw.json,test_sw.json"
 
 # swap NE/SE
