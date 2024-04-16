@@ -7,7 +7,10 @@ requirements:
   bash shell
 
 Installation:
-  source ~/ls4_venv/bin/activate
+  python3 -m venv  ~/ls4_venv
+  source scripts/setup.bash
+  pip install wheel
+  pip install -r ls4_requirements.txt
   cd archon-main
   pip install .
 

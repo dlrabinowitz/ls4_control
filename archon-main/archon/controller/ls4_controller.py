@@ -29,7 +29,7 @@ from collections.abc import AsyncIterator
 from typing import Any, Callable, Iterable, Literal, Optional, cast, overload
 
 import numpy
-
+import threading
 from archon.controller.ls4_device import LS4_Device
 from archon.controller.ls4_sync_io import LS4_SyncIO
 
@@ -44,7 +44,8 @@ from archon.exceptions import (
 )
 
 from . import MAX_COMMAND_ID, MAX_CONFIG_LINES, FOLLOWER_TIMEOUT_MSEC, \
-              P100_SUPPLY_VOLTAGE, N100_SUPPLY_VOLTAGE, AMPS_PER_CCD, CCDS_PER_QUAD
+              P100_SUPPLY_VOLTAGE, N100_SUPPLY_VOLTAGE, AMPS_PER_CCD, \
+              CCDS_PER_QUAD, STATUS_LOCK_TIMEOUT
 
 
 __all__ = ["LS4Controller"]
@@ -257,6 +258,9 @@ class LS4Controller(LS4_Device):
         else:
            self.timing={'expose':TimePeriod(),'readout':TimePeriod(),'fetch':TimePeriod()}
 
+        # ned a mutex to lock self._status while changing status bits
+        self.status_lock = threading.Lock()
+
     def set_lead(self, lead_flag: bool = False):
          self.leader = lead_flag
          self.prefix = "leader %s" % self.name
@@ -288,9 +292,36 @@ class LS4Controller(LS4_Device):
     def status(self) -> ControllerStatus:
         """Returns the status of the controller as a `.ControllerStatus` enum type."""
 
-        return self._status
+        try:
+          if not self.status_lock.acquire(timeout=STATUS_LOCK_TIMEOUT):
+             error_msg = "ERROR: failed to acquire status lock within %7.3f sec" %\
+                  STATUS_LOCK_TIMEOUT
+             self.warn(error_msg)
+        except Exception as e:
+          error_msg = "Exception acquiring status lock"
+          self.warn(error_msg)
+
+        state = self._status
+        try:
+          self.status_lock.release()
+        except Exception as e:
+          error_msg = "Exception releasing status lock"
+          self.warn(error_msg)
+
+        return state
+
+    def is_exposing(self):
+        return  self.status&ControllerStatus.EXPOSING
+
+    def is_reading(self):
+        return self.status&ControllerStatus.READING
+
+    def is_fetching(self):
+        return self.status&ControllerStatus.FETCHING
 
     def get_obsdate(self,tm=None):
+        if tm is None:
+           tm=time.gmtime()
         dt = "%04d-%02d-%02dT%02d:%02d:%05.2f" % \
               (tm.tm_year,tm.tm_mon,tm.tm_mday, tm.tm_hour,tm.tm_min,tm.tm_sec)
         return dt
@@ -326,6 +357,15 @@ class LS4Controller(LS4_Device):
             else:
                 raise ValueError(f"Invalid mode '{mode}'.")
 
+        try:
+          if not self.status_lock.acquire(timeout=STATUS_LOCK_TIMEOUT):
+             error_msg = "ERROR: failed to acquire status lock within %7.3f sec" %\
+                  STATUS_LOCK_TIMEOUT
+             self.warn(error_msg)
+        except Exception as e:
+          error_msg = "Exception acquiring status lock: %s" % e
+          self.warn(error_msg)
+
         # Make sure that we don't have IDLE and ACTIVE states at the same time.
         if ControllerStatus.IDLE in bits:
             status &= ~ControllerStatus.ACTIVE
@@ -350,6 +390,13 @@ class LS4Controller(LS4_Device):
             status &= ~ControllerStatus.UNKNOWN
 
         self._status = status
+       
+        try:
+           self.status_lock.release()
+        except Exception as e:
+           error_msg = "Exception releasing status lock: %s" % e
+           self.warn(error_msg)
+      
 
         if notify:
             self.__status_event.set()
@@ -1079,7 +1126,6 @@ class LS4Controller(LS4_Device):
         self.debug(f"hold_timing")
         await self.hold_timing()
 
-
         self.debug(f"set autoflush %s" % autoflush)
         await self.set_autoflush(autoflush)
         self.debug(f"setting Exposures to 0")
@@ -1351,6 +1397,7 @@ class LS4Controller(LS4_Device):
 
         return self.current_window
 
+
     async def expose(
         self,
         exposure_time: float = 1,
@@ -1364,7 +1411,7 @@ class LS4Controller(LS4_Device):
         that the readout has started.
         """
 
-        self.debug(f"exposing with exposure time {exposure_time} and readout {readout}.")
+        #self.notifier(f"%s: preparing for exposure duration exposure {exposure_time} " % self.get_obsdate())
 
         CS = ControllerStatus
 
@@ -1379,10 +1426,9 @@ class LS4Controller(LS4_Device):
         if (not (CS.POWERON & self.status)) or (CS.POWERBAD & self.status):
             raise ArchonControllerError("Controller power is off or invalid.")
 
-        self.debug(f"resetting") 
         #await self.reset(autoflush=False, release_timing=False,sync_flag=self.ls4_sync_io.sync_flag)
         await self.reset(autoflush=False, release_timing=False,sync_flag=False)
-        self.debug(f"done resetting") 
+        #self.info(f"%s: done resetting",self.get_obsdate()) 
         if self.ls4_sync_io.sync_flag:
            self.debug(f"syncing up")
            await self.set_param(param="SYNCTEST",value=0)
@@ -1411,41 +1457,48 @@ class LS4Controller(LS4_Device):
         self.timing['expose'].start()
         tm = time.gmtime()
         self.config['expose params']['dateobs']=self.get_obsdate(tm)
+        self.config['expose params']['startobs']=self.get_obsdate(tm)
 
-        self.debug(f"returning update_state function")
-       
+        #self.notifier(f"%s: starting exposure of duration exposure {exposure_time} " % self.get_obsdate())
         async def update_state():
            dt = 0.0
            done=True
            aborted=False
+           t_start=time.time()
            if exposure_time>0.0 and dt < exposure_time:
-              self.notifier(f"update_state: waiting %7.3f sec for exposure to end" % exposure_time)
+              #self.notifier(f"%s: waiting %7.3f sec for exposure to end" %\
+              #    (self.get_obsdate(),exposure_time))
               done = False
               aborted = False
               while (not done) and (not aborted):
                  if dt >= exposure_time:
-                    self.notifier(f"update_state: exposure completed after %7.3f sec" % dt)
+                    #self.notifier(f"update_state: end %s:  exposure completed after %7.3f sec" % (self.get_obsdate(tm),dt))
                     done= True
                  elif not (self.status & CS.EXPOSING):  # Must have been aborted.
-                    self.notifi(f"update_state: exposure was aborted after %7.3f sec" % dt)
-                    abort=True
+                    self.notifier(f"update_state: exposure was aborted after %7.3f sec" % dt)
+                    aborted=True
                  else:
-                    time.sleep(0.001)
-                    dt += 0.001
+                    await asyncio.sleep(0.01)
+                    dt = time.time()-t_start
+                    tm = time.gmtime()
            else:
               self.debug(f"update_state: skipping 0-sec exposure loop")
 
            self.timing['expose'].end()
            self.config['expose params']['exptime']=self.timing['expose'].period
+           self.config['expose params']['doneobs']=self.get_obsdate(tm)
+           self.update_status(CS.EXPOSING, 'off')
+           #self.notifier(f"%s: done with exposure of duration exposure {exposure_time} " % self.get_obsdate())
             
            if done:
               if aborted:
                  pass
               elif not readout: # readout later
                  self.debug(f"update_state: updating status to IDLE, READOUT_PENDING")
-                 self.update_status([CS.IDLE, CS.READOUT_PENDING])
+                 self.update_status(CS.READOUT_PENDING)
+                 #self.update_status([CS.IDLE, CS.READOUT_PENDING])
               else: # readout now
-                 self.notifier(f"update_state: starting readout")
+                 #self.notifier(f"update_state: starting readout")
                  frame = await self.get_frame()
                  wbuf = frame["wbuf"]
                  if frame[f"buf{wbuf}complete"] == 0:
@@ -1464,7 +1517,10 @@ class LS4Controller(LS4_Device):
               self.timing['readout'].end()
               self.config['expose params']['read-per']=self.timing['readout'].period
 
-        return asyncio.create_task(update_state())
+
+        self.debug(f"%s: returning awaited update_state function" % self.get_obsdate(time.gmtime()))
+        return await update_state()
+        #return 
 
     async def abort(self, readout: bool = False):
         """Aborts the current exposure.
@@ -1473,7 +1529,8 @@ class LS4Controller(LS4_Device):
         Aborting does not flush the charge.
         """
 
-        self.notifier("aborting controller.")
+        if self.notifier:
+          self.notifier("aborting controller.")
 
         CS = ControllerStatus
 
@@ -1494,7 +1551,8 @@ class LS4Controller(LS4_Device):
     async def flush(self, count: int = 2, wait_for: Optional[float] = None):
         """Resets and flushes the detector. Blocks until flushing completes."""
 
-        self.notifier("flushing.")
+        if self.notifier: 
+          self.notifier("flushing.")
 
         await self.reset(release_timing=False,sync_flag=False)
 
@@ -1515,7 +1573,7 @@ class LS4Controller(LS4_Device):
         self,
         force: bool = False,
         block: bool = True,
-        delay: int = 0,
+        #delay: int = 0,
         wait_for: float | None = None,
         #notifier: Optional[Callable[[str], None]] = None,
         idle_after: bool = True,
@@ -1524,7 +1582,10 @@ class LS4Controller(LS4_Device):
 
         If ``force``, triggers the readout routine regardless of the detector expected
         state. If ``block``, blocks until the buffer has been fully written. Otherwise
-        returns immediately. A ``delay`` can be passed to slow down the readout by as
+        returns immediately. 
+
+        # not implemented in LS4 timing code
+        A ``delay`` can be passed to slow down the readout by as
         many seconds (useful for creating photon transfer frames).
         """
 
@@ -1542,7 +1603,14 @@ class LS4Controller(LS4_Device):
         ):
             raise ArchonControllerError(f"Controller is not in a readable state.")
 
+        """
         delay = int(delay)
+
+        if delay > 0:
+           #if notifier:
+           #    notifier(f"setting WaitCount to {delay}")
+           await self.set_param("WaitCount", delay)
+        """
 
         #if notifier:
         #   notifier (f"reset...")
@@ -1560,12 +1628,6 @@ class LS4Controller(LS4_Device):
         await self.send_command("RELEASETIMING")
 
         self.timing['readout'].start()
-
-        if delay > 0:
-           #if notifier:
-           #    notifier(f"setting WaitCount to {delay}")
-           await self.set_param("WaitCount", delay)
-
         #if notifier:
         #   notifier (f"update_status READING")
 
@@ -1581,7 +1643,8 @@ class LS4Controller(LS4_Device):
            #   notifier(f"not block, returning")
            return
 
-        max_wait = self.config["timeouts"]["readout_max"] + delay
+        #max_wait = self.config["timeouts"]["readout_max"] + delay
+        max_wait = self.config["timeouts"]["readout_max"] 
 
         wait_for = wait_for or 3  # sec delay to ensure the new frame starts filling.
         #if notifier:
@@ -1603,6 +1666,7 @@ class LS4Controller(LS4_Device):
 
         done = False
         timeout = False
+        lines_read_prev = -1
         while (not done) and (not timeout):
            if waited > max_wait:
               timeout = True
@@ -1616,7 +1680,14 @@ class LS4Controller(LS4_Device):
                  pixels_read=frame[f"buf{wbuf}pixels"]
                  lines_read=frame[f"buf{wbuf}lines"]
                  w= int(waited)
-                 self.notifier(f"{w}: frame is not complete: {pixels_read} pixel {lines_read} lines")
+                 if self.notifier:
+                   self.notifier(f"{w}: frame is not complete: {pixels_read} pixel {lines_read} lines")
+                 if lines_read <= lines_read_prev:
+                    if self.notifier:
+                      self.notifier("ERROR reading out at lines_read = %d" % lines_read)
+                    timeout=True
+                 else:
+                    lines_read_prev = lines_read
               await asyncio.sleep(update_interval)
               dt += update_interval
               waited += update_interval
@@ -1625,8 +1696,8 @@ class LS4Controller(LS4_Device):
         self.config['expose params']['read-per']=self.timing['readout'].period
 
         if done:
-           #if notifier:
-           #    notifier(f"done reading out controller in %7.3f sec" % self.timing['readout'].period)
+           if self.notifier:
+               self.notifier(f"done reading out controller in %7.3f sec" % self.timing['readout'].period)
            if idle_after:
                #notifier(f"idling controller...")
                self.update_status(ControllerStatus.IDLE)
@@ -1635,8 +1706,8 @@ class LS4Controller(LS4_Device):
            await self.set_autoflush(True)
 
         elif timeout:
-           #if notifier:
-           #    notifier(f"timeout reading out controller")
+           if self.notifier:
+               self.notifier(f"timeout reading out controller")
            self.update_status(ControllerStatus.ERROR)
            raise ArchonControllerError(\
                 f"{self.name}:Timed out waiting for controller to finish reading.")
@@ -1699,7 +1770,8 @@ class LS4Controller(LS4_Device):
 
         self.timing['fetch'].start()
 
-        self.notifier("start fetching data from buffer %d" % buffer_no)
+        if self.notifier:
+          self.notifier("start fetching data from buffer %d" % buffer_no)
 
         if self.status & ControllerStatus.FETCHING:
             raise ArchonControllerError("Controller is already fetching")
@@ -1739,10 +1811,18 @@ class LS4Controller(LS4_Device):
         # Set the expected length of binary buffer to read, including the prefixes.
         self.set_binary_reply_size((1024 + 4) * n_blocks)
 
+        cmd_string = f"FETCH{start_address:08X}{n_blocks:08X}"
+        #if self.notifier:
+        #  self.notifier ("sending command [%s] with timout=None and sync_flag=False" % cmd_string)
+        #cmd: ArchonCommand = await self.send_command(
+        #   f"FETCH{start_address:08X}{n_blocks:08X}",
+        #   timeout=None,sync_flag=False
+        #
         cmd: ArchonCommand = await self.send_command(
-            f"FETCH{start_address:08X}{n_blocks:08X}",
-            timeout=None,sync_flag=False
+            cmd_string, timeout=None,sync_flag=False
         )
+        #if self.notifier:
+        #  self.notifier ("done sending command [%s] with timout=None and sync_flag=False" % cmd_string)
 
         # Unlock all
         await self.send_command("LOCK0",sync_flag=False)
@@ -1757,10 +1837,12 @@ class LS4Controller(LS4_Device):
         arr = arr.reshape(height, width)
 
         # Turn off FETCHING bit
-        self.update_status(ControllerStatus.IDLE)
+        #self.update_status(ControllerStatus.IDLE)
+        self.update_status(ControllerStatus.FETCHING, mode = 'off')
 
         self.timing['fetch'].end()
-        self.notifier("done fetching data in %7.3f sec" % self.timing['fetch'].period)
+        if self.notifier:
+          self.notifier("done fetching data in %7.3f sec" % self.timing['fetch'].period)
 
         if return_buffer:
             return (arr, buffer_no)
@@ -1863,19 +1945,25 @@ class LS4Controller(LS4_Device):
 
     async def erase(self):
         """Run the LBNL erase procedure."""
-
-        self.notifier("erasing.")
+ 
+        if self.notifier:
+          self.notifier("erasing.")
 
         await self.reset(release_timing=False, autoflush=False,sync_flag=False)
 
         self.update_status(ControllerStatus.FLUSHING)
 
+        """
         await self.set_param("DoErase", 1)
         await self.send_command("RELEASETIMING")
-
+        """
         await asyncio.sleep(2)  # Real time should be ~0.6 seconds.
 
-        await self.reset(sync_flag=False)
+        self.update_status(ControllerStatus.IDLE)
+        #self.update_status(ControllerStatus.FLUSHING,mode='off')
+        #await self.reset(sync_flag=False)
+        # DEBUG
+        #await self.reset(autoflush=False, sync_flag=False)
 
     async def cleanup(
         self,
@@ -1913,7 +2001,8 @@ class LS4Controller(LS4_Device):
 
         mode = "fast" if fast else "normal"
         purge_msg = f"Doing {n_cycles} with DoPurge=1 (mode={mode})"
-        self.notifier(purge_msg)
+        if self.notifier:
+          self.notifier(purge_msg)
 
         for ii in range(n_cycles):
             #notifier(f"Cycle {ii+1} of {n_cycles}.")
@@ -1922,7 +2011,8 @@ class LS4Controller(LS4_Device):
         await self.set_param("DoPurge", 0)
 
         #flush_msg = "Flushing 3x"
-        self.notifier(flush_msg)
+        if self.notifier:
+          self.notifier(flush_msg)
 
         await self.flush(3)
 
@@ -1944,7 +2034,8 @@ class LS4Controller(LS4_Device):
 
         """
 
-        self.notifier("Running e-purge.")
+        if self.notifier:
+          self.notifier("Running e-purge.")
 
         if fast:
             await self.set_param("FLUSHBIN", 10)

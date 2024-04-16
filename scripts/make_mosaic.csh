@@ -3,7 +3,7 @@
 # make mosaic image from 64 amp output of LS4 
 #
 if ( $#argv != 2 && $#argv != 3 ) then
-   echo "syntax: make_mosaic.csh [prefix (e.g. "test")] [sequence number] [directory_path]"  "
+   echo "syntax: make_mosaic.csh [prefix (e.g. test)] [sequence number] [directory_path]  "
    exit
 endif
 if ( $#argv == 3 ) then
@@ -16,7 +16,8 @@ if ( $#argv == 3 ) then
 endif
 
 set prefix = $argv[1]
-set seq_num = `printf "_%03d_" $argv[2]`
+@ n = $argv[2] + 0
+set seq_num = `printf "_%03d_" $n`
 echo "prefix: $prefix seq_num: $seq_num"
 set output = `printf "mos_%03d.fits" $argv[2]`
 echo "output: $output"

@@ -35,7 +35,7 @@ import json
 import time
 import argparse
 #from . import MAX_COMMAND_ID,FOLLOWER_TIMEOUT_MSEC
-from . import VOLTAGE_TOLERANCE
+from . import VOLTAGE_TOLERANCE, MAX_FETCH_TIME
 
 # Notes about LS4 tap lines and CCD placement
 #
@@ -731,47 +731,86 @@ class LS4_Camera():
               #await ls4.ls4_controller.cleanup(n_cycles=1)
 
             if error_msg is None:
-              self.debug("start exposing %7.3f sec. Trigger readout only:" % exptime)
+              self.debug("start exposing %7.3f sec." % exptime)
               try:
-                self.info("waiting for exposure")
+                #self.info("%s: start waiting %7.3f for exposure" % (self.ls4_controller.get_obsdate(),exptime))
                 await self.ls4_controller.expose(exptime, readout=False)
-                self.info("waited %7.3f sec for exposure" % \
-                          self.ls4_controller.config['expose params']['exptime'])
+                #self.info("%s: done waiting %7.3f sec for exposure" % \
+                #     (self.ls4_controller.get_obsdate(),self.ls4_controller.config['expose params']['exptime']))
               except Exception as e:
                 error_msg = "exception exposing: %s" % e
 
             if error_msg is None:
-              self.debug("reading out CCD to controller memory")
-              wait_for = 1.0 # time (sec) to wait to allow buffer to start filling
+              self.debug("%s: reading out CCD to controller memory" % self.ls4_controller.get_obsdate())
+              wait_for = 0.1 # time (sec) to wait to allow buffer to start filling
               try:
-                #await self.ls4_controller.readout(notifier=self.notifier,wait_for=wait_for)
                 await self.ls4_controller.readout(wait_for=wait_for)
-                self.info("waited %7.3f sec for readout" %\
-                           self.ls4_controller.config['expose params']['read-per'])
+                self.debug("%s: waited %7.3f sec for readout" %\
+                     (self.ls4_controller.get_obsdate(),self.ls4_controller.config['expose params']['read-per']))
 
               except Exception as e:
                 error_msg = "exception reading image to controller memory: %s" % e
 
         if error_msg is None and fetch:
-          if acquire:
-            self.info("fetching newly acquired image")
-          else:
-            self.info("fetching previously acquired image")
+          wait_expose = False
+          if not acquire and exptime > MAX_FETCH_TIME:
+             wait_expose=True
+
+          self.debug("%s: fetching previously acquired image with wait_expose = %d" %\
+                 (self.ls4_controller.get_obsdate(),wait_expose))
           try:
-            await self.fetch_and_save(output_image=output_image,status=status,system=system,save=save)
+            await self.fetch_and_save(output_image=output_image,status=status,system=system,save=save,wait_expose=wait_expose)
           except Exception as e:
             error_msg = "Exception fetching and saving data: %s" %e
 
+          self.debug("%s: done fetching previously acquired image with wait_expose = %d" %\
+                 (self.ls4_controller.get_obsdate(),wait_expose))
         assert error_msg is None, error_msg
           
-    async def fetch_and_save(self,output_image=None, status=None, system=None,save=True):
+    async def fetch_and_save(self,output_image=None, status=None, system=None,save=True,wait_expose=False, max_wait = 3.0):
+
+        """
+           Fetch data from last-written controller buffer and write to disk (if save = True).
+
+           If wait_expose is True, wait up to max_wait sec for next exposure to begin before
+           reading out buffer. This is to make sure the the fetch occurs as a separate thread.
+           The assumption here is that the fetch time is less than the exposure time.
+        """      
+
         error_msg = None
         self.image_data = None
+        wait_timeout = False
 
         try:
            assert self.ls4_controller is not None,"ERROR: controller has not been started"
         except Exception as e:
             error_msg = "%s" % e
+
+        if error_msg is None:
+          try:
+            assert not self.ls4_controller.is_fetching(), "ERROR: controller is still fetching a different image"
+          except Exception as e:
+            error_msg = "%s" % e
+
+        if error_msg is None and wait_expose and not self.ls4_controller.is_exposing():
+          self.debug("%s: waiting up to %7.3f sec for exposure to begin before fetching previous exposure" %\
+                   (self.ls4_controller.get_obsdate(),max_wait))
+          t_start = time.time()
+          wait_timeout = False
+          dt = 0.0
+          while (not wait_timeout) and (not self.ls4_controller.is_exposing()):
+          
+             if dt  > max_wait:
+                wait_timeout = True
+             else:
+                await asyncio.sleep(0.1)
+                dt += 0.1
+
+          if wait_timeout :
+            self.warn("timeout waiting %7.3f sec for exposure to begin before fetching previous buffer" % max_wait)
+          else:
+            self.debug("%s: done waiting for exposure to begin (waited %7.3f sec)" % \
+                 (self.ls4_controller.get_obsdate(),dt))
 
         if error_msg is None:
           try:
@@ -782,7 +821,7 @@ class LS4_Camera():
 
         
         if error_msg is None and save:
-          self.info("saving image to %s" % output_image)
+          self.debug("saving image to %s" % output_image)
           try:
             await self.save_image(output_image=output_image,status=status,system=system)
           except Exception as e:

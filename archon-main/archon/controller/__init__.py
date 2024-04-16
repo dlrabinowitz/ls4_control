@@ -39,3 +39,5 @@ CCDS_PER_QUAD = 8
 P100_SUPPLY_VOLTAGE = 50.0
 N100_SUPPLY_VOLTAGE = -50.0
 
+# seconds for time out when acquiring status lock
+STATUS_LOCK_TIMEOUT = 1.0 

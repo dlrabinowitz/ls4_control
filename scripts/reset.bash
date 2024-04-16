@@ -7,8 +7,7 @@ IMG_PREFIX=ls4_sw_eng
 CONF_PATH=$LS4_CONTROL_ROOT/conf
 SCRIPTS=$LS4_CONTROL_ROOT/scripts
 PYTHON=$LS4_CONTROL_ROOT/python 
-#ARCHON_CFG_LIST="test_ne.acf,test_se.acf,test_nw.acf,test_sw.acf"
-ARCHON_CFG_LIST="test_ne_unconnected.acf,test_se_unconnected.acf,test_nw_unconnected.acf,test_sw_unconnected.acf"
+ARCHON_CFG_LIST="test_ne.acf,test_se.acf,test_nw.acf,test_sw.acf"
 JSON_CFG_LIST="test_ne.json,test_se.json,test_nw.json,test_sw.json"
 TEST=""
 
