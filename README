@@ -5,7 +5,7 @@ Implementation:
   This code was built on top of the SDSS Python code written to 
   control their Archon controllers (see doc/controller.pdf).
   
-  The code was and augmented to allow synchronized I/O to/from
+  The code was augmented to allow synchronized I/O to/from
   multiple controllers using the synchronization mechanism
   built into the controllers (see doc/Archon.pdf)
 
