@@ -141,8 +141,13 @@ def subtract_col_bias(data=None,pre_x=0,post_x=0,pre_y=0,post_y=0,amp_name=None,
             z2 = z2 + (z*z)
             z1 = z1 + z
             n += 1
-    avg= z1/float(n)
-    rms = np.sqrt((z2/(float(n)) - avg*avg))
+
+    try:
+      avg= z1/float(n)
+      rms = np.sqrt((z2/(float(n)) - avg*avg))
+    except Exception as e:
+      print("unable to get meaningful avg and rms from overscan: %s" % e)
+      sys.exit(-1)
 
     #3-sigma clip
     n=0
@@ -158,12 +163,15 @@ def subtract_col_bias(data=None,pre_x=0,post_x=0,pre_y=0,post_y=0,amp_name=None,
               z1 = z1 + z
               n += 1
 
-    if n>10:
-      avg= z1/float(n)
-      rms = np.sqrt((z2/(float(n)) - avg*avg))
-    else:
-      avg=0.0
-      rms=0.0
+    try:
+      if n>10:
+        avg= z1/float(n)
+        rms = np.sqrt((z2/(float(n)) - avg*avg))
+      else:
+        avg=0.0
+        rms=0.0
+    except Exception as e:
+      print("bad sigma clipping: %s" % e)
 
 
 
@@ -202,7 +210,17 @@ def subtract_row_bias(data=None,pre_x=0,post_x=0,pre_y=0,post_y=0,amp_name=None)
 
 def assemble_mosaic(conf=None):
   im_list = conf['images']
+  im_list_dark = None
   num_images = len(im_list)
+  num_dark_images=0
+
+  print("%s" % conf['dark_images'])
+  if conf['dark_images'] != ['']:
+     im_list_dark = conf['dark_images']
+     num_dark_images = len(im_list_dark)
+     if num_dark_images != num_images:
+        print("dark image mismatch: %d %d" % (num_images,num_dark_images))
+        sys.exit(-1)
 
   im = im_list[0]
   hdu_list = fits.open(im)
@@ -219,9 +237,11 @@ def assemble_mosaic(conf=None):
   mos_data=np.zeros(shape=[ccds_per_col*height,ccds_per_row*amps_per_ccd*width],dtype=np.ushort)
 
   shape = (hdu_list[0].data).shape
+  im_index = 0
   for im in im_list:
      hdu_list = fits.open(im)
      im_data_raw = hdu_list[0].data
+     im_dark_data_raw = None
      im_head = hdu_list[0].header
      assert im_data_raw.shape == shape,\
              "image %s has shape(%s) inconsitent with first image(%s)" %\
@@ -235,6 +255,14 @@ def assemble_mosaic(conf=None):
      assert ccd_name in ccd_map.keys(),"ccd_name %s not in ccd_map" % ccd_name
      assert amp_name in ['LEFT','RIGHT'],"amp_name %s must be LEFT or RIGHT" % amp_name
 
+     if im_list_dark is not None:
+        im_dark = im_list_dark[im_index]
+        hdu_list = fits.open(im_dark)
+        im_dark_data_raw = hdu_list[0].data
+        assert im_dark_data_raw.shape == shape,\
+             "dark image %s has shape(%s) inconsitent with first image(%s)" %\
+                   (im_dark,im_dark_data_raw.shape,shape)
+        im_index += 1
 
      # flip meaning of Right and Left
      if amp_name == 'RIGHT':
@@ -246,9 +274,14 @@ def assemble_mosaic(conf=None):
      y1 = 10
      y2 = shape[0]
 
+     """
      if (tap_name in ["AD1R", "AD2L"] ) and ("SW" in  ccd_name):
          y1 = y2 - 40
          print("y1,y2 = %d %d" % (y1,y2))
+     """
+
+     if  im_dark_data_raw is not None:
+       im_data_raw = im_data_raw + 1000 - im_dark_data_raw
 
      if conf['bias']:
        im_data,bias,rms = subtract_col_bias(im_data_raw,prescan_x, postscan_x,prescan_y,postscan_y,amp_name,y1,y2)
@@ -280,6 +313,7 @@ def get_params():
   conf={}
   parser = argparse.ArgumentParser(description="tool to make mosaic fromLS4 exposure images")
   parser.add_argument('--images', metavar='i', type=namelist, default='')
+  parser.add_argument('--dark_images', metavar='d', type=namelist, default=[])
   parser.add_argument('--x1', metavar='x', type=int, default=-1)
   parser.add_argument('--dx', metavar='w', type=int, default=-1)
   parser.add_argument('--y1', metavar='y', type=int, default=-1)

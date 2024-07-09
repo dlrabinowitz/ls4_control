@@ -1,6 +1,6 @@
 #!/bin/bash
 source ~/ls4_venv/bin/activate
-LOG_LEVEL="INFO"
+LOG_LEVEL="DEBUG"
 EXPTIME=0.000
 NUM_EXPOSURES=0
 IMG_PREFIX=ls4_sw_eng
@@ -15,7 +15,11 @@ ENABLE_LIST="ctrl1,ctrl2,ctrl3,ctrl4"
 IP_LIST="192.168.1.1,192.168.2.1,192.168.3.1,192.168.4.1"
 IP_BIND_LIST="192.168.1.10,192.168.2.10,192.168.3.10,192.168.4.10"
 PORT_LIST="0,0,0,0"
-SYNC=False
+SYNC=True 
+FAKE=False
+RESET=True
 
-python $PYTHON/test_controller.py --ip_list $IP_LIST --conf_path $CONF_PATH --acf_list $ARCHON_CFG_LIST --map_list $JSON_CFG_LIST --prefix $IMG_PREFIX --exptime $EXPTIME --num_exp $NUM_EXPOSURES --enable_list $ENABLE_LIST $TEST --bind_list $IP_BIND_LIST --port_list $PORT_LIST --leader "ctrl1" --sync $SYNC --log_level $LOG_LEVEL
+prog="ls4_ccp.py"
+python $PYTHON/$prog --ip_list $IP_LIST --conf_path $CONF_PATH --acf_list $ARCHON_CFG_LIST --map_list $JSON_CFG_LIST --image_prefix $IMG_PREFIX --exptime $EXPTIME --num_exp $NUM_EXPOSURES --enable_list $ENABLE_LIST $TEST --bind_list $IP_BIND_LIST --port_list $PORT_LIST --leader "ctrl1" --sync $SYNC --log_level $LOG_LEVEL --fake $FAKE --reset $RESET
+
 

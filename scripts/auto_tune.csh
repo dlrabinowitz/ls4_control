@@ -29,7 +29,7 @@ while ( $trial <= $n_iterations )
   cd $x
   set trial_dir = "trial"$trial
   echo "################# trial $trial"
-  $z/test_all.bash 
+  $z/test.bash 
   $z/get_tap_corrections.csh  `pwd`
   grep rms tap_corrections.dat
   if ( -e $t/$trial_dir ) then
