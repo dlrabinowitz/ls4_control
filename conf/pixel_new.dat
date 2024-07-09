@@ -1,0 +1,16 @@
+Pixel:
+RGHIGH; X(24)
+RGLOW
+X; IF Binning CALL HorizontalShift(HorizontalBinning)
+PCLK
+NOPCLK
+H1SWHIGH; X(10)
+H3LOW; X(10)
+H2HIGH; X(10)
+H1LOW; X(151)
+SWLOW; X(10)
+SWHIGH; X(151)
+H3HIGH; X(10)
+H2LOW; X(10)
+X; RETURN Pixel
+

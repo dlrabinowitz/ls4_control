@@ -18,7 +18,11 @@ import asyncio
 from archon import log
 from archon.ls4.ls4_events  import LS4_Events
 from archon.controller.ls4_logger import LS4_Logger 
-
+from archon.exceptions import (
+    ArchonControllerError,
+    ArchonControllerWarning,
+    ArchonUserWarning,
+)
 from . import FOLLOWER_TIMEOUT_MSEC
 
 class LS4_SyncIO():
@@ -114,7 +118,7 @@ class LS4_SyncIO():
         self.sync_test = False
         param_flag = False
 
-        self.debug("%s: preparing for synchronous IO" % prefix)
+        #self.debug("%s: preparing for synchronous IO" % prefix)
 
         assert [command_args,param_args] != [None,None], "neither param or command args specified"
         assert command_args is None or param_args is None, "both param and command args specified"
@@ -156,7 +160,7 @@ class LS4_SyncIO():
 
         # follower
         else:
-           self.debug("%s waiting for sync_msg event: sync_index %d" % (prefix,self.sync_index))
+           #self.debug("%s waiting for sync_msg event: sync_index %d" % (prefix,self.sync_index))
            await self.wait_events(event_list=sync_msg_list,sync_index = self.sync_index)
 
            # the follower checks that the param or command arguments match the global values
@@ -169,7 +173,7 @@ class LS4_SyncIO():
                   error_msg = "%s command_args mismatch: local : %s, global: %s" %\
                     (prefix,command_args,self.command_args[0])
 
-           self.debug("%s clearing sync_msg events: sync_index %d" % (prefix,self.sync_index))
+           #self.debug("%s clearing sync_msg events: sync_index %d" % (prefix,self.sync_index))
            await self.clear_events(event_list=sync_msg_list,sync_index=self.sync_index)
 
 
@@ -177,7 +181,7 @@ class LS4_SyncIO():
            self.error("%s: %s" % (prefix,error_msg))
            raise ArchonControllerError(f"Failed preparing sync: %s" % error_msg)
       
-        self.debug("%s: done preparing for synchronous IO" % prefix)
+        #self.debug("%s: done preparing for synchronous IO" % prefix)
 
     async def sync_update(self,param_flag=None,command_flag=None):
  
@@ -195,7 +199,7 @@ class LS4_SyncIO():
         prefix = self.prefix
 
         assert [command_flag,param_flag] != [None,None], "neither param nor command flag specified"
-        assert command_flag is None or param_args is None, "both param and command flag specified"
+        assert command_flag is None or param_flag is None, "both param and command flag specified"
 
         if param_flag:
            sync_msg_list = self.param_msg_list
@@ -207,23 +211,23 @@ class LS4_SyncIO():
            prefix = "command " + prefix
 
         if self.leader :
-           self.debug("%s setting sync_msg_events: sync_index %d" % (prefix,-1))
+           #self.debug("%s setting sync_msg_events: sync_index %d" % (prefix,-1))
            result = await self.set_events(event_list=sync_msg_list,sync_index=-1)
-           self.debug("%s result of setting sync_msg_events: %s" % (prefix,result))
+           #self.debug("%s result of setting sync_msg_events: %s" % (prefix,result))
 
            # wait here for the followers to set the sync reply events
-           self.debug("%s waiting for sync_reply events to set: sync_index = %d" % (prefix,-1))
+           #self.debug("%s waiting for sync_reply events to set: sync_index = %d" % (prefix,-1))
            result=await self.wait_events(event_list=sync_reply_list,sync_index=-1)
-           self.debug("%s result of waiting sync_reply_events: %s" % (prefix,result))
+           #self.debug("%s result of waiting sync_reply_events: %s" % (prefix,result))
 
-           self.debug("%s clearing sync_reply events: sync_index %d" % (prefix,-1))
+           #self.debug("%s clearing sync_reply events: sync_index %d" % (prefix,-1))
            await self.clear_events(event_list=sync_reply_list, sync_index=-1)
 
         else:
 
-           self.debug("%s setting sync_reply_events: sync_index %d" % (prefix,self.sync_index))
+           #self.debug("%s setting sync_reply_events: sync_index %d" % (prefix,self.sync_index))
            result = await self.set_events(event_list=sync_reply_list,sync_index=self.sync_index)
-           self.debug("%s result of setting sync_reply_events: %s" % (prefix,result))
+           #self.debug("%s result of setting sync_reply_events: %s" % (prefix,result))
            
 
         if error_msg is not None:
@@ -247,7 +251,7 @@ class LS4_SyncIO():
         error_msg = None
         prefix = self.prefix
         assert [command_flag,param_flag] != [None,None], "neither param nor command flag specified"
-        assert command_flag is None or param_args is None, "both param and command flag specified"
+        assert command_flag is None or param_flag is None, "both param and command flag specified"
 
         if param_flag:
            sync_msg_list = self.param_msg_list
@@ -260,29 +264,29 @@ class LS4_SyncIO():
 
 
         if self.leader and error_msg is None:
-           self.debug("%s setting sync_msg_events: sync_index %d" % (prefix,-1))
+           #self.debug("%s setting sync_msg_events: sync_index %d" % (prefix,-1))
            result = await self.set_events(event_list=sync_msg_list,sync_index=-1)
-           self.debug("%s result of setting sync_msg_events: %s" % (prefix,result))
+           #self.debug("%s result of setting sync_msg_events: %s" % (prefix,result))
 
            # wait here for the followers to set the sync reply events
-           self.debug("%s waiting for sync_reply events to set: sync_index %d" % (prefix,-1))
+           #self.debug("%s waiting for sync_reply events to set: sync_index %d" % (prefix,-1))
            await self.wait_events(event_list=sync_reply_list,sync_index=-1)
-           self.debug("%s done waiting for sync_reply events to set" % prefix)
+           #self.debug("%s done waiting for sync_reply events to set" % prefix)
 
-           self.debug("%s clearing sync_reply events: sync_index %d" % (prefix,-1))
+           #self.debug("%s clearing sync_reply events: sync_index %d" % (prefix,-1))
            await self.clear_events(event_list=sync_reply_list, sync_index=-1)
 
 
         elif error_msg is None:
-           self.debug("%s waiting for sync_msg event: sync_index %d" % (prefix,self.sync_index))
+           #self.debug("%s waiting for sync_msg event: sync_index %d" % (prefix,self.sync_index))
            await self.wait_events(event_list=sync_msg_list,sync_index = self.sync_index)
 
-           self.debug("%s clearing sync_msg events: sync_index %d" % (prefix,self.sync_index))
+           #self.debug("%s clearing sync_msg events: sync_index %d" % (prefix,self.sync_index))
            await self.clear_events(event_list=sync_msg_list,sync_index=self.sync_index)
 
-           self.debug("%s setting sync_reply_events: sync_index %d" % (prefix,self.sync_index))
+           #self.debug("%s setting sync_reply_events: sync_index %d" % (prefix,self.sync_index))
            result = await self.ls4_events.set_events(event_list=sync_reply_list,sync_index=self.sync_index)
-           self.debug("%s result of setting sync_reply_events: %s" % (prefix,result))
+           #self.debug("%s result of setting sync_reply_events: %s" % (prefix,result))
            
 
         if error_msg is not None:

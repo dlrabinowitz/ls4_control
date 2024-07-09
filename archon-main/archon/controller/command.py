@@ -63,7 +63,9 @@ class ArchonCommand(asyncio.Future):
         controller=None,
         expected_replies: Optional[int] = 1,
         timeout: Optional[float] = None,
+        fake: bool | None = None
     ):
+
         super().__init__()
 
         self.command_string = command_string.upper()

@@ -51,15 +51,14 @@ class LS4_TCPStreamClient:
 
         # if local_addr is None or the port is 0, do not bind the socket to the address/port
 
-        # if local_addr is None or the port is 0, do not bind the socket to the address/port
         if self.local_addr is None or self.local_addr[1] == 0 or self.local_addr[1] == "0":
-           self.debug("open connection without binding : local_addr/port : %s "% str(self.local_addr))
+           #self.debug("open connection without binding : local_addr/port : %s "% str(self.local_addr))
            self.reader, self.writer = await asyncio.open_connection(host=self.host, port=self.port)
 
         # otherwise bind. Note: After closing, there is a system-dependent delay before the port becomes
         # available again for socket IO.
         else:
-           self.debug("open connection with binding : local_addr/port : %s "% str(self.local_addr))
+           #self.debug("open connection with binding : local_addr/port : %s "% str(self.local_addr))
            self.reader, self.writer = await asyncio.open_connection\
                   (host=self.host, port=self.port, local_addr=self.local_addr)
 
@@ -67,10 +66,10 @@ class LS4_TCPStreamClient:
         """Close the stream connection."""
 
         if self.writer:
-            self.debug("closing writer connection")
+            #self.debug("closing writer connection")
             self.writer.close()
             await self.writer.wait_closed()
-            self.debug("done closing writer connection")
+            #self.debug("done closing writer connection")
 
         else:
             raise RuntimeError("writer connection cannot be closed because it is not open.")
@@ -84,8 +83,14 @@ class LS4_Device(Device):
         local_addr: tuple = ('127.0.0.1',4242),
         port: int = 4242,
         config: dict | None = None,
-        ls4_logger = None
+        ls4_logger = None,
+        fake: bool | None = None
     ):
+
+        if fake is not None:
+           self.fake_controller = fake
+        else:
+           self.fake_controller = False
 
         self.ls4_logger=ls4_logger
         if self.ls4_logger is None:
@@ -97,27 +102,45 @@ class LS4_Device(Device):
         self.error= self.ls4_logger.error
         self.critical= self.ls4_logger.critical
 
-        super(LS4_Device,self).__init__(host=host,port=port)
+        if not self.fake_controller:
+          super(LS4_Device,self).__init__(host=host,port=port)
+
         self.name=name
         self.local_addr=local_addr
         self.config=config
 
+    def fake_write(self,string=None):
+
+        """ NOP substitue for self.write() when fake_controller = True """
+        #self.debug("writing fake command %s" % string)
+        
+
     async def start(self):
+ 
+        if self.fake_controller:
+           await asyncio.sleep(1)
+           return
 
         if self.is_connected():
-            raise RuntimeError("connection is already running.")
+           self.warn("connection is already running")
+           #raise RuntimeError("connection is already running.")
 
-        self._client = await self.ls4_open_connection()
-        self.listener = asyncio.create_task(self._listen())
+        else:
+           self._client = await self.ls4_open_connection()
+           self.listener = asyncio.create_task(self._listen())
 
-        #return self
 
     async def stop(self):
 
-        if not self.is_connected():
-            raise RuntimeError("no connection to stop.")
+        if self.fake_controller:
+           return
 
-        await self._client.close()
+        elif not self.is_connected():
+           self.warn("no connection to stop.")
+           #raise RuntimeError("no connection to stop.")
+
+        else:
+           await self._client.close()
 
 
     async def ls4_open_connection(self):

@@ -3,6 +3,8 @@ from archon import log
 from archon.controller.ls4_logger import LS4_Logger
 
 # utility functions for working with asyncio Events
+# The LS4_Events class is specifically used to synchronize calls to
+# set_param() and send_command() by ls4_controller.py
 
 class LS4_Events():
 
@@ -82,12 +84,12 @@ class LS4_Events():
                 "sync_index [%d] out of range [-1 to %d]" % (sync_index,len(event_list))
 
         if sync_index > -1:
-           log.debug("wating for event for sync index %d" % sync_index)
+           #log.debug("wating for event for sync index %d" % sync_index)
            result = await self.event_action(event_list[sync_index],"wait")
            return [result]
         else:
            result = await asyncio.gather(*(self.event_action(event,"wait") for event in event_list))
-           log.debug("wait_events: result = %s" % result)
+           #log.debug("wait_events: result = %s" % result)
            return result
 
 
@@ -97,7 +99,7 @@ class LS4_Events():
         set_flag: bool = True
     ):
 
-        """ check that all (sync_index==1) or a specific event  (sync_index>-1) in event_list 
+        """ check that all (sync_index==-1) or a specific event  (sync_index>-1) in event_list 
             have status matching set_flag 
         """
         assert sync_index in range(-1,len(event_list)),\
@@ -107,7 +109,7 @@ class LS4_Events():
         all_correct = True
         
         if sync_index > -1:
-           log.debug("checking event for sync index %d" % sync_index)
+           #log.debug("checking event for sync index %d" % sync_index)
            if event_list[sync_index].is_set() != set_flag:
              all_correct = False
         else:
@@ -121,7 +123,7 @@ class LS4_Events():
               result.append(r)
            """
            if (not set_flag)  in result:
-              log.debug ("check_events unwanted result (all should be %s) : %s" % (set_flag,result))
+              #log.debug ("check_events unwanted result (all should be %s) : %s" % (set_flag,result))
               all_correct = False
 
         return all_correct
@@ -137,8 +139,7 @@ class LS4_Events():
                 "sync_index [%d] out of range [-1 to %d]" % (sync_index,len(event_list))
 
         if sync_index > -1:
-           log.debug("setting event for sync index %d" % sync_index)
-           log.debug("setting event for sync index %d" % sync_index)
+           #log.debug("setting event for sync index %d" % sync_index)
            result = await self.event_action(event_list[sync_index],"set")
            results = [result]
         else:
@@ -157,7 +158,7 @@ class LS4_Events():
                 "sync_index [%d] out of range [-1 to %d]" % (sync_index,len(event_list))
 
         if sync_index > -1:
-           log.debug("clearing event for sync index %d" % sync_index)
+           #log.debug("clearing event for sync index %d" % sync_index)
            result = event_list[sync_index].clear()
            return [result]
 
@@ -171,7 +172,7 @@ class LS4_Events():
                result.append(event.clear())
                log.debug("result of clearing: %s" % event.is_set())
            """
-           log.debug("clear_events result: %s" % result)
+           #log.debug("clear_events result: %s" % result)
 
            return result
 

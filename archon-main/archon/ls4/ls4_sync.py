@@ -141,9 +141,9 @@ class LS4_Sync():
             the same way
         """
 
-        print("running set_param with sync_test = True")
+        #print("running set_param with sync_test = True")
         await self.set_param(param="SYNCTEST",value=0)
-        print("done running set_param with sync_test = True")
+        #print("done running set_param with sync_test = True")
 
     async def set_param(
         self,

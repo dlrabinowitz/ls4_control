@@ -38,6 +38,7 @@ class ModType(enum.Enum):
 class ControllerStatus(enum.Flag):
     """Status of the Archon controller."""
 
+    CLEAR = 0x0
     UNKNOWN = 0x1
     IDLE = 0x2
     EXPOSING = 0x4
