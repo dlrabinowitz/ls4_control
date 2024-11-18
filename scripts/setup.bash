@@ -8,5 +8,6 @@ p=$x/python
 a=$x/archon-main/archon
 c=$a/controller
 l=$a/ls4
+t=~/data/test
 
 

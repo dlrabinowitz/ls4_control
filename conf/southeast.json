@@ -1,0 +1,11 @@
+{
+ "A": {"CCD_NAME": "S3-348", "CCD_LOC": "se_a"},
+ "B": {"CCD_NAME": "S3-317", "CCD_LOC": "se_b"},
+ "C": {"CCD_NAME": "S3-005", "CCD_LOC": "se_c"},
+ "D": {"CCD_NAME": "S3-205", "CCD_LOC": "se_d"},
+ "E": {"CCD_NAME": "S3-357", "CCD_LOC": "se_e"},
+ "F": {"CCD_NAME": "S3-345", "CCD_LOC": "se_f"},
+ "G": {"CCD_NAME": "S3-247", "CCD_LOC": "se_g"},
+ "H": {"CCD_NAME": "S3-109", "CCD_LOC": "se_h"}
+}
+

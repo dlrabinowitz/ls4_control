@@ -33,7 +33,7 @@ from archon.exceptions import (
     ArchonUserWarning,
 )
 
-from . import MAX_COMMAND_ID, MAX_CONFIG_LINES
+from archon.controller.ls4_params import MAX_COMMAND_ID, MAX_CONFIG_LINES
 
 
 __all__ = ["ArchonController"]
@@ -94,7 +94,6 @@ class ArchonController(LS4_Device):
     async def start(self, reset: bool = True, read_acf: bool = True):
         """Starts the controller connection. If ``reset=True``, resets the status."""
 
-        log.debug(f"connecting {self.name} to {self.host}.")
         await super().start()
         log.debug(f"Controller {self.name} connected at {self.host}.")
 
@@ -112,14 +111,6 @@ class ArchonController(LS4_Device):
                 warnings.warn(f"Failed resetting controller: {err}", ArchonUserWarning)
 
         return self
-
-
-    async def stop(self):
-        """Stops the controller connection """
-
-        log.debug(f"disconnecting {self.name} from {self.host}.")
-        await super().stop()
-        log.debug(f"Controller {self.name} disconnected from {self.host}.")
 
     @property
     def status(self) -> ControllerStatus:
@@ -232,7 +223,6 @@ class ArchonController(LS4_Device):
         self.__running_commands[command_id] = command
 
         self.write(command.raw)
-             
         log.debug(f"{self.name} -> {command.raw}")
 
         return command

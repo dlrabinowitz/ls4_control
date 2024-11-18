@@ -9,15 +9,27 @@ from archon.controller.ls4_logger import LS4_Logger
 class LS4_Events():
 
     def __init__(self,
-        num_controllers: int,
-        event_lists: dict | None = None
+        #num_controllers: int,
+        event_lists: dict | None = None,
+        ls4_logger: LS4_Logger | None = None
     ):
 
-        self.num_controllers = num_controllers
+        if ls4_logger is None:
+           self.ls4_logger = LS4_Logger()
+        else:
+           self.ls4_logger=ls4_logger
+
+        self.info = self.ls4_logger.info
+        self.debug = self.ls4_logger.debug
+        self.warn= self.ls4_logger.warn
+        self.error= self.ls4_logger.error
+        self.critical= self.ls4_logger.critical
+
+        #self.num_controllers = num_controllers
 
         assert event_lists is not None, "event_lists are unspecified"
         self.event_lists = event_lists
-
+        self.num_synced_controllers = len(event_lists)
         param_msg_list = None
         param_reply_list = None
         command_msg_list = None

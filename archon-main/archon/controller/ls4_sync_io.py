@@ -18,12 +18,13 @@ import asyncio
 from archon import log
 from archon.ls4.ls4_events  import LS4_Events
 from archon.controller.ls4_logger import LS4_Logger 
-from archon.exceptions import (
-    ArchonControllerError,
-    ArchonControllerWarning,
-    ArchonUserWarning,
+from archon.ls4_exceptions import (
+    LS4ControllerError,
+    LS4ControllerWarning,
+    LS4UserWarning,
 )
-from . import FOLLOWER_TIMEOUT_MSEC
+
+from archon.controller.ls4_params import FOLLOWER_TIMEOUT_MSEC
 
 class LS4_SyncIO():
 
@@ -33,7 +34,6 @@ class LS4_SyncIO():
         command_args: dict | None = None,
         ls4_events: LS4_Events | None = None,
         ls4_logger: LS4_Logger | None = None,
-        num_controllers: int = 0,
     ):
 
         self.ls4_logger=ls4_logger
@@ -49,7 +49,7 @@ class LS4_SyncIO():
         self.set_events=self.ls4_events.set_events
         self.clear_events=self.ls4_events.clear_events
 
-        self.num_controllers = ls4_events.num_controllers
+        self.num_synced_controllers = ls4_events.num_synced_controllers
         self.param_msg_list=ls4_events.event_lists['param_msg']
         self.param_reply_list=ls4_events.event_lists['param_reply']
         self.command_msg_list=ls4_events.event_lists['command_msg']
@@ -97,8 +97,8 @@ class LS4_SyncIO():
         self.sync_flag = sync_flag
 
     """
-    def set_num_controllers(self, num_controllers = 0):
-        self.num_controllers = num_controllers
+    def set_num_synced_controllers(self, num_synced_controllers = 0):
+        self.num_synced_controllers = num_synced_controllers
     """
 
     async def sync_prepare(self,param_args=None,command_args=None):
@@ -179,7 +179,7 @@ class LS4_SyncIO():
 
         if error_msg is not None:
            self.error("%s: %s" % (prefix,error_msg))
-           raise ArchonControllerError(f"Failed preparing sync: %s" % error_msg)
+           raise LS4ControllerError(f"Failed preparing sync: %s" % error_msg)
       
         #self.debug("%s: done preparing for synchronous IO" % prefix)
 
@@ -232,7 +232,7 @@ class LS4_SyncIO():
 
         if error_msg is not None:
            self.error("%s: %s" % (prefix,error_msg))
-           raise ArchonControllerError(f"Failed updating sync: %s" % error_msg)
+           raise LS4ControllerError(f"Failed updating sync: %s" % error_msg)
 
 
     async def sync_verify(self,command_flag=None,param_flag=None):
@@ -291,5 +291,5 @@ class LS4_SyncIO():
 
         if error_msg is not None:
            self.error("%s: %s" % (prefix,error_msg))
-           raise ArchonControllerError(f"Failed verifying sync: %s" % error_msg)
+           raise LS4ControllerError(f"Failed verifying sync: %s" % error_msg)
 

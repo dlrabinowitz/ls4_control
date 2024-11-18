@@ -1,0 +1,11 @@
+{
+ "A": {"CCD_NAME": "S3-157", "CCD_LOC": "nw_a"},
+ "B": {"CCD_NAME": "S3-137", "CCD_LOC": "nw_b"},
+ "C": {"CCD_NAME": "S3-207", "CCD_LOC": "nw_c"},
+ "D": {"CCD_NAME": "S3-224", "CCD_LOC": "nw_d",  "CCD_NOTE": "bad right side"},
+ "E": {"CCD_NAME": "S3-322", "CCD_LOC": "nw_e"},
+ "F": {"CCD_NAME": "S3-314", "CCD_LOC": "nw_f"},
+ "G": {"CCD_NAME": "S3-353", "CCD_LOC": "nw_g"},
+ "H": {"CCD_NAME": "S3-347", "CCD_LOC": "nw_h"}
+}
+

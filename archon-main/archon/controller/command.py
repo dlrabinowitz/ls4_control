@@ -18,7 +18,7 @@ from typing import AsyncGenerator, Optional
 from archon.exceptions import ArchonError, ArchonUserWarning
 from archon.tools import Timer
 
-from . import MAX_COMMAND_ID
+from archon.controller.ls4_params import MAX_COMMAND_ID
 
 
 __all__ = ["ArchonCommand", "ArchonCommandStatus", "ArchonCommandReply"]
@@ -63,9 +63,7 @@ class ArchonCommand(asyncio.Future):
         controller=None,
         expected_replies: Optional[int] = 1,
         timeout: Optional[float] = None,
-        fake: bool | None = None
     ):
-
         super().__init__()
 
         self.command_string = command_string.upper()

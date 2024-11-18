@@ -38,7 +38,7 @@ class ModType(enum.Enum):
 class ControllerStatus(enum.Flag):
     """Status of the Archon controller."""
 
-    CLEAR = 0x0
+    NOSTATUS = 0x0
     UNKNOWN = 0x1
     IDLE = 0x2
     EXPOSING = 0x4
@@ -46,12 +46,17 @@ class ControllerStatus(enum.Flag):
     READING = 0x10
     FETCHING = 0x20
     FLUSHING = 0x40
-    ERROR = 0x80
-    POWERON = 0x100
-    POWEROFF = 0x200
-    POWERBAD = 0x400
+    ERASING = 0x80
+    PURGING = 0x100
+    AUTOCLEAR = 0x200
+    AUTOFLUSH = 0x400
+    POWERON = 0x800
+    POWEROFF = 0x1000
+    POWERBAD = 0x2000
+    FETCH_PENDING = 0x4000
+    ERROR = 0x8000
 
-    ACTIVE = EXPOSING | READING | FETCHING | FLUSHING
+    ACTIVE = EXPOSING | READING | FETCHING | FLUSHING | ERASING | PURGING 
     ERRORED = ERROR | POWERBAD
 
     def get_flags(self):
@@ -61,6 +66,41 @@ class ControllerStatus(enum.Flag):
 
         return [b for b in ControllerStatus if b & self and b.name not in skip]
 
+    @property
+    def status_dict(self):
+
+        """ return a dictionary with values 0 of 1 for each bit name
+            if the corresponsing but is 0 or 1 in t the specified
+            status value
+        """
+
+        bit_names=["NOSTATUS","UNKNOWN","IDLE","EXPOSING","READOUT_PENDING","READING",\
+                   "FETCHING","FLUSHING","ERASING", "PURGING",\
+                   "AUTOCLEAR","AUTOFLUSH", "POWERON","POWEROFF","POWERBAD","FETCH_PENDING",\
+                   "ERROR","ACTIVE","ERRORED"]
+
+        bit_values=[self.NOSTATUS,self.UNKNOWN,self.IDLE,self.EXPOSING,\
+                   self.READOUT_PENDING,self.READING,\
+                   self.FETCHING,self.FLUSHING,self.ERASING, self.PURGING,\
+                   self.AUTOCLEAR, self.AUTOFLUSH,self.POWERON,self.POWEROFF,self.POWERBAD,\
+                   self.FETCH_PENDING,self.ERROR,self.ACTIVE,self.ERRORED]
+
+
+        status_val = self
+
+        index = 0
+        result={}
+        for index in range(0,len(bit_names)):
+            b= bit_values[index]
+            if status_val & b:
+                val = 1
+            else:
+                val = 0
+            key="BIT_"+bit_names[index]
+            result[key]=val
+            index += 1
+
+        return result
 
 class ArchonPower(enum.Enum):
     UNKNOWN = 0

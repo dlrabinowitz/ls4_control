@@ -1,4 +1,1 @@
-DEFAULT_PORT = 5000 # socket port
-DEFAULT_TIMEOUT = 10.0 # sec
-DEFAULT_MAXBUFSIZE = 1024 # bytes
 

@@ -14,6 +14,7 @@ import sys
 from astropy.io import fits
 import warnings
 from astropy.io.fits.verify import VerifyWarning
+from astropy import wcs
 import argparse
 import numpy as np
 
@@ -63,7 +64,7 @@ import numpy as np
 #
 #
 # The relevant FITS header parmeters are:
-#CCD_NAME= 'NE_A    '
+#CCD_LOC= 'NE_A    '
 #AMP_NAME= 'RIGHT   '
 #TAP_NAME= 'AD4L    '
 #
@@ -104,7 +105,7 @@ ccd_map = {'NW_A':[0,0],
 ccds_per_row = 8
 ccds_per_col = 4
 amps_per_ccd = 2
-#CCD_NAME= 'NE_A    '
+#CCD_LOC= 'NE_A    '
 #AMP_NAME= 'RIGHT   '
 #TAP_NAME= 'AD4L    '
 
@@ -121,7 +122,7 @@ def write_fits(data=None,header=None,output='test.fits'):
     hdul.writeto(output,overwrite=True)
     hdul.close()
 
-def subtract_col_bias(data=None,pre_x=0,post_x=0,pre_y=0,post_y=0,amp_name=None,y1=None,y2=None):
+def subtract_col_bias(data=None,pre_x=0,post_x=0,pre_y=0,post_y=0,amp_name=None,y1=None,y2=None,bias_prev=None, rms_prev = None):
 
     width=data.shape[1]
     height=data.shape[0]
@@ -132,48 +133,52 @@ def subtract_col_bias(data=None,pre_x=0,post_x=0,pre_y=0,post_y=0,amp_name=None,
     else:
         x1=1
         x2 = post_x-1
-    n=0
-    z1=0.0
-    z2=0.0
+
+    good_median = True
+    good_clipping = True
+
+    # copy data from data array into d and determine median
+    d=[]
     for x in range(x1,x2):
         for y in range(y1,y2):
             z = float(data[y][x])
-            z2 = z2 + (z*z)
-            z1 = z1 + z
-            n += 1
+            d.append(z)
 
-    try:
-      avg= z1/float(n)
-      rms = np.sqrt((z2/(float(n)) - avg*avg))
-    except Exception as e:
-      print("unable to get meaningful avg and rms from overscan: %s" % e)
-      sys.exit(-1)
+    d=np.asarray(d)
+    med = np.median(d)
 
-    #3-sigma clip
-    n=0
-    z1=0.0
-    z2=0.0
-    z_min = avg-(3.0*rms)
-    z_max = avg+(3.0*rms)
-    for x in range(x1,x2):
-        for y in range(y1,y2):
-            z = float(data[y][x])
-            if z>z_min and z < z_max:
-              z2 = z2 + (z*z)
-              z1 = z1 + z
-              n += 1
+    # compute mean ands rms of data with values near median
+    z_min = med - 100.0
+    z_max = med + 100.0
+    d1=d[(d>z_min)&(d<z_max)]
+    if len(d1)<0.50*len(d):
+       print("data too noisy for good median: %d accepted" % len(d1))
+       good_median = False
 
-    try:
-      if n>10:
-        avg= z1/float(n)
-        rms = np.sqrt((z2/(float(n)) - avg*avg))
-      else:
-        avg=0.0
-        rms=0.0
-    except Exception as e:
-      print("bad sigma clipping: %s" % e)
+    avg = None
+    rms = None
+    if good_median:   
+        avg=np.mean(d1)
+        rms=np.std(d1)
+    elif bias_prev is not None:
+        avg = bias_prev
+        rms = rms_prev
 
+    if (avg is not None) and (rms is not None):
+        #3-sigma clip
+        z_min = avg - 3.0*rms
+        z_max = avg + 3.0*rms
+        d2=d[(d>z_min)&(d<z_max)]
+        if len(d2)<0.05*len(d):
+          print("data too noisy for 3-sigma clip: %d accepted" % len(d2))
+          good_clipping = False
+        else:
+          avg=np.mean(d2)
+          rms=np.std(d2)
 
+    if (avg is None) or (rms is None):
+      avg = 0.0
+      rms = 0.0
 
     temp_data = np.zeros(shape=data.shape,dtype=np.double)
     temp_data = data
@@ -214,7 +219,7 @@ def assemble_mosaic(conf=None):
   num_images = len(im_list)
   num_dark_images=0
 
-  print("%s" % conf['dark_images'])
+  #print("%s" % conf['dark_images'])
   if conf['dark_images'] != ['']:
      im_list_dark = conf['dark_images']
      num_dark_images = len(im_list_dark)
@@ -238,15 +243,18 @@ def assemble_mosaic(conf=None):
 
   shape = (hdu_list[0].data).shape
   im_index = 0
+  bias_prev = None
+  rms_prev = None
+
   for im in im_list:
-     hdu_list = fits.open(im)
+     hdu_list = fits.open(im,mode='update')
      im_data_raw = hdu_list[0].data
      im_dark_data_raw = None
      im_head = hdu_list[0].header
      assert im_data_raw.shape == shape,\
              "image %s has shape(%s) inconsitent with first image(%s)" %\
                    (im,im_data_raw.shape,shape)
-     ccd_name= im_head['CCD_NAME'].strip()
+     ccd_name= im_head['CCD_LOC'].strip()
      amp_name = im_head['AMP_NAME'].strip()
      tap_name = im_head['TAP_NAME'].strip()
 
@@ -284,7 +292,10 @@ def assemble_mosaic(conf=None):
        im_data_raw = im_data_raw + 1000 - im_dark_data_raw
 
      if conf['bias']:
-       im_data,bias,rms = subtract_col_bias(im_data_raw,prescan_x, postscan_x,prescan_y,postscan_y,amp_name,y1,y2)
+       im_data,bias,rms = subtract_col_bias(im_data_raw,prescan_x, postscan_x,prescan_y,postscan_y,amp_name,y1,y2,bias_prev=bias_prev)
+       if rms>0.0 and rms<100.0:
+          bias_prev = bias
+          rms_prev = rms
      else:
        im_data=im_data_raw
        bias=0.0
@@ -302,6 +313,23 @@ def assemble_mosaic(conf=None):
             (ccd_name,tap_name,amp_name,bias,rms,im))
 
      mos_data[y0:y0+height,x0:x0+width]=np.flip(im_data)
+
+     w=wcs.WCS(naxis=2)
+     w.wcs.crpix = [0.0,0.0]
+     w.wcs.cdelt = [1.0, 1.0]
+     w.wcs.crval = [0,0]
+     w.wcs.ctype = ["linear","linear"]
+     h = w.to_header
+     #print(h)
+     wcs_val = [w.wcs.crpix, w.wcs.cdelt, w.wcs.crval, w.wcs.ctype,w.wcs.pc[0],w.wcs.pc[1]]
+     header_kwds = ['CRPIX','CDELT','CRVAL','CTYPE','PC1_','PC2_']
+     for index in range(0,len(header_kwds)):
+        for i in [0,1]:
+           i1 = i + 1
+           kw=header_kwds[index]+str(i1)
+           im_head[kw]=wcs_val[index][i]
+
+     hdu_list.flush()
      hdu_list.close()
   
   write_fits(mos_data,im_head,conf['output'])
@@ -319,8 +347,13 @@ def get_params():
   parser.add_argument('--y1', metavar='y', type=int, default=-1)
   parser.add_argument('--dy', metavar='h', type=int, default=-1)
   parser.add_argument('--output', metavar='c', type=str, default='test.fits')
-  parser.add_argument('--bias', metavar='b', type=bool, default=False)
+  parser.add_argument('--bias', metavar='b', type=str, default="False")
   conf.update(vars(parser.parse_args()))
+
+  if conf['bias'] in ['True','TRUE','true']:
+     conf['bias'] = True
+  else:
+     conf['bias'] = False
 
   return (conf)
 

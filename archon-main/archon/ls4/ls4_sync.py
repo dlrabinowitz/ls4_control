@@ -28,15 +28,15 @@ class LS4_Sync():
 
     def __init__(
         self,
-        num_controllers: int = 0 ,
+        num_synced_controllers: int = 0 ,
         lead_index: int = 0,
         ls4_logger: LS4_Logger | None = None
     ):
      
         assert lead_index is not None, "lead_index must be specified"
-        assert num_controllers > 0, "num_controllers must exceed 0"
-        assert lead_index in range(0,num_controllers), \
-                  "lead_index must be in range 0 to %d" % num_controllers
+        assert num_synced_controllers > 0, "num_synced_controllers must exceed 0"
+        assert lead_index in range(0,num_synced_controllers), \
+                  "lead_index must be in range 0 to %d" % num_synced_controllers
 
         if ls4_logger is None:
            self.ls4_logger = LS4_Logger()
@@ -50,12 +50,12 @@ class LS4_Sync():
         self.critical= self.ls4_logger.critical
 
         # list of instances of LS4Controller, one for each synchronized controller
-        self.controller_list=[]
+        self.synced_controller_list=[]
 
         # total number of synced controllers
-        self.num_controllers = num_controllers
+        self.num_synced_controllers = num_synced_controllers
         
-        #index within controller_list of the lead controller
+        #index within synced_controller_list of the lead controller
         self.lead_index = lead_index
 
         # lists of asyncio Events, one for each controller:
@@ -73,7 +73,7 @@ class LS4_Sync():
         self.command_sync_msg_list = []
         self.command_sync_reply_list = []
 
-        for index in range(0,num_controllers):
+        for index in range(0,self.num_synced_controllers):
            if index != lead_index:
              self.param_sync_msg_list.append(asyncio.Event())
              self.param_sync_reply_list.append(asyncio.Event())
@@ -88,8 +88,7 @@ class LS4_Sync():
 
 
         # ls4_events keeps track of event list for synchronizing controller threads
-        self.ls4_events=LS4_Events(num_controllers=num_controllers,
-                              event_lists=self.event_lists)
+        self.ls4_events=LS4_Events(event_lists=self.event_lists, ls4_logger = self.ls4_logger)
 
 
         #global copy of arguments used by ls4_controller.set_params
@@ -109,7 +108,7 @@ class LS4_Sync():
 
         assert controller is not None, "controller is not instantiated"       
 
-        self.controller_list.append(controller)
+        self.synced_controller_list.append(controller)
        
         """
         controller.set_sync_event_lists(\
@@ -128,7 +127,7 @@ class LS4_Sync():
         result = await self.ls4_events.check_all_events_clear()
         assert result is True,"not all sync events are clear"
 
-        for controller in self.controller_list:
+        for controller in self.synced_controller_list:
             controller.set_sync(sync_flag)
 
     async def test_sync(
@@ -142,7 +141,13 @@ class LS4_Sync():
         """
 
         #print("running set_param with sync_test = True")
-        await self.set_param(param="SYNCTEST",value=0)
+        try:
+          await self.set_param(param="SYNCTEST",value=0)
+        except Exception as e:
+          error_msg = "Exception testing sync by setting SYNCTEST param to 0: %s" % e
+          self.error(error_msg)
+          raise RuntimeError(error_msg)
+         
         #print("done running set_param with sync_test = True")
 
     async def set_param(
@@ -157,7 +162,13 @@ class LS4_Sync():
             
         """
 
-        await asyncio.gather(*(self.controller_list[index].set_param(param=param,\
-                            value=value) for index in range(0,self.num_controllers)))
+        self.debug("num_synced_controllers = %d" % self.num_synced_controllers)
+        self.debug("length of synced_controller_list = %d" % len(self.synced_controller_list))
+        try:
+          await asyncio.gather(*(self.synced_controller_list[index].set_param(param=param,\
+                            value=value) for index in range(0,self.num_synced_controllers)))
 
-
+        except Exception as e:
+          error_msg = "Exception setting param %s to %d: %e" % (param,value,e)
+          self.error(error_msg)
+          raise RuntimeError(error_msg)

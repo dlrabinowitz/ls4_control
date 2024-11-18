@@ -13,6 +13,7 @@ import os
 import pathlib
 import socket
 from subprocess import CalledProcessError
+import time
 
 
 __all__ = [
@@ -21,6 +22,9 @@ __all__ = [
     "subprocess_run_async",
     "get_profile_name",
     "send_and_receive",
+    "check_bool_value",
+    "get_obsdate",
+    "check_abort_file"
 ]
 
 
@@ -155,3 +159,35 @@ async def send_and_receive(
         if w is not None:
             w.close()
             await w.wait_closed()
+
+def check_bool_value(
+    data: None,
+    bval: None,
+):
+    """ check if data represents the specified boolean value """
+    result = False
+    if data is None:
+       pass
+    elif bval is None:
+       pass
+    elif not isinstance(bval,(bool)):
+       pass
+    elif not isinstance(data,(str,bool)):
+       pass
+    elif isinstance(data,(bool)) and data == bval:
+       result = True
+    elif data in ['True','TRUE','T','true'] and bval == True:
+       result = True
+    elif data in ['False','FALSE','F','false'] and bval == False:
+       result = True
+
+    return result
+
+def get_obsdate(tm=None):
+    if tm is None:
+       tm=time.gmtime()
+    dt = "%04d-%02d-%02dT%02d:%02d:%05.2f" % \
+          (tm.tm_year,tm.tm_mon,tm.tm_mday, tm.tm_hour,tm.tm_min,tm.tm_sec)
+    return dt
+
+

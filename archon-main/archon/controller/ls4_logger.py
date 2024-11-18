@@ -20,7 +20,7 @@ class LS4_Logger():
 
     def __init__(
       self,
-      lead_flag: bool | None = None,
+      leader: bool | None = None,
       name=None,
       info=None,
       debug=None,
@@ -29,11 +29,11 @@ class LS4_Logger():
       critical=None
     ):
 
-      if lead_flag is not None:
-         print("lead_flag = %s" % lead_flag)
-         self.lead_flag=lead_flag
+      if leader is not None:
+         print("leader = %s" % leader)
+         self.leader=leader
       else:
-         self.lead_flag=False
+         self.leader=False
 
       if name is not None:
          self.name=name
@@ -57,10 +57,8 @@ class LS4_Logger():
       if critical is not None:
          self.critical= critical
 
-      self.set_format("%(message)s")
-
     def ls4_info(self,s: str):
-      #if self.lead_flag or self.name == "ctrl1":
+      #if self.leader or self.name == "ctrl1":
         cf=currentframe()
         fi=getframeinfo(cf.f_back)
         s1 = "[" + os.path.basename(fi.filename) + ":" +  str(fi.lineno) + "] " + ("%s: " % self.name) + s
@@ -124,7 +122,7 @@ class LS4_Logger():
 #"""
 if( __name__ == '__main__'):
 
-  lg=LS4_Logger(lead_flag=True)
+  lg=LS4_Logger(leader=True)
   lg.set_format("%(message)s")
 
   lg.info("hello info")

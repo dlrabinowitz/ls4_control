@@ -299,8 +299,8 @@ def assemble_mosaic(conf=None):
 
      offsets = ccd_map[ccd_name]
      x0 = offsets[0]*width*amps_per_ccd
-     if position == 'RIGHT':
-        x0 += width
+     #if position == 'RIGHT':
+        #x0 += width
      y0 = offsets[1]*height
      print("ccd_name: %6s  tap_name: %6s amp_name: %6s bias: %07.1f rms: %07.3f image: %s" % \
             (ccd_name,tap_name,amp_name,bias,rms,im))
