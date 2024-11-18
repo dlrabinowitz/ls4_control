@@ -1,34 +1,11 @@
-Code to run the Archon controller for the LS4 camera
-D. Rabinowitz 2024 Jul 8 
+Code to run a command server for control of the LS4 camera
+D. Rabinowitz 2024 Nov 18
 
-Implementation:
-  This code was built on top of the SDSS Python code written to 
-  control their Archon controllers (see doc/controller.pdf).
-  
-  The code was augmented to allow synchronized I/O to/from
-  multiple controllers using the synchronization mechanism
-  built into the controllers (see doc/Archon.pdf)
-
-  The "actor" object for which the original SDSS code was
-  designed is not used in this implementation. Instead,
-  a basic command server and coordination program (ls4_ccp.py) was
-  written specifically to interface with the control and
-  scheduling system used by the La Silla - Quest survey at the
-  ESO Schmidt.
-
-Status:
-  The code has been extensively test in a laboratory setting at
-Yale Wright Lab. The interface with the scheduling software has
-not been tested. The test script included here allows basic
-functions expected by the scheduling software to be tested.
-
-TBD: The scheduler code (written in C/C++) was written to
-control a different camera (LS4 QUEST camera). This code (see
-python/scheduler_camera.c) must be modified to work with
-ls4_ccp.py
+TBD: Plan single-amp readout format. 
 
 requirements:
   Python environment with required modules (ls4_venv)
+  Python module archon-main with ls4 additions
   bash shell
 
 Installation:
@@ -39,24 +16,24 @@ Installation:
   cd archon-main
   pip install .
 
-Configuration:
-  see scripts/test.bash
-
 Usage:
   bash
   cd source directory for this package
   source scripts/setup.bash
-  scripts/test.bash
+  scripts/start_ccp.bash 
 
 output:
-  diagnostic messages are written to stdout and stderr
-  FITs files are written to the configured data path
+  diagnostic message go to standard out and standard error.
+  Saved fits images go to /data/test
 
-
+configuration:
+  conf/northeast.acf,southeast.acf,northwest.acf, southwest.acf
+  conf/northeast.json,southeast.json,northwest.json, southwest.json
+  
 source:
-  python/ls4_ccp.py
+  python/run_ccp.py
   scripts/setup.bash
-  scripts/test.bash
-  python code in archon-main
+  archon-main
+
   
 
