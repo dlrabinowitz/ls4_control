@@ -7,6 +7,7 @@ from archon import log
 import logging
 import time
 import argparse
+import platform
 from archon.controller.ls4_logger import LS4_Logger
 
    
@@ -17,6 +18,7 @@ def namelist(s):
 class LS4_Conf():
     """ class to handle configuration parameters """
 
+    hostname = platform.node()
 
     def __init__(self,logger=None,ls4_conf_file=None,init_conf=None,parse_args=False):
 
@@ -228,7 +230,7 @@ class LS4_Conf():
                            help='delay (sec) between exposure pairs')
        parser.add_argument('--shutter_mode', type=str, default="open",
                            help='choose alternate, dark, or open')
-       parser.add_argument('--server_name', metavar='H', type=str, default='ls4-workstn',
+       parser.add_argument('--server_name', metavar='H', type=str, default=self.hostname,
                            help='name of the command server host')
        parser.add_argument('--server_port', metavar='P', type=int, default=5000,
                            help='port number of the command server')

@@ -7,8 +7,8 @@ if (! -e $LS4_CONTROL_ROOT/scripts/make_mosaics.csh ) then
    exit
 endif
 
+set ls4_host = `hostname`
 set CLEAR = 1
-
 set MAX_EXPTIME = 3.5
 set exptime0 = 0
 set exp_incr = 0.1
@@ -20,12 +20,12 @@ set DISK_LIMIT = 90
 
 if ( $CLEAR == 1 ) then
   echo `date` "clearing 30 sec"
-  set l = `echo "clear 30" | netcat -N ls4-workstn 5000`
+  set l = `echo "clear 30" | netcat -N $ls4_host 5000`
   echo `date` $l   
   if ( $l != "DONE") exit
 endif
 
-set l = `echo "vsub_on" | netcat -N ls4-workstn 5000`
+set l = `echo "vsub_on" | netcat -N $ls4_host 5000`
 echo `date` $l   
 if ( $l != "DONE") exit
 
@@ -54,7 +54,7 @@ while ( $l == "DONE" && $sequence_done == 0)
   echo `date` "exp $n exptime $exptime"
   if ( $n == 0 ) then
     set exp_mode = "first"
-    set l = `echo "expose $shutter $exptime test $exp_mode" | netcat -N ls4-workstn 5000`
+    set l = `echo "expose $shutter $exptime test $exp_mode" | netcat -N $ls4_host 5000`
     set exp_mode = "next"
   else if ( $sequence_done == 1 ) then
     set exp_mode = "last"
@@ -65,13 +65,13 @@ while ( $l == "DONE" && $sequence_done == 0)
   echo EXPTIME = $exptime
   echo EXPMODE = $exp_mode
   echo ERASING CCD
-  set l = `echo "erase" | netcat -N ls4-workstn 5000`
+  set l = `echo "erase" | netcat -N $ls4_host 5000`
   echo FLUSHING CCD
-  set l = `echo "clean False 0 1 True" | netcat -N ls4-workstn 5000`
+  set l = `echo "clean False 0 1 True" | netcat -N $ls4_host 5000`
   echo CLEARING CCD
-  set l = `echo "clear 10" | netcat -N ls4-workstn 5000`
+  set l = `echo "clear 10" | netcat -N $ls4_host 5000`
   echo STARTING EXPOSURE
-  set l = `echo "expose $shutter $exptime test $exp_mode" | netcat -N ls4-workstn 5000`
+  set l = `echo "expose $shutter $exptime test $exp_mode" | netcat -N $ls4_host 5000`
   echo `date` $n $exp_mode $l
   echo SAVING IN $save_dir 
   #$LS4_CONTROL_ROOT/scripts/make_mosaics.csh testC 
@@ -81,7 +81,7 @@ while ( $l == "DONE" && $sequence_done == 0)
 end
 
 echo `date` "shutting down"
-set l = `echo "shutdown" | netcat -N ls4-workstn 5000`
+set l = `echo "shutdown" | netcat -N $ls4_host 5000`
 echo `date` "shutting down" $l
 
 

@@ -116,11 +116,11 @@ class LS4_Abort:
 
         while (not self.abort_server) and (not self.shutdown_flag):
           await asyncio.sleep(1)
-          self.debug("watchdog checking status ...")
+          #self.debug("watchdog checking status ...")
           if error_msg is not None:
             self.error("%s" % str (error_msg))
           else:
-            self.debug("checking for abort")
+            #self.debug("checking for abort")
             try:
               error_msg = self.check_abort()
             except Exception as e:

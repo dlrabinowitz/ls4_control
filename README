@@ -1,6 +1,8 @@
 Code to run a command server for control of the LS4 camera
 D. Rabinowitz 2024 Nov 18
 
+Fake mode finalized 2025 Apr 4
+
 TBD: Plan single-amp readout format. 
 
 requirements:
@@ -20,7 +22,10 @@ Usage:
   bash
   cd source directory for this package
   source scripts/setup.bash
-  scripts/start_ccp.bash 
+  scripts/start_ccp.bash  [options]
+
+  For fake ops, use option "-fake"
+  For debug messages, use  option "-verbose"
 
 output:
   diagnostic message go to standard out and standard error.
@@ -34,6 +39,9 @@ source:
   python/run_ccp.py
   scripts/setup.bash
   archon-main
+
+testing:
+  scripts/test_loop.csh
 
   
 

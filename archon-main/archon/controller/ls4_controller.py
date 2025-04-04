@@ -38,6 +38,7 @@ from archon.controller.command import ArchonCommand, ArchonCommandStatus
 from archon.controller.maskbits import ArchonPower, ControllerStatus, ModType
 from archon.controller.ls4_mainloop import Mainloop_Function as ML
 from archon.controller.ls4_mainloop import LS4_Mainloop
+from archon.controller.ls4_fake_controller import LS4_Fake_Control
 from archon.ls4_exceptions import (
     LS4ControllerError,
     LS4ControllerWarning,
@@ -134,6 +135,7 @@ class LS4Controller(LS4_Device):
         idle_function: ML | None = None,
         fake: bool | None = None,
         timing = None,
+        acf_file: str | None = None,
         reboot: bool | None = None,
         notifier: Optional[Callable[[str], None]] = None,
     ):
@@ -162,20 +164,48 @@ class LS4Controller(LS4_Device):
         self.error= self.ls4_logger.error
         self.critical= self.ls4_logger.critical
 
+        self.fake_controller = False
+
+        self._status: ControllerStatus = ControllerStatus.UNKNOWN
+        self.__status_event = asyncio.Event()
+        
+        self.debug("instantiating state_lock")
+        # need a mutex to lock self._status while changing status bits
+        self.status_lock = threading.Lock()
+        self.debug("done instantiating state_lock")
+
+        self.host = host
+        self.name = name
+
+        self._binary_reply: Optional[bytearray] = None
+
+
+        self.parameters: dict[str, int] = {}
+
+        self.current_window: dict[str, int] = {}
+        self.default_window: dict[str, int] = {}
+
+        self.config = config or lib_config
+        self.debug("self.config = %s" % str(self.config))
+
+        self.acf_config: configparser.ConfigParser | None = None
+
+        self.acf_file = acf_file
+
+        # self.fake_control will be used to simulate controller operations
+        self.fake_control = None
         if fake is not None:
            self.fake_controller = fake
-           self.host = host
-           self.port = port
-           self.local_addr=local_addr
-           self.fake_count = 0
-           self.fake_data = None
-           self.fake_conf={}
-           self.fake_conf['bytes_per_pixel']=2
-           self.fake_conf['data_type']=numpy.uint16
-           self.fake_conf['n_amps']=AMPS_PER_CCD*CCDS_PER_QUAD
+ 
+        if self.fake_controller:
+           try:
+             self.debug("instantiating LS4_Fake_Control")
+             self.fake_control = LS4_Fake_Control(ls4_logger=self.ls4_logger)
+             self.debug("done instantiating LS4_Fake_Control")
+           except Exception as e:
+             error_msg = "Exception instantiating LS4_Fake_Control: %s" % e
+             raise LS4ControllerError(error_msg)
 
-        else:
-           self.fake_controller = False
 
         #self.add_logger(info=info, error=error, debug=debug, warn = warn)
 
@@ -194,27 +224,10 @@ class LS4Controller(LS4_Device):
            self.info("done rebooting controller")
 
              
-
         self.__running_commands: dict[int, ArchonCommand] = {}
         self._id_pool = set(range(MAX_COMMAND_ID))
         LS4_Device.__init__(self, name=name, host=host, port=port, local_addr=local_addr,
-                    ls4_logger=self.ls4_logger)
-
-        self.name = name
-        self._status: ControllerStatus = ControllerStatus.UNKNOWN
-        self.__status_event = asyncio.Event()
-
-        self._binary_reply: Optional[bytearray] = None
-
-
-        self.parameters: dict[str, int] = {}
-
-        self.current_window: dict[str, int] = {}
-        self.default_window: dict[str, int] = {}
-
-        self.config = config or lib_config
-        self.acf_file: str | None = None
-        self.acf_config: configparser.ConfigParser | None = None
+                    ls4_logger=self.ls4_logger,config=self.config)
 
         # TODO: asyncio recommends using asyncio.create_task directly, but that
         # call get_running_loop() which fails in iPython.
@@ -304,10 +317,6 @@ class LS4Controller(LS4_Device):
            self.timing=timing
         else:
            self.timing={'expose':TimePeriod(),'readout':TimePeriod(),'fetch':TimePeriod()}
-
-        # need a mutex to lock self._status while changing status bits
-        self.status_lock = threading.Lock()
-
         self.default_idle_function = idle_function
         self.mainloop = LS4_Mainloop(ls4_controller=self,ls4_logger=self.ls4_logger, 
                         default_function = idle_function)
@@ -333,7 +342,10 @@ class LS4Controller(LS4_Device):
         self.info(f"testing connection to controller {self.name}")
         error_msg = None
         try:
-           alive = await super().test_connection()
+           if self.fake_controller:
+              alive=True
+           else:
+              alive = await super().test_connection()
            if not alive:
                error_msg = f"controller {self.name} is not accepting connections"
            else:
@@ -343,14 +355,31 @@ class LS4Controller(LS4_Device):
 
         assert error_msg is None , error_msg
 
-        await super().start()
+        if not self.fake_controller:
+          await super().start()
         self.debug(f"Controller {self.name} connected at {self.host}.")
 
-        if read_acf:
-            self.debug(f"Retrieving ACF data from controller {self.name}.")
-            config_parser, _ = await self.read_config()
-            self.acf_config = config_parser
-            self._parse_params()
+        if read_acf :
+            if self.fake_controller and self.acf_file is None:
+              error_msg = "cannot retrieve XVS data from acf_file. acf_file is None"
+              self.error(error_msg)
+              raise LS4ControllerError(error_msg)
+              
+            elif self.fake_controller:
+              self.debug(f"Retrieving ACF data from acf_file {self.acf_file}.")
+              try:
+                 self.acf_config = self.acf_file_to_parser(acf_file=self.acf_file)
+              except Exception as e:
+                 error_msg = "exception getting acf_config: %s" %e 
+                 self.error(error_msg)
+                 raise LS4ControllerError(error_msg)
+              self.debug(f"Done retrieving ACF data from acf_file {self.acf_file}.")
+
+            else:
+              self.debug(f"Retrieving ACF data from controller {self.name}.")
+              config_parser, _ = await self.read_config()
+              self.acf_config = config_parser
+              self._parse_params()
 
         # disable shutter on power up
         self.shutter_enable=False
@@ -365,6 +394,23 @@ class LS4Controller(LS4_Device):
 
         return self
 
+    def acf_file_to_parser(self,acf_file=None):
+
+        cp = None
+        if acf_file is not None:
+          cp = configparser.ConfigParser()
+
+          input = str(acf_file)
+          if os.path.exists(input):
+             cp.read(input)
+          else:
+             self.warn("acf_file [%s] does not exist" % acf_file)
+        else:
+             self.warn("acf_file is not specified")
+
+        return cp
+
+
     @property
     def status(self) -> ControllerStatus:
         """Returns the status of the controller as a `.ControllerStatus` enum type."""
@@ -375,7 +421,7 @@ class LS4Controller(LS4_Device):
                   STATUS_LOCK_TIMEOUT
              self.warn(error_msg)
         except Exception as e:
-          error_msg = "Exception acquiring status lock"
+          error_msg = "Exception acquiring status lock: %s" % e
           self.warn(error_msg)
 
         state = self._status
@@ -647,18 +693,20 @@ class LS4Controller(LS4_Device):
             )
 
         command = ArchonCommand(
-            command_string,
-            command_id,
-            controller=self,
-            **kwargs,
+              command_string,
+              command_id,
+              controller=self,
+              fake=self.fake_controller,
+              **kwargs,
         )
 
         self.__running_commands[command_id] = command
 
         # non-synchronous I/O
         if not sync_flag:
-            self.debug("%s: asynchronously writing command [%s]" % (prefix,command.command_string))
-            self.write(command.raw)
+              self.debug("%s: asynchronously writing command [%s]" % (prefix,command.command_string))
+              if not self.fake_controller:
+                self.write(command.raw)
 
         # synchronous I/O
         else:
@@ -686,7 +734,8 @@ class LS4Controller(LS4_Device):
             # The followers write the command here after leader update sync_io below.
             if not self.ls4_sync_io.leader:
               self.debug("%s: synchronously writing command [%s]" % (prefix,command.command_string))
-              self.write(command.raw)
+              if not self.fake_controller:
+                 self.write(command.raw)
 
             # The followers wait here for leader to update sync_io. 
             # When the leader begins updating sync_io, it first allows the followers to proceed with their
@@ -701,7 +750,8 @@ class LS4Controller(LS4_Device):
             # The leader writes the command here, after the followers have updated  sync_io.
             if self.ls4_sync_io.leader and not error_msg:
               self.debug("%s: synchronously writing command [%s]" % (prefix,command.command_string))
-              self.write(command.raw)
+              if not self.fake_controller:
+                self.write(command.raw)
 
             if not error_msg:
               self.debug("%s: verifying sync" % prefix)
@@ -716,7 +766,7 @@ class LS4Controller(LS4_Device):
 
         #self.debug("done sending command [%s] sync_flag: %s" %\
         #   (command_string,sync_flag))
-          
+         
         return command
 
     def send_command(
@@ -751,14 +801,16 @@ class LS4Controller(LS4_Device):
             command_string,
             command_id,
             controller=self,
+            fake=self.fake_controller,
             **kwargs,
         )
         self.__running_commands[command_id] = command
 
-           
-        self.write(command.raw)
+         
+        if not self.fake_controller:  
+          self.write(command.raw)
         #self.debug(f"-> {command.raw}")
-           
+         
         return command
 
     async def send_many(
@@ -848,8 +900,9 @@ class LS4Controller(LS4_Device):
         command_string = command_string.upper()
         #self.info("command_string = %s" % command_string)
 
-       
+        #self.debug("awaiting send_command with command_string = %s" % command_string)
         command = await self.send_command(command_string, **kwargs)
+        #self.debug("done awaiting send_command with command_string = %s" % command_string)
 
         if not command.succeeded():
             if raise_error:
@@ -897,8 +950,13 @@ class LS4Controller(LS4_Device):
                 set_error_status=error,
             )
 
-        keywords = str(cmd.replies[0].reply).split()
         system = {}
+
+        if self.fake_controller:
+          keywords=self.fake_control.system_keys
+        else:
+          keywords = str(cmd.replies[0].reply).split()
+
         for key, value in map(lambda k: k.split("="), keywords):
             system[key.lower()] = value
             if match := re.match(r"^MOD([0-9]{1,2})_TYPE", key, re.IGNORECASE):
@@ -923,28 +981,37 @@ class LS4Controller(LS4_Device):
                 set_error_status=error,
             )
 
-        device_status={}
-        for key_val_str in str(cmd.replies[0].reply).split():
-            key_val = key_val_str.split("=")
-            key=key_val[0].lower()
-            val= key_val[1]
-            value = None
-            # The timing code uses one of the DIO bits of the XBIAS card (MOD4/DINPUTS) to signal 
-            # when it is busy running a main-loop procedure (erasing, purging, clearing, flushing,
-            # etc). The STATUS_START_BIT is asserted when the procedure is running, and 
-            # cleared when finished. Set keyword 'MAINLOOP' to show the status of this bit
-            # (False when asserted, True otherwise)
-            # code is in the main loop (finished) or not.
-            if "mod4/dinputs" in key:
-               #assert check_int(val), "value for MOD4/DINPUTS [%s] is not an integer" % val
-               value = int(val)
-               device_status['mainloop'] = not ( int(val,2)& STATUS_START_BIT)
-            elif check_int(val):
-               value = int(val)
-            else:
-               value = float(val)
-            device_status[key]=value
-                
+        if self.fake_controller:
+            device_status = {'powergood':1,'overheat':0,'power':4}
+            status_keys=self.fake_control.status_keys
+            conf_enable_keys=self.fake_control.conf_enable_keys
+            for k in status_keys:
+                device_status[k]=0.0
+            for k in conf_enable_keys:
+                device_status[k]=0
+            device_status['mainloop']=0
+        else:
+          for key_val_str in str(cmd.replies[0].reply).split():
+              key_val = key_val_str.split("=")
+              key=key_val[0].lower()
+              val= key_val[1]
+              value = None
+              # The timing code uses one of the DIO bits of the XBIAS card (MOD4/DINPUTS) to signal 
+              # when it is busy running a main-loop procedure (erasing, purging, clearing, flushing,
+              # etc). The STATUS_START_BIT is asserted when the procedure is running, and 
+              # cleared when finished. Set keyword 'MAINLOOP' to show the status of this bit
+              # (False when asserted, True otherwise)
+              # code is in the main loop (finished) or not.
+              if "mod4/dinputs" in key:
+                 #assert check_int(val), "value for MOD4/DINPUTS [%s] is not an integer" % val
+                 value = int(val)
+                 device_status['mainloop'] = not ( int(val,2)& STATUS_START_BIT)
+              elif check_int(val):
+                 value = int(val)
+              else:
+                 value = float(val)
+              device_status[key]=value
+                  
         """
         keywords = str(cmd.replies[0].reply).split()
         device_status = {
@@ -957,7 +1024,10 @@ class LS4Controller(LS4_Device):
            await self.power()
 
         if update_frame:
-           frame=await self.get_frame()
+           if self.fake_controller:
+              frame= self.fake_control.get_frame()
+           else:
+              frame=await self.get_frame()
            device_status['frame']=frame
 
         device_status['shutter']=self.shutter_enable
@@ -1072,12 +1142,16 @@ class LS4Controller(LS4_Device):
         return (c, config_lines)
 
     async def hold_timing(self):
+        #self.debug("sending HOLDTIMING command")
         cmd_str = "HOLDTIMING"
         cmd = await self.send_command(cmd_str, timeout=1)
+        #self.debug("checking if command succeeded")
         if not cmd.succeeded():
+          #seld.debug("command did not succeed")
           self.update_status(ControllerStatus.ERROR)
           raise LS4ControllerError(\
                f"Failed sending {cmd_str} ({cmd.status.name})")
+        #self.debug("command succeeded")
 
     async def release_timing(self):
         cmd_str = "RELEASETIMING"
@@ -1175,10 +1249,11 @@ class LS4Controller(LS4_Device):
           for key in aconfig:
               lines.append(key.upper().replace("\\", "/") + "=" + aconfig[key].strip('"'))
 
-          self.debug("Clearing previous configuration")
+          #self.debug("Clearing previous configuration")
           await self.send_and_wait("CLEARCONFIG", timeout=timeout)
+          #self.debug("Done clearing previous configuration")
 
-          self.debug("Sending configuration lines")
+          #self.debug("Sending configuration lines")
           #DEBUG:
           #self.info("configuration lines:")
           #i = 0
@@ -1192,9 +1267,13 @@ class LS4Controller(LS4_Device):
           poll_on = False
 
           cmd_strs = [f"WCONFIG{n_line:04X}{line}" for n_line, line in enumerate(lines)]
+          n_lines = len(cmd_strs)
+          i=1
           for line in cmd_strs:
+              #self.debug("line %d/%d: %s" % (i,n_lines,line))
               cmd = await self.send_command(line, timeout=timeout)
               if cmd.status == ACS.FAILED or cmd.status == ACS.TIMEDOUT:
+                  self.debug("cmd error status is %s" % str(cmd.status))
                   self.update_status(ControllerStatus.ERROR)
                   await self.send_command("POLLON")
                   poll_on = True
@@ -1202,6 +1281,7 @@ class LS4Controller(LS4_Device):
                       f"Failed sending line {cmd.raw!r} ({cmd.status.name})"
                   )
               await asyncio.sleep(delay)
+              i += 1
 
           self.acf_config = cp
           self.acf_file = input if os.path.exists(input) else None
@@ -1209,7 +1289,7 @@ class LS4Controller(LS4_Device):
         # Write MOD overrides. Do not apply since we optionall do an APPLYALL afterwards.
 
         if overrides and len(overrides) > 0:
-           self.debug("Writing configuration overrides.")
+           #self.debug("Writing configuration overrides.")
            for keyword, value in overrides.items():
              await self.write_line(keyword, value, apply=False)
 
@@ -1348,7 +1428,7 @@ class LS4Controller(LS4_Device):
             if cmd_apply.status == ArchonCommandStatus.FAILED:
                 raise LS4ControllerError(f"Failed applying changes to {mod}.")
 
-            self.debug(f"{keyword}={value_str}")
+            #self.debug(f"{keyword}={value_str}")
 
 
     async def read_line(
@@ -1407,8 +1487,6 @@ class LS4Controller(LS4_Device):
           raise LS4ControllerError(
                 f"Failed sending line {cmd.raw!r} ({cmd.status.name})"
            )
-        else:
-          self.debug("reply to RCONFIG is %s" % str (cmd.replies[0].reply))
 
     async def power(self, mode: bool | None = None):
         """Handles power to the CCD(s). Sets the power status bit.
@@ -1427,34 +1505,42 @@ class LS4Controller(LS4_Device):
             The power state as an `.ArchonPower` flag.
 
         """
+        if self.fake_controller:
+           power_status= await self.fake_control.power(mode)
 
-        if mode is not None:
-            cmd_str = "POWERON" if mode is True else "POWEROFF"
-            cmd = await self.send_command(cmd_str, timeout=10)
-            if not cmd.succeeded():
-                self.update_status([ControllerStatus.ERROR, ControllerStatus.POWERBAD])
-                raise LS4ControllerError(
-                    f"Failed sending POWERON ({cmd.status.name})"
-                )
+           if power_status == ArchonPower.ON:
+               self.update_status(ControllerStatus.POWERON)
+           else:
+               self.update_status(ControllerStatus.POWEROFF)
 
-            await asyncio.sleep(1)
-
-        status = await self.get_device_status(update_power_bits=False,update_frame=False)
-
-        power_status = ArchonPower(status["power"])
-
-        if (
-            power_status not in [ArchonPower.ON, ArchonPower.OFF]
-            or status["powergood"] == 0
-        ):
-            if power_status == ArchonPower.INTERMEDIATE:
-                warnings.warn("Power in INTERMEDIATE state.", LS4UserWarning)
-            self.update_status(ControllerStatus.POWERBAD)
         else:
-            if power_status == ArchonPower.ON:
-                self.update_status(ControllerStatus.POWERON)
-            elif power_status == ArchonPower.OFF:
-                self.update_status(ControllerStatus.POWEROFF)
+          if mode is not None:
+              cmd_str = "POWERON" if mode is True else "POWEROFF"
+              cmd = await self.send_command(cmd_str, timeout=10)
+              if not cmd.succeeded():
+                  self.update_status([ControllerStatus.ERROR, ControllerStatus.POWERBAD])
+                  raise LS4ControllerError(
+                      f"Failed sending POWERON ({cmd.status.name})"
+                  )
+
+              await asyncio.sleep(1)
+
+          status = await self.get_device_status(update_power_bits=False,update_frame=False)
+
+          power_status = ArchonPower(status["power"])
+
+          if (
+              power_status not in [ArchonPower.ON, ArchonPower.OFF]
+              or status["powergood"] == 0
+          ):
+              if power_status == ArchonPower.INTERMEDIATE:
+                  warnings.warn("Power in INTERMEDIATE state.", LS4UserWarning)
+              self.update_status(ControllerStatus.POWERBAD)
+          else:
+              if power_status == ArchonPower.ON:
+                  self.update_status(ControllerStatus.POWERON)
+              elif power_status == ArchonPower.OFF:
+                  self.update_status(ControllerStatus.POWEROFF)
 
         return power_status
 
@@ -1726,23 +1812,51 @@ class LS4Controller(LS4_Device):
         and before any calls to `.write_line` or `.set_param`. Resets the window.
 
         """
+        linecount = int(self.parameters.get("LINECOUNT", -1))
+        pixelcount = int(self.parameters.get("PIXELCOUNT", -1))
+        lines = int(self.parameters.get("LINES", -1))
+        pixels = int(self.parameters.get("PIXELS", -1))
+        preskiplines= int(self.parameters.get("PRESKIPLINES", 0))
+        postskiplines = int(self.parameters.get("POSTSKIPLINES", 0))
+        preskippixels = int(self.parameters.get("PRESKIPPIXELS", 0))
+        postskippixels = int(self.parameters.get("POSTSKIPPIXELS", 0))
+        overscanpixels = int(self.parameters.get("OVERSCANPIXELS", 0))
+        overscanlines = int(self.parameters.get("OVERSCANLINES", 0))
+        hbin = int(self.parameters.get("HORIZONTALBINNING", 1))
+        vbin = int(self.parameters.get("VERTICALBINNING", 1))
 
         self.default_window = {
-            "lines": int(self.parameters.get("LINES", -1)),
-            "pixels": int(self.parameters.get("PIXELS", -1)),
-            "preskiplines": int(self.parameters.get("PRESKIPLINES", 0)),
-            "postskiplines": int(self.parameters.get("POSTSKIPLINES", 0)),
-            "preskippixels": int(self.parameters.get("PRESKIPPIXELS", 0)),
-            "postskippixels": int(self.parameters.get("POSTSKIPPIXELS", 0)),
-            "overscanpixels": int(self.parameters.get("OVERSCANPIXELS", 0)),
-            "overscanlines": int(self.parameters.get("OVERSCANLINES", 0)),
-            "hbin": int(self.parameters.get("HORIZONTALBINNING", 1)),
-            "vbin": int(self.parameters.get("VERTICALBINNING", 1)),
+            "linecount": linecount,
+            "pixelcount": pixelcount,
+            "lines": lines,
+            "pixels": pixels,
+            "preskiplines": preskiplines,
+            "postskiplines": postskiplines,
+            "preskippixels": preskippixels,
+            "postskippixels": postskippixels,
+            "overscanpixels": overscanpixels,
+            "overscanlines": overscanlines,
+            "hbin": hbin,
+            "vbin": vbin,
         }
 
+        new_linecount = (preskiplines+lines+postskiplines+overscanlines) // vbin
+        new_pixelcount = (preskippixels+pixels+postskippixels+overscanpixels) // hbin
 
-        self.current_window = self.default_window.copy()
+        if new_linecount != linecount:
+           self.warn("default linecount [%d] inconsistent with default preskip,postskip,lines,overscan [%d,%d,%d,%d]" %\
+                     (linecount, preskiplines,postskiplines,lines,overscanlines))
+           self.default_window["linecount"] =  new_linecount
 
+        if new_pixelcount != pixelcount:
+           self.warn("default pixelcount [%d] inconsistent with default preskip,postskip,pixel,overscan [%d,%d,%d,%d]" %\
+                     (pixelcount,preskippixels,postskippixels,pixels,overscanpixels))
+           self.default_window["pixelcount"] = new_pixelcount
+
+        self.current_window.update(self.default_window)
+
+        if self.fake_controller:
+             self.fake_control.update(linecount=new_linecount, pixelcount=new_pixelcount)
 
         if reset:
             await self.reset_window()
@@ -1860,6 +1974,8 @@ class LS4Controller(LS4_Device):
         overscanpixels: int | None = None,
         hbin: int | None = None,
         vbin: int | None = None,
+        linecount: int | None = None,
+        pixelcount: int | None = None
     ):
         """Sets the CCD window."""
 
@@ -1928,12 +2044,13 @@ class LS4Controller(LS4_Device):
             "overscanlines": overscanlines,
             "hbin": hbin,
             "vbin": vbin,
+            "pixelcount": pixelcount,
+            "linecount": linecount
         }
 
 
         return self.current_window
 
-   
     async def expose(
         self,
         exposure_time: float = 1
@@ -2069,7 +2186,6 @@ class LS4Controller(LS4_Device):
         block: bool = True,
         #delay: int = 0,
         wait_for: float | None = None,
-        #notifier: Optional[Callable[[str], None]] = None,
         idle_after: bool = True,
     ):
         """Reads the detector into a buffer.
@@ -2083,13 +2199,8 @@ class LS4Controller(LS4_Device):
         many seconds (useful for creating photon transfer frames).
         """
 
-        #if notifier:
-        #  notifier(f"synchronizing...")
 
         await self.set_param(param="SYNCTEST",value=0)
-
-        #if notifier:
-        #  notifier(f"start reading out controller.")
 
         if (not force) and await self.check_status([ControllerStatus.READOUT_PENDING,ControllerStatus.IDLE],mode='nor'):
             self.error(f"Controller is not in a readable state.")
@@ -2099,60 +2210,71 @@ class LS4Controller(LS4_Device):
         delay = int(delay)
 
         if delay > 0:
-           #if notifier:
-           #    notifier(f"setting WaitCount to {delay}")
            await self.set_param("WaitCount", delay)
         """
 
-        #if notifier:
-        #   notifier (f"reset...")
 
         await self.reset(release_timing=False, update_status=False,sync_flag=False, idle_function = ML.NONE_FUNCTION)
 
-        #if notifier:
-        #  notifier(f"set Readout to 1")
 
         await self.set_param("ReadOut", 1)
 
-        #if notifier:
-        #   notifier(f"sending READLEASETIMING")
 
         await self.send_command("RELEASETIMING")
 
         self.timing['readout'].start()
-        #if notifier:
-        #   notifier (f"update_status READING")
+        self.debug(f"update_status READING")
+
+        if self.fake_controller:
+           t = time.time()
+           try:
+             self.fake_control.update(pixelcount=self.current_window['pixelcount'],\
+                                linecount=self.current_window['linecount'])
+             # choose next controller buffer ready for writing
+             buf = await self.fake_control.check_buffer(op='write')
+             assert buf is not None, "failed to find buffer ready for writing"
+             # update the completness for wbuf to False.
+             self.fake_control.update_frame(wbuf=buf,complete=False)
+             self.fake_control.update_read(t=t,waited=0.0)
+           except Exception as e:
+             error_msg = "Exception starting read of fake controller: %s" % e
+             raise LS4ControllerError(error_msg)
 
         #self.update_status(ControllerStatus.READING, notify=False)
         self.update_status(ControllerStatus.READING)
 
-        #if notifier:
-        #   notifier(f"update_status READOUT_PENDING")
+        self.debug(f"update_status READOUT_PENDING")
 
         self.update_status(ControllerStatus.READOUT_PENDING, "off")
 
         if not block:
-           #if notifier:
-           #   notifier(f"not block, returning")
            return
 
         #max_wait = self.config["timeouts"]["readout_max"] + delay
         max_wait = self.config["timeouts"]["readout_max"] 
 
         wait_for = wait_for or 3  # sec delay to ensure the new frame starts filling.
-        #if notifier:
-        #  notifier(f"sleeping {wait_for} sec to make sure readout has started")
+        self.debug(f"sleeping {wait_for} sec to make sure readout has started")
 
         await asyncio.sleep(wait_for)
         waited = wait_for
 
-        frame = await self.get_frame()
+        t = time.time()
+        if self.fake_controller:
+          self.debug("updating read")
+          self.fake_control.update_read(t=t,waited = wait_for)
+          self.debug("getting frame")
+          frame= self.fake_control.get_frame()
+          self.debug("done getting frame")
+        else:
+          frame = await self.get_frame()
+
+          #frame = await self.get_frame()
        
         wbuf = frame["wbuf"]
+        self.debug("reading out exposure to buffer %d" % wbuf)
         self.info("reading out exposure to buffer %d" % wbuf)
 
-        #if notifier:
-        #   notifier(f"Reading frame to buffer {wbuf}.")
 
         dt = 0.0
         status_interval = 1.0
@@ -2171,14 +2293,11 @@ class LS4Controller(LS4_Device):
               # During readout, get_frame will timeout after max_wait sec and
               # return None. Keep checking periodically to see when readout is complete.
               #DEBUG
-              """
-              result = await self.get_frame(max_wait=0.1)
-              if result is not None:
-                 frame = result
-                 if frame[f"buf{wbuf}complete"] == 1:
-                   done=True
-              """
-              frame = await self.get_frame()
+              if self.fake_controller:
+                frame = self.fake_control.get_frame()
+              else:
+                frame = await self.get_frame()
+
               if frame[f"buf{wbuf}complete"] == 1:
                  done=True
            if not done:
@@ -2188,7 +2307,6 @@ class LS4Controller(LS4_Device):
                  pixels_read=frame[f"buf{wbuf}pixels"]
                  lines_read=frame[f"buf{wbuf}lines"]
                  w= int(waited)
-                 #self.notifier(f"{w}: frame is not complete: {pixels_read} pixel {lines_read} lines")
                  self.info(f"{w}: frame is not complete: {pixels_read} pixel {lines_read} lines")
                  if lines_read <= lines_read_prev:
                     self.error("ERROR reading out at lines_read = %d" % lines_read)
@@ -2199,6 +2317,8 @@ class LS4Controller(LS4_Device):
               t=time.time()
               dt  = t - status_start
               waited = t - t_start
+              if self.fake_controller:
+                 self.fake_control.update_read(t=t,waited=waited)
 
         self.timing['readout'].end()
         self.config['expose_params']['read-per']=self.timing['readout'].period
@@ -2206,11 +2326,14 @@ class LS4Controller(LS4_Device):
         self.update_status(ControllerStatus.FETCH_PENDING)
 
         if done:
-           self.notifier(f"done reading out controller in %7.3f sec" % self.timing['readout'].period)
+           self.debug("done reading out controller in %7.3f sec to buf %d" %\
+                (self.timing['readout'].period,wbuf))
+           if self.fake_controller:
+              self.fake_control.update_read(t=t,waited=waited)
+              self.fake_control.update_frame(complete=True)
+
            if idle_after:
-               #notifier(f"idling controller...")
                self.update_status(ControllerStatus.IDLE)
-               #notifier(f"done idling controller...")
            # Reset autoclearing.
            await self.mainloop.restore()
 
@@ -2289,21 +2412,33 @@ class LS4Controller(LS4_Device):
             raise LS4ControllerError("Controller is already fetching")
 
         if frame_info is None:
+          if self.fake_controller:
+            frame_info=self.fake_control.get_frame()
+          else:
             frame_info = await self.get_frame()
 
         if buffer_no not in [1, 2, 3, -1]:
             raise LS4ControllerError(f"Invalid frame buffer {buffer_no}")
 
         if buffer_no == -1:
-            buffers = [
+            if self.fake_controller:
+              buffer_no = await self.fake_control.check_buffer(frame_info=frame_info,op='fetch')
+              if buffer_no is None:
+                error_msg ="failed to find buffer ready for fetching"
+                self.error(error_msg)
+                self.print_frame(frame=frame_info)
+                raise LS4ControllerError(error_msg)
+
+            else:   
+              buffers = [
                 (n, frame_info[f"buf{n}timestamp"])
                 for n in [1, 2, 3]
                 if frame_info[f"buf{n}complete"] == 1
-            ]
-            if len(buffers) == 0:
+              ]
+              if len(buffers) == 0:
                 raise LS4ControllerError("There are no buffers ready to be read")
-            sorted_buffers = sorted(buffers, key=lambda x: x[1], reverse=True)
-            buffer_no = sorted_buffers[0][0]
+              sorted_buffers = sorted(buffers, key=lambda x: x[1], reverse=True)
+              buffer_no = sorted_buffers[0][0]
         else:
             if frame_info[f"buf{buffer_no}complete"] == 0:
                 raise LS4ControllerError(f"Buffer frame {buffer_no} cannot be read")
@@ -2314,7 +2449,6 @@ class LS4Controller(LS4_Device):
         # Lock for reading
         await self.send_command(f"LOCK{buffer_no}",sync_flag=False)
 
-      
         width = frame_info[f"buf{buffer_no}width"]
         height = frame_info[f"buf{buffer_no}height"]
         bytes_per_pixel = 2 if frame_info[f"buf{buffer_no}sample"] == 0 else 4
@@ -2341,9 +2475,12 @@ class LS4Controller(LS4_Device):
         #   f"FETCH{start_address:08X}{n_blocks:08X}",
         #   timeout=None,sync_flag=False
         #
-        cmd: ArchonCommand = await self.send_command(
-            cmd_string, timeout=None,sync_flag=False
-        )
+        self.debug("cmd_string = %s" % cmd_string)
+        self.debug("fake = %s" % self.fake_controller)
+        #cmd: ArchonCommand = await self.send_command(command_string=cmd_string, \
+        #                           fake=self.fake_controller,timeout=None,sync_flag=False)
+        cmd: ArchonCommand = await self.send_command(command_string=cmd_string, \
+                                   timeout=None,sync_flag=False)
         #self.notifier ("done sending command [%s] with timout=None and sync_flag=False" % cmd_string)
 
         # Unlock all
@@ -2351,7 +2488,14 @@ class LS4Controller(LS4_Device):
 
         # The full read buffer probably contains some extra bytes to complete the 1024
         # reply. We get only the bytes we know are part of the buffer.
-        frame = cast(bytes, cmd.replies[0].reply[0:n_bytes])
+
+        if self.fake_controller:
+           fetch_time = self.fake_control.conf['fetch_time']
+           await asyncio.sleep(fetch_time)
+           frame = cast(bytes, self.fake_control.buffers[buffer_no-1][0:n_bytes])
+        else:
+           frame = cast(bytes, cmd.replies[0].reply[0:n_bytes])
+
 
         # Convert to uint16 array and reshape.
         dtype = f"<u{bytes_per_pixel}"  # Buffer is little-endian
@@ -2366,6 +2510,11 @@ class LS4Controller(LS4_Device):
         #self.info("time to fetch data : %7.3f sec" % self.timing['fetch'].period)
 
         self.update_status(ControllerStatus.FETCH_PENDING,'off')
+
+        if self.fake_controller:
+          # Mark the buffer as fetched by setting completeness to False (i.e. empty)     
+          #self.info("setting current buffer (%d) to empty" % buffer_no)
+          self.fake_control.update_frame(buf_index=buffer_no,complete = False)
 
         if return_buffer:
             return (arr, buffer_no)

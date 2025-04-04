@@ -10,6 +10,13 @@ FOLLOWER_TIMEOUT_MSEC = 10000
 AMPS_PER_CCD = 2
 CCDS_PER_QUAD = 8
 
+# for fake control:
+FAKE_LINECOUNT = 4120
+FAKE_PIXELCOUNT = 1050
+FAKE_AMPS_PER_CCD = 2
+FAKE_CCDS_PER_QUAD = 8
+FAKE_BYTES_PER_PIXEL = 2
+
 # Note +/-100 V supply voltages changed to +/- 50.0 V by G. Bredthauer
 # 2024 Feb 16 to keep op-amp on XV BIASS from overheating. THis change
 # prevents operation of DECam CCDS with Vsub > 40.0 V

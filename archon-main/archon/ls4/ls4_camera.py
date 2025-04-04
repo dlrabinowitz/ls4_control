@@ -579,6 +579,7 @@ class LS4_Camera():
                  timing=self.timing,
                  reboot=reboot,
                  idle_function =  self.ls4_conf['idle_function'],
+                 acf_file = self.acf_conf_file,
                  notifier=self.notifier)
             self.debug("awaiting ac.start")
             await self.ls4_controller.start(reset=False)
@@ -676,7 +677,6 @@ class LS4_Camera():
         if error_msg is None  and  self.acf_conf_file is not None:
           self.debug("writing acf_conf_file %s to controller, release_timing is %s" %\
                       (self.acf_conf_file,release_timing))
-
           try:
             # in test mode, do apply configuration to controller and do not power it on
             if self.ls4_test:
@@ -687,6 +687,8 @@ class LS4_Camera():
               await self.ls4_controller.write_config(release_timing=release_timing,\
                              input=self.acf_conf_file,\
                              applyall=True,poweron=power_on)
+            self.debug("done writing acf_conf_file %s to controller, release_timing is %s" %\
+                      (self.acf_conf_file,release_timing))
           except Exception as e:
             error_msg = "exception writing acf_conf_file to controller: %s" % e
 

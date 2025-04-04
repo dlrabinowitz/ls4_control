@@ -167,6 +167,7 @@ class LS4_Device(Device):
         self.local_addr=local_addr
         self.config=config
 
+
     async def test_connection(self,timeout_sec =None):
         """ test for a connection within specified timeout period (or default if timeout_sec = None)"""
 
