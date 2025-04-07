@@ -9,7 +9,7 @@ endif
 
 set ls4_host = `hostname`
 set CLEAR = 0
-set NUM_EXP = 5    
+set NUM_EXP = 3    
 set exptime0 = 3 
 set exp_incr = 0  
 set shutter = "True" 

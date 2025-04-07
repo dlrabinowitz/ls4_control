@@ -871,7 +871,8 @@ class LS4_Camera():
 
                 self.debug("%s: start waiting %7.3f for exposure" % (get_obsdate(),exptime))
                 t_start=time.time()
-                await self.ls4_controller.expose(exptime)
+                await self.ls4_controller.expose(exposure_time = exptime,\
+                         exp_done_callback = self.exp_done_callback)
                 t_wait=time.time()-t_start
                 self.debug("%s: done waiting %7.3f sec for exposure, dt = %7.3f" % \
                       (get_obsdate(),self.ls4_controller.config['expose_params']['actexpt'],t_wait))
@@ -937,6 +938,11 @@ class LS4_Camera():
 
         assert error_msg is None, error_msg
           
+    async def exp_done_callback(self,message=None):
+        self.debug("writing message = %s" % str(message))
+        self.info(message)
+        self.debug(message)
+
     async def fetch_and_save(self,output_image=None, status=None, config=None,system=None,\
                   ls4_conf=None,save=True,wait_expose=False, wait_readout=False,max_wait = MAX_FETCH_TIME):
 

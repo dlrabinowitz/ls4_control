@@ -1007,7 +1007,8 @@ if __name__ == "__main__":
          else:
            exp_mode = exp_mode_next
          try:
-           await ls4_ctrl.expose(exptime=exptime, exp_num=exp_num, enable_shutter = True, exp_mode=exp_mode)
+           await ls4_ctrl.expose(exptime=exptime, exp_num=exp_num, enable_shutter = True,\
+                      exp_mode=exp_mode)
          except Exception as e:
            error_msg = "exception taking exposure %d: %s" % (exp_num,e)
            break
@@ -1016,7 +1017,8 @@ if __name__ == "__main__":
        if (error_msg is None) and (exp_mode != exp_mode_single) and (last_exp_num is not None):
          exp_num = last_exp_num
          try:
-           await ls4_ctrl.expose(exptime=0.25, exp_num=exp_num, enable_shutter = True, exp_mode='last')
+           await ls4_ctrl.expose(exptime=0.25, exp_num=exp_num, \
+                    enable_shutter = True, exp_mode='last')
          except Exception as e:
            error_msg = "exception reading out last exposure %d: %s" % (exp_num,e)
 

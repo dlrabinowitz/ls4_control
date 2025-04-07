@@ -2053,7 +2053,8 @@ class LS4Controller(LS4_Device):
 
     async def expose(
         self,
-        exposure_time: float = 1
+        exposure_time: float = 1,
+        exp_done_callback: Optional[Callable[[str], None]] = None, 
     ) -> asyncio.Task:
 
         """Integrates the CCD for ``exposure_time`` seconds.
@@ -2145,6 +2146,12 @@ class LS4Controller(LS4_Device):
            self.config['expose_params']['doneobs']=get_obsdate()
 
            self.update_status(CS.EXPOSING, 'off')
+           if exp_done_callback is not None:
+             try:
+               await exp_done_callback("######### DONE WITH EXPOSURE. NOW READING OUT #########")
+             except Exception as e:
+               self.error("exception executing exp_done_callback: %s" % e)
+
            #self.debug(f"update_state: updating status to READOUT_PENDING")
            #self.update_status(CS.READOUT_PENDING)
            self.info("%s: done with exposure: expected : %7.3f, measured: %7.3f" %\
