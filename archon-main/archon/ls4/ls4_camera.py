@@ -38,6 +38,7 @@ import argparse
 #from . import MAX_COMMAND_ID,FOLLOWER_TIMEOUT_MSEC
 from . import VOLTAGE_TOLERANCE, MAX_FETCH_TIME, AMPS_PER_CCD, MAX_CCDS, VSUB_BIAS_NAME
 from archon.tools import get_obsdate
+from typing import Any, Callable, Iterable, Literal, Optional, cast, overload
 
 # Notes about LS4 tap lines and CCD placement
 #
@@ -200,6 +201,7 @@ class LS4_Camera():
         self.ip_address = ls4_conf['ip']
         self.local_addr = ls4_conf['local_addr']
         self.name = ls4_conf['name']
+        self.index = ls4_conf['index']
 
         self.ls4_logger = LS4_Logger(leader=self.leader,name=self.name)
         self.info = self.ls4_logger.info
@@ -570,8 +572,8 @@ class LS4_Camera():
 
         if error_msg is None:
           try: 
-            self.ls4_controller = LS4Controller(name=self.name,\
-                 host=self.ip_address,local_addr=self.local_addr,\
+            self.ls4_controller = LS4Controller(name=self.name,
+                 host=self.ip_address,local_addr=self.local_addr,
                  param_args=self.param_args,command_args=self.command_args,
                  ls4_events = self.ls4_sync.ls4_events,
                  ls4_logger=self.ls4_logger,
@@ -580,7 +582,8 @@ class LS4_Camera():
                  reboot=reboot,
                  idle_function =  self.ls4_conf['idle_function'],
                  acf_file = self.acf_conf_file,
-                 notifier=self.notifier)
+                 notifier=self.notifier,
+                 index=self.index)
             self.debug("awaiting ac.start")
             await self.ls4_controller.start(reset=False)
           except Exception as e:
@@ -796,8 +799,18 @@ class LS4_Camera():
 
         self.timing['save'].end()
     
-    async def acquire(self,output_image=None,exptime=0.0, acquire=True, fetch=True, \
-                        concurrent=False, save=True, enable_shutter=True):
+    async def acquire(
+        self,
+        output_image: str | None = None,
+        exptime: float = 0.0,
+        acquire: bool = True,
+        fetch: bool = True,
+        concurrent: bool = False,
+        save: bool = True,
+        enable_shutter: bool =True,
+        exp_done_callback: Optional[Callable[[str,int], None]] = None, 
+
+    ) -> None:
 
         """  If acquire = True: acquire a new  exposure and readout to controller memory.
 
@@ -872,7 +885,7 @@ class LS4_Camera():
                 self.debug("%s: start waiting %7.3f for exposure" % (get_obsdate(),exptime))
                 t_start=time.time()
                 await self.ls4_controller.expose(exposure_time = exptime,\
-                         exp_done_callback = self.exp_done_callback)
+                         exp_done_callback = exp_done_callback)
                 t_wait=time.time()-t_start
                 self.debug("%s: done waiting %7.3f sec for exposure, dt = %7.3f" % \
                       (get_obsdate(),self.ls4_controller.config['expose_params']['actexpt'],t_wait))
@@ -938,11 +951,6 @@ class LS4_Camera():
 
         assert error_msg is None, error_msg
           
-    async def exp_done_callback(self,message=None):
-        self.debug("writing message = %s" % str(message))
-        self.info(message)
-        self.debug(message)
-
     async def fetch_and_save(self,output_image=None, status=None, config=None,system=None,\
                   ls4_conf=None,save=True,wait_expose=False, wait_readout=False,max_wait = MAX_FETCH_TIME):
 

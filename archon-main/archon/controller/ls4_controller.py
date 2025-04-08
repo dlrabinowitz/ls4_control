@@ -138,6 +138,7 @@ class LS4Controller(LS4_Device):
         acf_file: str | None = None,
         reboot: bool | None = None,
         notifier: Optional[Callable[[str], None]] = None,
+        index: int | None = None
     ):
 
         assert param_args is not None, "param_args are not specified"
@@ -176,6 +177,7 @@ class LS4Controller(LS4_Device):
 
         self.host = host
         self.name = name
+        self.index= index
 
         self._binary_reply: Optional[bytearray] = None
 
@@ -2054,7 +2056,7 @@ class LS4Controller(LS4_Device):
     async def expose(
         self,
         exposure_time: float = 1,
-        exp_done_callback: Optional[Callable[[str], None]] = None, 
+        exp_done_callback: Optional[Callable[[str,int],None]] = None, 
     ) -> asyncio.Task:
 
         """Integrates the CCD for ``exposure_time`` seconds.
@@ -2148,7 +2150,7 @@ class LS4Controller(LS4_Device):
            self.update_status(CS.EXPOSING, 'off')
            if exp_done_callback is not None:
              try:
-               await exp_done_callback("######### DONE WITH EXPOSURE. NOW READING OUT #########")
+               await exp_done_callback("done",self.index)
              except Exception as e:
                self.error("exception executing exp_done_callback: %s" % e)
 

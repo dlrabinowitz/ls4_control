@@ -223,6 +223,7 @@ class LS4_Control:
          conf.update({'image_prefix':'%sC%d' % (self.ls4_conf['image_prefix'],index)})
          conf.update({'ip':self.ip_list[index]})
          conf.update({'name':name})
+         conf.update({'index':index})
          conf.update({'local_addr':(self.bind_list[index],self.port_list[index])})
          conf.update({'acf_file':self.conf_path+"/"+self.acf_list[index]})
          conf.update({'map_file':self.conf_path+"/"+self.map_list[index]})
@@ -792,9 +793,11 @@ class LS4_Control:
 
         try:
           await asyncio.gather(ls4.acquire(exptime=exptime,output_image=output_image,concurrent=concurrent,\
-                                 acquire=True,fetch=False,save=False,enable_shutter=enable_shutter),
-                               ls4.acquire(exptime=exptime,output_image=output_image,concurrent=concurrent,
-                                 acquire=False, fetch=True,save=save,enable_shutter=enable_shutter))
+                                 acquire=True,fetch=False,save=False,enable_shutter=enable_shutter,\
+                                 exp_done_callback = self.exp_done_callback),\
+                               ls4.acquire(exptime=exptime,output_image=output_image,concurrent=concurrent,\
+                                 acquire=False, fetch=True,save=save,enable_shutter=enable_shutter,\
+                                 exp_done_callback = self.exp_done_callback))
         except Exception as e:
            error_msg = "image %s: exception acquiring and fetching at same time: %s" % (output_image,e)
            self.error(error_msg)
@@ -804,7 +807,8 @@ class LS4_Control:
         if acquire:
           try: 
              await ls4.acquire(exptime=exptime,output_image=output_image,acquire=True,concurrent=concurrent,\
-                              fetch=False,save=False,enable_shutter=enable_shutter)
+                              fetch=False,save=False,enable_shutter=enable_shutter,\
+                              exp_done_callback = self.exp_done_callback)
           except Exception as e:
              error_msg = "image %s: exception acquiring and fetching sequentially: %s" % (output_image,e)
              self.error(error_msg)
@@ -812,7 +816,7 @@ class LS4_Control:
         if fetch and (error_msg is None):
           try: 
              await ls4.acquire(exptime=exptime,output_image=output_image,acquire=False,concurrent=concurrent,\
-                    fetch=True,save=save)
+                    fetch=True,save=save,exp_done_callback = None)
           except Exception as e:
              error_msg = "image: %s: exception saving fetched data: %s" %\
                            (output_image,e)
@@ -944,6 +948,11 @@ class LS4_Control:
 
       return error_msg
          
+  async def exp_done_callback(self,message=None,index=None):
+      string = "index: %d  exposure status is : %s" % (index,message)
+      self.info(string)
+      #self.debug(string) 
+
   """   
   async def close(self):
 
