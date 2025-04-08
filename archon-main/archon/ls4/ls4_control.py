@@ -972,7 +972,8 @@ class LS4_Control:
       self.exp_status['num_done'] = self.exp_status['num_done'] + 1
       if self.exp_status['num_done'] == self.num_controllers :
         state = 'all done'
-        self.ls4_status.update({'state':'done exposing'})
+        #self.ls4_status.update({'state':'done exposing'})
+        await self.ls4_status.status_callback(keyword='state',value='done exposing')
       else:
         state = '%d done' % self.exp_status['num_done']
 

@@ -340,8 +340,15 @@ class LS4_CCP():
         self.info("Running command and status servers")
         try:
           #await ls4_command_server.run()
-          await asyncio.gather(ls4_command_server.run(),self.ls4_abort.watchdog())
-          #await asyncio.gather(ls4_command_server.run(),ls4_status_server.run())
+          #
+          # This works
+          #await asyncio.gather(ls4_command_server.run(),self.ls4_abort.watchdog())
+          #
+          #
+          #
+          await asyncio.gather(ls4_command_server.run(),ls4_status_server.run())
+          #
+          # Testing this
           #await asyncio.gather(ls4_status_server.run(),\
           #                     ls4_command_server.run(),\
           #                     self.ls4_abort.watchdog())

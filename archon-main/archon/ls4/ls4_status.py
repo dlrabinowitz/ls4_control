@@ -9,6 +9,7 @@ import os
 from archon import log
 import logging
 import threading
+import asyncio
 
 from archon.controller.ls4_logger import LS4_Logger   
 from archon.tools import get_obsdate
@@ -131,7 +132,7 @@ class LS4_Status():
         return error_msg
 
 
-    def status_callback(self,keyword=None,value=None):
+    async def status_callback(self,keyword=None,value=None):
         """ update the status with the specified keyword and value"""
 
         if keyword is not None:
