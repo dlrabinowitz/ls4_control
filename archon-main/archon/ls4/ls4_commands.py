@@ -469,6 +469,7 @@ class LS4_Commands():
         # the last, and then use exp_mode_last
         #
         # exposures can be aborted using the "abort_exposure" script.
+        #
 
         error_msg = None
         arg_name_list = None

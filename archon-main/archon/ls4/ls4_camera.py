@@ -818,7 +818,7 @@ class LS4_Camera():
 
              IF acquire/fetch = False/True : fetch previously acquired data from controller memory
 
-             If acquire/fetch= True/Fase: acquire a new exposure and save to controller memory only
+             If acquire/fetch= True/False: acquire a new exposure and save to controller memory only
 
              If enable_shutter = True/False: enable/disable shutter during exposure
 

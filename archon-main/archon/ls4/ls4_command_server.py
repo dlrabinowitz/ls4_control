@@ -42,7 +42,8 @@ class LS4_Command_Server():
            self.debug("command_function: command and args are [%s] [%s]" %\
                      (command,arg_value_list) )
 
-        reply_list[0] = DONE_REPLY
+        reply_list[0] = DONE_REPL
+
         self.debug("command_function: reply is %s" % reply_list[0])
 
 
@@ -330,7 +331,8 @@ class LS4_Command_Server():
 
            self.debug("calling command_fnc with command %s and args %s" %\
                     (command,arg_value_list))
-           await self.command_fnc(command=command,arg_value_list=arg_value_list,reply_list=reply_list)
+           await self.command_fnc(command=command,arg_value_list=arg_value_list,\
+                          reply_list=reply_list)
            self.debug("done calling command_fnc with command [%s]  args [%s] and reply [%s]" %\
                     (command,str(arg_value_list),reply_list[0]))
         

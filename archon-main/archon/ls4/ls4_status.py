@@ -129,3 +129,16 @@ class LS4_Status():
           self.warn(error_msg)
 
         return error_msg
+
+
+    def status_callback(self,keyword=None,value=None):
+        """ update the status with the specified keyword and value"""
+
+        if keyword is not None:
+           try:
+               self.update({keyword:value})
+           except Exception as e:
+               self.error("unable to update status: keyword %s value %s: %s" %\
+                     (keyword,str(value),e))
+
+

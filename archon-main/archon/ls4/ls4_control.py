@@ -53,10 +53,13 @@ class LS4_Control:
 
   def __init__(self,logger=None, ls4_conf_file=None,init_conf=None,parse_args=False):
 
+
      """ 
          If init_conf is specified, it is a dictionary to initialize conf. 
+
          If ls4_conf_file is provided, it is a json file that overwrites
-         ors adds additional configuration parameters/
+         ors adds additional configuration parameters.
+
          If parse_args is True, parse the command line
          for additional configuration parameters.
 
@@ -111,6 +114,7 @@ class LS4_Control:
        self.initial_reboot = self.ls4_conf['initial_reboot']
        self.num_controllers = len(self.name_list)
        self.num_enabled_controllers=len(self.ls4_conf['enable_list'])
+       self.exp_status = {'num_done': 0, 'state':'0 done'}
 
        # evaluate bool expressions in ls4_conf (they could be bool or string values).
        self.save_images = check_bool_value(self.ls4_conf['save'],True)
@@ -280,6 +284,8 @@ class LS4_Control:
         else:
            self.ls4_sync.add_controller(ls4_cam.ls4_controller,sync_index=None)
 
+     self.exp_status = {'num_done': 0, 'state':'0 done'}
+            
      self.ls4_status.update({'ready':True,'state':'initialized','error':False,'comment':'initialized'})
 
   async def start(self):
@@ -321,6 +327,7 @@ class LS4_Control:
        await self.clear(self.clear_time)
 
      self.image_count=self.ls4_conf['init_count']
+     self.exp_status = {'num_done': 0, 'state':'0 done'}
 
      self.ls4_status.update({'state':'started','comment':'started'})
      await self.update_cam_status()
@@ -829,10 +836,13 @@ class LS4_Control:
 
       assert error_msg is None, error_msg
 
-  async def expose(self, exptime=0.0, exp_num = 0, enable_shutter = True,  exp_mode=exp_mode_single, fileroot=None):
+  async def expose(self, exptime=0.0, exp_num = 0, enable_shutter = True,\
+                        exp_mode=exp_mode_single, fileroot=None):
 
       error_msg = None
- 
+      self.exp_status = {'num_done': 0, 'state':'0 done'}
+      expected_exp_state = "all done"
+
       if fileroot is not None:
         self.ls4_conf['image_prefix']=fileroot
         index=0
@@ -860,6 +870,8 @@ class LS4_Control:
         elif exp_mode == exp_mode_last:
           self.info("########## %s: fetching last exposure %s" % \
                 (get_obsdate(),image_suffix))
+          # for this exposure mode, previous exposure is fetched. But no new exposures are taken.
+          expected_exp_state = "0 done"
         elif exp_mode == exp_mode_single:
           self.info("########## %s: acquiring and fetching exposure %s" % \
                 (get_obsdate(),image_suffix))
@@ -873,7 +885,7 @@ class LS4_Control:
              await self.set_sync(True)
         except Exception as e:
           error_msg = "Exception syncing controllers before new exposure: %s" %e
-         
+       
       if error_msg is None:
          self.ls4_status.update({'state':'exposing','comment':'expo_mode %s' % exp_mode})
 
@@ -886,7 +898,6 @@ class LS4_Control:
            
         except Exception as e:
           error_msg = "Exception executing exp_sequence with acquire/fetch/concurrent = True/False/False: %s" % e
-
 
       elif (error_msg is None) and exp_mode == exp_mode_next:
         try:
@@ -936,22 +947,38 @@ class LS4_Control:
           except Exception as e:
             error_msg = "Exception executing exp_sequence with acquire/fetch/concurrent = False/True/False: %s" % e
  
+      # make sure all expected exposures were read out
+      if error_msg is not None:
+          if self.exp_status['state'] != expected_exp_state:
+             error_msg = "Expected exposure state is %s. Final exposure state is %s" %\
+                        (self.exp_status['state'],expected_exp_state)
+
       if error_msg is not None:
          self.error("########## %s: %s" % (get_obsdate(),error_msg))
       else:
          self.image_count += 1
  
       if error_msg is None:
-         self.ls4_status.update({'state':'done exposing'})
+         #self.ls4_status.update({'state':'done exposing'})
+         self.ls4_status.update({'state':'done reading'})
       else:
-         self.ls4_status.update({'state':'done exposing','error':True,'comment':error_msg})
+         #self.ls4_status.update({'state':'done exposing','error':True,'comment':error_msg})
+         self.ls4_status.update({'state':'done reading','error':True,'comment':error_msg})
 
       return error_msg
          
   async def exp_done_callback(self,message=None,index=None):
-      string = "index: %d  exposure status is : %s" % (index,message)
-      self.info(string)
-      #self.debug(string) 
+
+      self.exp_status['num_done'] = self.exp_status['num_done'] + 1
+      if self.exp_status['num_done'] == self.num_controllers :
+        state = 'all done'
+        self.ls4_status.update({'state':'done exposing'})
+      else:
+        state = '%d done' % self.exp_status['num_done']
+
+      self.exp_status['state'] = state
+     
+      self.info("exposure status is %s" % str(self.exp_status))
 
   """   
   async def close(self):
