@@ -9,8 +9,8 @@ endif
 
 set ls4_host = `hostname`
 set CLEAR = 0
-set NUM_EXP = 3    
-set exptime0 = 20
+set NUM_EXP = 10   
+set exptime0 = 10
 set exp_incr = 0  
 set shutter = "True" 
 set exp_delay = 0.0

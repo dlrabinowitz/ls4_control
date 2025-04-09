@@ -75,6 +75,7 @@ class LS4_Status():
             error_msg = self.acquire_lock()
             if error_msg is None:
               dt=get_obsdate()
+              self.info("setting ls4 status to %s" % s)
               self._status.update(s)
               self._status.update({'date':dt})
             error_msg = self.release_lock()

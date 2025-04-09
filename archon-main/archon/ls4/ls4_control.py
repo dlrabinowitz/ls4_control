@@ -797,6 +797,9 @@ class LS4_Control:
 
       # acquire and fetch at the same time
       if acquire and fetch and concurrent and (error_msg is None):
+        self.ls4_status.update(\
+                  {'state':'begin exposure sequence',\
+                    'comment':'concurrent fetching of previous exposure'})
 
         try:
           await asyncio.gather(ls4.acquire(exptime=exptime,output_image=output_image,concurrent=concurrent,\
@@ -812,6 +815,8 @@ class LS4_Control:
       # acquire and/or fetch but not at the same time
       elif (acquire or fetch) and (not concurrent) and (error_msg is None):
         if acquire:
+          self.ls4_status.update(\
+                  {'state':'begin exposure sequence', 'comment':'acquire first'})
           try: 
              await ls4.acquire(exptime=exptime,output_image=output_image,acquire=True,concurrent=concurrent,\
                               fetch=False,save=False,enable_shutter=enable_shutter,\
@@ -821,6 +826,8 @@ class LS4_Control:
              self.error(error_msg)
 
         if fetch and (error_msg is None):
+          self.ls4_status.update(\
+                  {'state':'continue exposure sequence', 'comment':'now fetching'})
           try: 
              await ls4.acquire(exptime=exptime,output_image=output_image,acquire=False,concurrent=concurrent,\
                     fetch=True,save=save,exp_done_callback = None)
@@ -833,6 +840,13 @@ class LS4_Control:
          error_msg = "unexpected combination of acquire/fetch/concurrent: %s %s %s" %\
                        (acquire,fetch,concurrent)
          self.error(error_msg)
+
+      if error_msg:
+        self.ls4_status.update(\
+                  {'state':'done with exposure sequence', 'comment':'error'})
+      else:
+        self.ls4_status.update(\
+                  {'state':'done with exposure sequence', 'comment':'success'})
 
       assert error_msg is None, error_msg
 
@@ -887,7 +901,7 @@ class LS4_Control:
           error_msg = "Exception syncing controllers before new exposure: %s" %e
        
       if error_msg is None:
-         self.ls4_status.update({'state':'exposing','comment':'expo_mode %s' % exp_mode})
+         self.ls4_status.update({'state':'exposing','comment':'exp_mode %s' % exp_mode})
 
       if (error_msg is None) and exp_mode == exp_mode_first:
         try:
@@ -948,7 +962,7 @@ class LS4_Control:
             error_msg = "Exception executing exp_sequence with acquire/fetch/concurrent = False/True/False: %s" % e
  
       # make sure all expected exposures were read out
-      if error_msg is not None:
+      if error_msg is None:
           if self.exp_status['state'] != expected_exp_state:
              error_msg = "Expected exposure state is %s. Final exposure state is %s" %\
                         (self.exp_status['state'],expected_exp_state)
@@ -972,12 +986,12 @@ class LS4_Control:
       self.exp_status['num_done'] = self.exp_status['num_done'] + 1
       if self.exp_status['num_done'] == self.num_controllers :
         state = 'all done'
+        self.exp_status['state'] = state
         #self.ls4_status.update({'state':'done exposing'})
         await self.ls4_status.status_callback(keyword='state',value='done exposing')
       else:
         state = '%d done' % self.exp_status['num_done']
-
-      self.exp_status['state'] = state
+        self.exp_status['state'] = state
      
       self.info("exposure status is %s" % str(self.exp_status))
 

@@ -292,6 +292,7 @@ class LS4_CCP():
            command_dict = ls4_commands.command_dict
            status_dict = {}
            status_dict['status'] = ls4_commands.command_dict['status']
+           status_dict['abort'] = ls4_commands.command_dict['abort']
            error_reply = ls4_commands.error_reply
            done_reply = ls4_commands.done_reply
          except Exception as e:
@@ -331,7 +332,8 @@ class LS4_CCP():
               maxbufsize=server_bufsize,ls4_abort=self.ls4_abort,\
               command_fnc=status_fnc,logger=self.logger,server_status=self.ccp_status,\
               command_dict=status_dict,error_reply=error_reply,done_reply=done_reply,
-              status_only = True)
+              #status_only = True)
+              status_only = False)
         except Exception as e:
           error_msg = "Exception instantiating status server on port %d: %s" % (server_port,e)
       #"""     
@@ -346,12 +348,12 @@ class LS4_CCP():
           #
           #
           #
-          await asyncio.gather(ls4_command_server.run(),ls4_status_server.run())
+          #await asyncio.gather(ls4_command_server.run(),ls4_status_server.run())
           #
           # Testing this
-          #await asyncio.gather(ls4_status_server.run(),\
-          #                     ls4_command_server.run(),\
-          #                     self.ls4_abort.watchdog())
+          await asyncio.gather(ls4_status_server.run(),\
+                               ls4_command_server.run(),\
+                               self.ls4_abort.watchdog())
         except Exception as e:
           error_msg = "Exception running command and status servers: %s" % e
 
