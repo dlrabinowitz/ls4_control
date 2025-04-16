@@ -130,8 +130,11 @@ class LS4_Commands():
 
         elif command == 'status':
            await self.ls4_ctrl.update_cam_status()
-           reply_list[0] = self.done_reply + " " + str(self.ls4_ctrl.status)
-           reply_list[0] = reply_list[0].replace(",",",\n") 
+           reply_list[0] = self.done_reply + "|" + str(self.ls4_ctrl.status) + "|"
+           reply_list[0] = reply_list[0].replace(",","|") 
+           reply_list[0] = reply_list[0].replace("'","") 
+           reply_list[0] = reply_list[0].replace("{"," ") 
+           reply_list[0] = reply_list[0].replace("}"," ") 
 
         elif command == 'expose':
            error_msg = await self.expose(arg_dict)

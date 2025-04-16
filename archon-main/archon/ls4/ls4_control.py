@@ -40,6 +40,7 @@ import argparse
 from archon.ls4.ls4_sync import LS4_Sync
 from archon.controller.ls4_logger import LS4_Logger   
 from archon.controller.ls4_mainloop import Mainloop_Function as ML
+from archon.controller.maskbits import ArchonPower
 from archon.ls4.ls4_conf import LS4_Conf     
 from archon.ls4.ls4_camera import LS4_Camera
 from archon.ls4.ls4_status import LS4_Status
@@ -50,6 +51,32 @@ from archon.tools import get_obsdate
 
 
 class LS4_Control:
+
+  cam_status_keys=[\
+  'ready',
+  'state',
+  'error',
+  'comment',
+  'date',
+  'powergood',
+  'power',
+  'date-obs',
+  'obsmode',
+  'imagetype',
+  'actexpt',
+  #'frame',
+  'read-per',
+  'ccdtemp',
+  'shutter',
+  'startobs',
+  'doneobs',
+  'cmd_error',
+  'cmd_error_msg',
+  'cmd_command',
+  'cmd_arg_value_list',
+  'cmd_reply'\
+  ]
+
 
   def __init__(self,logger=None, ls4_conf_file=None,init_conf=None,parse_args=False):
 
@@ -364,7 +391,14 @@ class LS4_Control:
                if key1 not in cam_status:
                  cam_status[key1]=""
                cam_status[key1] += str(status[key])
+             elif key in self.cam_status_keys:
+               if key == 'power':
 
+                  p =  ArchonPower(status[key])
+                  print("status[power] = %s" % p)
+                  cam_status[key]=ArchonPower.str(p)
+               else:
+                  cam_status[key]=status[key]
       self.ls4_status.update(cam_status)
 
 
@@ -913,6 +947,9 @@ class LS4_Control:
         except Exception as e:
           error_msg = "Exception executing exp_sequence with acquire/fetch/concurrent = True/False/False: %s" % e
 
+        #s = await self.ls4_list[0].get_status()
+        #self.ls4_status.update(s)
+
       elif (error_msg is None) and exp_mode == exp_mode_next:
         try:
           await asyncio.gather(*(self.exp_sequence(exptime=exptime,ls4=self.ls4_list[index],\
@@ -923,6 +960,9 @@ class LS4_Control:
         except Exception as e:
           error_msg = "Exception executing exp_sequence with acquire/fetch/concurrent = True/True/True: %s" % e
 
+        #s = await self.ls4_list[0].get_status()
+        #self.ls4_status.update(s)
+
       elif (error_msg is None) and exp_mode == exp_mode_last:
         try:
           await asyncio.gather(*(self.exp_sequence(exptime=exptime,ls4=self.ls4_list[index],\
@@ -932,6 +972,9 @@ class LS4_Control:
 
         except Exception as e:
           error_msg = "Exception executing exp_sequence with acquire/fetch/concurrent = False/True/False: %s" % e
+
+        #s = await self.ls4_list[0].get_status()
+        #self.ls4_status.update(s)
 
       elif (error_msg is None) and exp_mode == exp_mode_single:
         # acquire (expose/readout) and then fetch immediately after the readout ends
@@ -945,6 +988,9 @@ class LS4_Control:
         except Exception as e:
           error_msg = "Exception executing exp_sequence with acquire/fetch/concurrent = True/False/False: %s" % e
              
+        #s = await self.ls4_list[0].get_status()
+        #self.ls4_status.update(s)
+
         if (error_msg is None):
           try:
             if self.sync_controllers:
@@ -959,8 +1005,12 @@ class LS4_Control:
                        fetch=True,concurrent=False,save=self.save_images,enable_shutter=enable_shutter) \
                        for index in range(0,self.num_controllers)))
           except Exception as e:
-            error_msg = "Exception executing exp_sequence with acquire/fetch/concurrent = False/True/False: %s" % e
+            error_msg =\
+              "Exception executing exp_sequence with acquire/fetch/concurrent = False/True/False: %s" % e
  
+        #s = await self.ls4_list[0].get_status()
+        #self.ls4_status.update(s)
+
       # make sure all expected exposures were read out
       if error_msg is None:
           if self.exp_status['state'] != expected_exp_state:

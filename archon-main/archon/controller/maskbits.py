@@ -109,3 +109,22 @@ class ArchonPower(enum.Enum):
     INTERMEDIATE = 3
     ON = 4
     STANDBY = 5
+
+    def str(val = 0):
+
+      if val == ArchonPower.UNKNOWN:
+        return "UNKNOWN"
+      elif val == ArchonPower.NOT_CONFIGURED:
+        return "NOT_CONFIGURED"
+      elif val == ArchonPower.OFF:
+        return "OFF"
+      elif val == ArchonPower.INTERMEDIATE:
+        return "INTERMEDIATE"
+      elif val == ArchonPower.ON:
+        return "ON"
+      elif val == ArchonPower.STANDBY:
+        return "STANDBY"
+      else:
+        return "UNRECOGNIZED"
+
+

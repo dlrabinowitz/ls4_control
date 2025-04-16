@@ -278,7 +278,7 @@ class LS4Controller(LS4_Device):
                {"date-obs":"0000-00-00T00:00:00",\
                 "object": "TEST",\
                 "obsmode": "TEST",\
-                "imagetyp": "TEST",\
+                "imagetype": "TEST",\
                 "actexpt": 0.0,\
                 "focus": 0.0,\
                 "tele-ra": 0.0,\
@@ -973,7 +973,7 @@ class LS4Controller(LS4_Device):
 
         """Returns a dictionary with the output of the ``STATUS`` command."""
 
-        device_status=None
+        device_status={}
 
         cmd = await self.send_command("STATUS", timeout=10)
         if not cmd.succeeded():
@@ -984,7 +984,13 @@ class LS4Controller(LS4_Device):
             )
 
         if self.fake_controller:
-            device_status = {'powergood':1,'overheat':0,'power':4}
+            power_status = await self.fake_control.power()
+            if power_status == ArchonPower.ON:
+              p = 4
+            else:
+              p = 2
+            device_status = {'powergood':1,'overheat':0,'power':p}
+
             status_keys=self.fake_control.status_keys
             conf_enable_keys=self.fake_control.conf_enable_keys
             for k in status_keys:
@@ -1014,6 +1020,8 @@ class LS4Controller(LS4_Device):
                  value = float(val)
               device_status[key]=value
                   
+        device_status.update(self.config['expose_params'])
+
         """
         keywords = str(cmd.replies[0].reply).split()
         device_status = {
@@ -1507,14 +1515,15 @@ class LS4Controller(LS4_Device):
             The power state as an `.ArchonPower` flag.
 
         """
+
+        status={}
         if self.fake_controller:
            power_status= await self.fake_control.power(mode)
-
            if power_status == ArchonPower.ON:
-               self.update_status(ControllerStatus.POWERON)
+             p = 1
            else:
-               self.update_status(ControllerStatus.POWEROFF)
-
+             p = 0
+           status = {'powergood':1,'overheat':0,'power':p}
         else:
           if mode is not None:
               cmd_str = "POWERON" if mode is True else "POWEROFF"
@@ -1531,18 +1540,18 @@ class LS4Controller(LS4_Device):
 
           power_status = ArchonPower(status["power"])
 
-          if (
-              power_status not in [ArchonPower.ON, ArchonPower.OFF]
-              or status["powergood"] == 0
-          ):
-              if power_status == ArchonPower.INTERMEDIATE:
-                  warnings.warn("Power in INTERMEDIATE state.", LS4UserWarning)
-              self.update_status(ControllerStatus.POWERBAD)
-          else:
-              if power_status == ArchonPower.ON:
-                  self.update_status(ControllerStatus.POWERON)
-              elif power_status == ArchonPower.OFF:
-                  self.update_status(ControllerStatus.POWEROFF)
+        if (
+            power_status not in [ArchonPower.ON, ArchonPower.OFF]
+            or status["powergood"] == 0
+        ):
+            if power_status == ArchonPower.INTERMEDIATE:
+                warnings.warn("Power in INTERMEDIATE state.", LS4UserWarning)
+            self.update_status(ControllerStatus.POWERBAD)
+        else:
+            if power_status == ArchonPower.ON:
+                self.update_status(ControllerStatus.POWERON)
+            elif power_status == ArchonPower.OFF:
+                self.update_status(ControllerStatus.POWEROFF)
 
         return power_status
 
