@@ -9,7 +9,6 @@ import os
 from archon import log
 import logging
 import threading
-import asyncio
 
 from archon.controller.ls4_logger import LS4_Logger   
 from archon.tools import get_obsdate
@@ -75,7 +74,6 @@ class LS4_Status():
             error_msg = self.acquire_lock()
             if error_msg is None:
               dt=get_obsdate()
-              self.info("setting ls4 status to %s" % s)
               self._status.update(s)
               self._status.update({'date':dt})
             error_msg = self.release_lock()
@@ -131,16 +129,3 @@ class LS4_Status():
           self.warn(error_msg)
 
         return error_msg
-
-
-    async def status_callback(self,keyword=None,value=None):
-        """ update the status with the specified keyword and value"""
-
-        if keyword is not None:
-           try:
-               self.update({keyword:value})
-           except Exception as e:
-               self.error("unable to update status: keyword %s value %s: %s" %\
-                     (keyword,str(value),e))
-
-

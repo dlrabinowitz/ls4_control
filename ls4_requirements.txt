@@ -56,7 +56,7 @@ referencing==0.32.0
 rich==13.7.0
 rpds-py==0.13.2
 scipy==1.13.0
-sdss-archon @ file:///home/ls4/archon/ls4_control/archon-main
+sdss-archon @ file:///home/ls4/archon/ls4_control9/archon-main
 sdss-clu==2.2.2
 sdsstools==1.5.5
 six==1.16.0

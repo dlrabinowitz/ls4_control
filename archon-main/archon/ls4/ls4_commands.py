@@ -38,7 +38,6 @@ class LS4_Commands():
     # NOTE: make sure there are no spaced in the command names
     command_dict={\
         #'init':{'arg_name_list':[],'comment':'initialize camera controller'},\
-        'abort':{'arg_name_list':[],'comment':'abort ongoing exposurer'},\
         'open_shutter':{'arg_name_list':[],'comment':'open the camera shutter'},\
         'close_shutter':{'arg_name_list':[],'comment':'close the camera shutter'},\
         'status':{'arg_name_list':[],'comment':'return camera status'},\
@@ -130,11 +129,8 @@ class LS4_Commands():
 
         elif command == 'status':
            await self.ls4_ctrl.update_cam_status()
-           reply_list[0] = self.done_reply + "|" + str(self.ls4_ctrl.status) + "|"
-           reply_list[0] = reply_list[0].replace(",","|") 
-           reply_list[0] = reply_list[0].replace("'","") 
-           reply_list[0] = reply_list[0].replace("{"," ") 
-           reply_list[0] = reply_list[0].replace("}"," ") 
+           reply_list[0] = self.done_reply + " " + str(self.ls4_ctrl.status)
+           reply_list[0] = reply_list[0].replace(",",",\n") 
 
         elif command == 'expose':
            error_msg = await self.expose(arg_dict)
@@ -182,9 +178,6 @@ class LS4_Commands():
         elif command == 'autoflush_off':
            error_msg = await self.disable_autoflush()
 
-        elif command == 'abort':
-           error_msg = await self.abort()
-
 
         #elif command == 'r':
         #   self.info("reading CCD images")
@@ -193,7 +186,9 @@ class LS4_Commands():
         elif command == 'header':
            self.info("modifying image header")
            extras = {arg_value_list[0]:arg_value_list[1]}
-           self.ls4_ctrl.set_extra_header(extras)
+           # not yet implemented
+           #error_msg = await self.ls4_ctrl.set_extra_header(extras)
+
         elif command == 'help':
            self.info("printing command help")
            reply_list[0] = self.done_reply + self.help_string()
@@ -218,21 +213,6 @@ class LS4_Commands():
             help_str += "%16s fnct: %s\n\n" % (" ",c['comment'])
  
         return help_str
-
-
-    async def abort(self,arg_dict=None):
-        """ abort any ungoing exposure """
-
-        error_msg = None
-
-        try:
-          self.info("aborting exposures")
-          await self.ls4_ctrl.abort()
-          self.info("done aborting exposures")
-        except Exception as e:
-          error_msg = "Exception aborting exposures: %s" %e
-
-        return error_msg
 
     async def enable_vsub(self,arg_dict=None):
         """ enable Vsub bias. Bias Power must already be enabled """
@@ -490,7 +470,6 @@ class LS4_Commands():
         # the last, and then use exp_mode_last
         #
         # exposures can be aborted using the "abort_exposure" script.
-        #
 
         error_msg = None
         arg_name_list = None

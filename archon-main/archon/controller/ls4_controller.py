@@ -138,7 +138,6 @@ class LS4Controller(LS4_Device):
         acf_file: str | None = None,
         reboot: bool | None = None,
         notifier: Optional[Callable[[str], None]] = None,
-        index: int | None = None
     ):
 
         assert param_args is not None, "param_args are not specified"
@@ -177,7 +176,6 @@ class LS4Controller(LS4_Device):
 
         self.host = host
         self.name = name
-        self.index= index
 
         self._binary_reply: Optional[bytearray] = None
 
@@ -278,7 +276,7 @@ class LS4Controller(LS4_Device):
                {"date-obs":"0000-00-00T00:00:00",\
                 "object": "TEST",\
                 "obsmode": "TEST",\
-                "imagetype": "TEST",\
+                "imagetyp": "TEST",\
                 "actexpt": 0.0,\
                 "focus": 0.0,\
                 "tele-ra": 0.0,\
@@ -973,7 +971,7 @@ class LS4Controller(LS4_Device):
 
         """Returns a dictionary with the output of the ``STATUS`` command."""
 
-        device_status={}
+        device_status=None
 
         cmd = await self.send_command("STATUS", timeout=10)
         if not cmd.succeeded():
@@ -984,13 +982,7 @@ class LS4Controller(LS4_Device):
             )
 
         if self.fake_controller:
-            power_status = await self.fake_control.power()
-            if power_status == ArchonPower.ON:
-              p = 4
-            else:
-              p = 2
-            device_status = {'powergood':1,'overheat':0,'power':p}
-
+            device_status = {'powergood':1,'overheat':0,'power':4}
             status_keys=self.fake_control.status_keys
             conf_enable_keys=self.fake_control.conf_enable_keys
             for k in status_keys:
@@ -1020,8 +1012,6 @@ class LS4Controller(LS4_Device):
                  value = float(val)
               device_status[key]=value
                   
-        device_status.update(self.config['expose_params'])
-
         """
         keywords = str(cmd.replies[0].reply).split()
         device_status = {
@@ -1515,15 +1505,14 @@ class LS4Controller(LS4_Device):
             The power state as an `.ArchonPower` flag.
 
         """
-
-        status={}
         if self.fake_controller:
            power_status= await self.fake_control.power(mode)
+
            if power_status == ArchonPower.ON:
-             p = 1
+               self.update_status(ControllerStatus.POWERON)
            else:
-             p = 0
-           status = {'powergood':1,'overheat':0,'power':p}
+               self.update_status(ControllerStatus.POWEROFF)
+
         else:
           if mode is not None:
               cmd_str = "POWERON" if mode is True else "POWEROFF"
@@ -1540,18 +1529,18 @@ class LS4Controller(LS4_Device):
 
           power_status = ArchonPower(status["power"])
 
-        if (
-            power_status not in [ArchonPower.ON, ArchonPower.OFF]
-            or status["powergood"] == 0
-        ):
-            if power_status == ArchonPower.INTERMEDIATE:
-                warnings.warn("Power in INTERMEDIATE state.", LS4UserWarning)
-            self.update_status(ControllerStatus.POWERBAD)
-        else:
-            if power_status == ArchonPower.ON:
-                self.update_status(ControllerStatus.POWERON)
-            elif power_status == ArchonPower.OFF:
-                self.update_status(ControllerStatus.POWEROFF)
+          if (
+              power_status not in [ArchonPower.ON, ArchonPower.OFF]
+              or status["powergood"] == 0
+          ):
+              if power_status == ArchonPower.INTERMEDIATE:
+                  warnings.warn("Power in INTERMEDIATE state.", LS4UserWarning)
+              self.update_status(ControllerStatus.POWERBAD)
+          else:
+              if power_status == ArchonPower.ON:
+                  self.update_status(ControllerStatus.POWERON)
+              elif power_status == ArchonPower.OFF:
+                  self.update_status(ControllerStatus.POWEROFF)
 
         return power_status
 
@@ -2064,8 +2053,7 @@ class LS4Controller(LS4_Device):
 
     async def expose(
         self,
-        exposure_time: float = 1,
-        exp_done_callback: Optional[Callable[[str,int],None]] = None, 
+        exposure_time: float = 1
     ) -> asyncio.Task:
 
         """Integrates the CCD for ``exposure_time`` seconds.
@@ -2157,12 +2145,6 @@ class LS4Controller(LS4_Device):
            self.config['expose_params']['doneobs']=get_obsdate()
 
            self.update_status(CS.EXPOSING, 'off')
-           if exp_done_callback is not None:
-             try:
-               await exp_done_callback("done",self.index)
-             except Exception as e:
-               self.error("exception executing exp_done_callback: %s" % e)
-
            #self.debug(f"update_state: updating status to READOUT_PENDING")
            #self.update_status(CS.READOUT_PENDING)
            self.info("%s: done with exposure: expected : %7.3f, measured: %7.3f" %\
