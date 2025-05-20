@@ -9,14 +9,13 @@ POWER_DOWN="False"
 FAKE_FLAG="False"
 LOG_FLAG="False"
 HELP_FLAG="False"
-
+DATA_PATH="/data/ls4/test"
 EXPTIME=0.25
-IDLE_FUNCTION='clear'
+IDLE_FCTN="clear"
 
 n_args=$#
 
 index=1
-reset=False
 log_file=""
 
 while [ $index -le $n_args ]; do
@@ -25,8 +24,10 @@ while [ $index -le $n_args ]; do
    if [ $param == "-help" ] ; then
       HELP_FLAG=True  
 
-   elif [ $param == "-verbose" ] ; then
-      LOG_LEVEL="DEBUG"
+   elif [ $param == "-log_level" ] ; then
+      let "index=index+1"
+      shift 1
+      LOG_LEVEL=$1
 
    elif [ $param == "-clear" ] ; then
       CLEAR_FLAG=True  
@@ -52,6 +53,21 @@ while [ $index -le $n_args ]; do
       let "index=index+1"
       shift 1
       log_file=$1
+
+   elif [ $param == "-data_path" ] ; then
+      let "index=index+1"
+      shift 1
+      DATA_PATH=$1
+
+   elif [ $param == "-exp_time" ] ; then
+      let "index=index+1"
+      shift 1
+      EXPTIME=$1
+
+   elif [ $param == "-idle_fctn" ] ; then
+      let "index=index+1"
+      shift 1
+      NCTION=$1
    fi
 
    let "index=index+1"
@@ -61,19 +77,37 @@ done
 if [ $HELP_FLAG == "True" ]; then
    echo "syntax: start_ccp.bash [ options ]"
    echo "options:"
-   echo "-verbose   : verbose messaging"
-   echo "-reset     : reset controllers"
-   echo "-reboot    : reboot controllers"
-   echo "-poweroff  : reset and power off controllers"
-   echo "-fake      : fake operation of controllers"
-   echo "-log [file]: write output messages to log file"
-   echo "-help      : print help"
+   echo "  -log_level [level] : level of diagnostic messaging (ERROR,WARN,INFO,DEBUG)"
+   echo "  -clear             : clear CCD on startup "
+   echo "  -reset             : reset controllers on startup " 
+   echo "  -reboot            : reboot controllers on startup"   
+   echo "  -subread           : readout sub-section of each CCD" 
+   echo "  -poweroff          : reset and power off controllers"
+   echo "  -fake              : fake the operation of the CCD controllers "
+   echo "  -log [file]        : write output messages to specified log file"
+   echo "  -data_path [path]  : set path for writing image data"
+   echo "  -exp_time [expt]   : set default exposure time(sec) for exposures"
+   echo "  -idle_fctn [fctn]  : set idle function between exposures (none,clear,flush)"
+   echo "  -help              : print help"
+   echo " "
+   echo "defaults:"
+   echo "  -log_level : $LOG_LEVEL"
+   echo "  -reset     : $RESET_FLAG"
+   echo "  -reboot    : $REBOOT_FLAG"
+   echo "  -subread   : $SUB_READOUT"
+   echo "  -poweroff  : $POWER_DOWN"
+   echo "  -fake      : $FAKE_FLAG"
+   echo "  -log       : standard output"
+   echo "  -data_path : $DATA_PATH"
+   echo "  -exp_time  : $EXPTIME"
+   echo "  -idle_fctn : $IDLE_FCTN"
+
    exit
 fi
 
 #NOTE: If -log is not a parameter, then output goes to standard out.
 
-echo "LOG_LEVEL=$LOG_LEVEL CLEAR_FLAG=$CLEAR_FLAG SUB_READOUT=$SUB_REAWDOUT RESET_FLAG=$RESET_FLAG REBOOT_FLAG=$REBOOT_FLAG POWER_DOWN=$POWER_DOWN FAKE_FLAG=$FAKE_FLAG HELP_FLAG=$HELP_FLAG LOG_FLAG=$LOG_FLAG LOG_FILE=$log_file"
+echo "LOG_LEVEL=$LOG_LEVEL CLEAR_FLAG=$CLEAR_FLAG SUB_READOUT=$SUB_REAWDOUT RESET_FLAG=$RESET_FLAG REBOOT_FLAG=$REBOOT_FLAG POWER_DOWN=$POWER_DOWN FAKE_FLAG=$FAKE_FLAG HELP_FLAG=$HELP_FLAG LOG_FLAG=$LOG_FLAG LOG_FILE=$log_file DATA_PATH=$DATA_PATH EXPTIME=$EXPTIME IDLE_FCTN=$IDLE_FCTN"
 
 
 dt=`date +"LS4_%Y%m%d%H%M%S"`
@@ -119,11 +153,11 @@ SAVE_IMAGE="True"
 
 if [ $LOG_FLAG  == "True" ]; then
 
-  python $PYTHON/run_ccp.py --ip_list $IP_LIST --conf_path $CONF_PATH --acf_list $ARCHON_CFG_LIST --map_list $JSON_CFG_LIST --image_prefix $IMG_PREFIX --exptime $EXPTIME  --enable_list $ENABLE_LIST $TEST --bind_list $IP_BIND_LIST --port_list $PORT_LIST --leader ctrl1 --sync $SYNC --log_level $LOG_LEVEL --clear_time $CLEAR_TIME --save $SAVE_IMAGE --power_down $POWER_DOWN --shutter_mode $SHUTTER_MODE --name_list $NAME_LIST --initial_clear $CLEAR_FLAG  --idle_function $IDLE_FUNCTION --reset $RESET_FLAG --initial_reboot $REBOOT_FLAG --fake $FAKE_FLAG >& $log_file &
+  python $PYTHON/run_ccp.py --ip_list $IP_LIST --conf_path $CONF_PATH --acf_list $ARCHON_CFG_LIST --map_list $JSON_CFG_LIST --image_prefix $IMG_PREFIX --exptime $EXPTIME  --enable_list $ENABLE_LIST $TEST --bind_list $IP_BIND_LIST --port_list $PORT_LIST --leader ctrl1 --sync $SYNC --log_level $LOG_LEVEL --clear_time $CLEAR_TIME --save $SAVE_IMAGE --power_down $POWER_DOWN --shutter_mode $SHUTTER_MODE --name_list $NAME_LIST --initial_clear $CLEAR_FLAG  --idle_function $IDLE_FCTN --reset $RESET_FLAG --initial_reboot $REBOOT_FLAG --fake $FAKE_FLAG --data_path $DATA_PATH >& $log_file &
 
 else
 
-  python $PYTHON/run_ccp.py --ip_list $IP_LIST --conf_path $CONF_PATH --acf_list $ARCHON_CFG_LIST --map_list $JSON_CFG_LIST --image_prefix $IMG_PREFIX --exptime $EXPTIME  --enable_list $ENABLE_LIST $TEST --bind_list $IP_BIND_LIST --port_list $PORT_LIST --leader ctrl1 --sync $SYNC --log_level $LOG_LEVEL --clear_time $CLEAR_TIME --save $SAVE_IMAGE --power_down $POWER_DOWN --shutter_mode $SHUTTER_MODE --name_list $NAME_LIST --initial_clear $CLEAR_FLAG  --idle_function $IDLE_FUNCTION --reset $RESET_FLAG --initial_reboot $REBOOT_FLAG --fake $FAKE_FLAG 
+  python $PYTHON/run_ccp.py --ip_list $IP_LIST --conf_path $CONF_PATH --acf_list $ARCHON_CFG_LIST --map_list $JSON_CFG_LIST --image_prefix $IMG_PREFIX --exptime $EXPTIME  --enable_list $ENABLE_LIST $TEST --bind_list $IP_BIND_LIST --port_list $PORT_LIST --leader ctrl1 --sync $SYNC --log_level $LOG_LEVEL --clear_time $CLEAR_TIME --save $SAVE_IMAGE --power_down $POWER_DOWN --shutter_mode $SHUTTER_MODE --name_list $NAME_LIST --initial_clear $CLEAR_FLAG  --idle_function $IDLE_FCTN --reset $RESET_FLAG --initial_reboot $REBOOT_FLAG --fake $FAKE_FLAG --data_path $DATA_PATH
 
 fi
 
