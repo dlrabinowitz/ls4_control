@@ -37,7 +37,7 @@ SHUTTER_MODE='open'
 if [ $SUB_READOUT  == "True" ]; then
   ARCHON_CFG_LIST="northeast_1024.acf,southeast_1024.acf,northwest_1024.acf,southwest_1024.acf"
 else
-  ARCHON_CFG_LIST="northeast.acf,southeast.acf,northwest.acf,southwest.acf"
+  ARCHON_CFG_LIST="northeast_left.acf,southeast_left.acf,northwest_left.acf,southwest_left.acf"
   #ARCHON_CFG_LIST="northeast_dp.acf,southeast_dp.acf,northwest_dp.acf,southwest_dp.acf"
 fi
 
@@ -56,7 +56,7 @@ IP_BIND_LIST="192.168.1.10,192.168.2.10,192.168.3.10,192.168.4.10"
 PORT_LIST="0,0,0,0"
 
 SYNC="True"
-CLEAR_TIME=30.0
+CLEAR_TIME=60.0
 SAVE_IMAGE="True"
 
 python $PYTHON/run_ccp.py --ip_list $IP_LIST --conf_path $CONF_PATH --acf_list $ARCHON_CFG_LIST --map_list $JSON_CFG_LIST --image_prefix $IMG_PREFIX --exptime $EXPTIME  --enable_list $ENABLE_LIST $TEST --bind_list $IP_BIND_LIST --port_list $PORT_LIST --leader ctrl1 --sync $SYNC --log_level $LOG_LEVEL --clear_time $CLEAR_TIME --save $SAVE_IMAGE --power_down $POWER_DOWN --shutter_mode $SHUTTER_MODE --name_list $NAME_LIST --initial_clear $INITIAL_CLEAR  --idle_function $IDLE_FUNCTION --reset $RESET_FLAG --initial_reboot $REBOOT_FLAG

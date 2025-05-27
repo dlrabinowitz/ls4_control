@@ -1,7 +1,10 @@
 VOLTAGE_TOLERANCE = 0.20
-MAX_FETCH_TIME = 10.0
-AMPS_PER_CCD = 2
+MAX_FETCH_TIME = 20.0
+AMPS_PER_CCD = 1
 MAX_CCDS = 8
+# "BOTH", "LEFT", or "RIGHT"`
+READOUT_DIRECTION = "BOTH"
+
 DEFAULT_COMMAND_PORT = 5000 # socket port for all commands
 DEFAULT_STATUS_PORT = 5001 # socket port for status command only
 DEFAULT_TIMEOUT = 10.0 # sec

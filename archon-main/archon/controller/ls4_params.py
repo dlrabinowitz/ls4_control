@@ -7,7 +7,7 @@ MAX_CONFIG_LINES = 16384
 # added by D. Rabinowitz
 
 FOLLOWER_TIMEOUT_MSEC = 10000
-AMPS_PER_CCD = 2
+AMPS_PER_CCD = 1
 CCDS_PER_QUAD = 8
 
 # Note +/-100 V supply voltages changed to +/- 50.0 V by G. Bredthauer
@@ -35,7 +35,7 @@ VSUB_APPLY_COMMAND = "APPLYMOD08"
 
 STATUS_START_BIT = 0x2
 # maximum expected fetch time (sec) for a full image
-MAX_FETCH_TIME = 30.0
+MAX_FETCH_TIME = 60.0
 
 #time (sec) required for controller to reboot 
 REBOOT_TIME = 10

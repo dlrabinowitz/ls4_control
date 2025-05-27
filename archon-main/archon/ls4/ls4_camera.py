@@ -36,7 +36,7 @@ import json
 import time
 import argparse
 #from . import MAX_COMMAND_ID,FOLLOWER_TIMEOUT_MSEC
-from . import VOLTAGE_TOLERANCE, MAX_FETCH_TIME, AMPS_PER_CCD, MAX_CCDS, VSUB_BIAS_NAME
+from . import VOLTAGE_TOLERANCE, MAX_FETCH_TIME, AMPS_PER_CCD, MAX_CCDS, VSUB_BIAS_NAME, READOUT_DIRECTION
 from archon.tools import get_obsdate
 
 # Notes about LS4 tap lines and CCD placement
@@ -181,7 +181,7 @@ class LS4_Camera():
         assert command_args is not None,"unspecified command_args"
         assert len(param_args)==1, "param_args is not a list of length 1"
         assert len(command_args)==1, "command_args is not a list of length 1"
-
+        assert READOUT_DIRECTION in ["BOTH","LEFT","RIGHT"], "unexpected READOUT_DIRECTION"
         self.ls4_sync = ls4_sync
 
         for key in self.default_params:
@@ -760,7 +760,10 @@ class LS4_Camera():
 
         for ccd_location in self.ccd_map:
           for amp_index in range(0,self.amps_per_ccd):
-            amp_selection = self._get_amp_selection(amp_index)
+            if READOUT_DIRECTION == "BOTH":
+              amp_selection = self._get_amp_selection(amp_index)
+            else:
+              amp_selection = READOUT_DIRECTION
             if amp_selection is not None:
                 ccd_data_list = self._get_ccd_data(ccd_location=ccd_location,amp_selection=amp_selection)
                 ccd_data = ccd_data_list[0]
