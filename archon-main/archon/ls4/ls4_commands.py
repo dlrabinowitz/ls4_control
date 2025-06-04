@@ -186,8 +186,7 @@ class LS4_Commands():
         elif command == 'header':
            self.info("modifying image header")
            extras = {arg_value_list[0]:arg_value_list[1]}
-           # not yet implemented
-           #error_msg = await self.ls4_ctrl.set_extra_header(extras)
+           error_msg = await self.ls4_ctrl.set_extra_header(extras)
 
         elif command == 'help':
            self.info("printing command help")
