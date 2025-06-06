@@ -95,7 +95,9 @@ class LS4_Commands():
         reply_list[0]=self.done_reply
         arg_name_list=None
         arg_dict = None
-        self.debug("%s command [%s] args [%s]" %\
+
+        t_start = time.time()
+        self.info("%s command [%s] args [%s]" %\
                      (get_obsdate(),command,str(arg_value_list)) )
 
         try:
@@ -133,7 +135,9 @@ class LS4_Commands():
            reply_list[0] = reply_list[0].replace(",",",\n") 
 
         elif command == 'expose':
+           self.info("awaiting expose with arg_dict : %s" % str(arg_dict))
            error_msg = await self.expose(arg_dict)
+           self.info("done awaiting expose")
            if self.ls4_abort.abort:
              await self.ls4_abort.clear_exposure_abort()
 
@@ -197,10 +201,16 @@ class LS4_Commands():
            self.error(error_msg)
            reply_list[0] = self.error_reply + " " + error_msg
 
+        t_end = time.time()
+        dt = t_end - t_start
+        self.info("command done in %7.3f s" % dt)
+        self.info("awaiting update_cam_status")
         await self.ls4_ctrl.update_cam_status()
+        self.info("done awaiting update_cam_status")
 
-        self.debug("%s command [%s] args [%s] reply [%s]" %\
+        self.info("%s command [%s] args [%s] reply [%s]" %\
               (get_obsdate(),command,arg_value_list,reply_list[0]))
+        self.info("done command function")
 
     def help_string(self,arg_dict=None):
 

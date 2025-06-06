@@ -994,7 +994,7 @@ class LS4_Camera():
            raise RuntimeError("tap indices for ccd at location [%s] with name [%s] are unknown" %\
                        (ccd_location, ccd_name))
 
-        framemode_int = int(self.acf_conf["CONFIG"]["FRAMEMODE"])
+        framemode_int = int(self.ls4_ccd_map.acf_conf["CONFIG"]["FRAMEMODE"])
         if framemode_int == 0:
             framemode = "top"
         elif framemode_int == 1:

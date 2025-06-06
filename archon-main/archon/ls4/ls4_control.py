@@ -830,6 +830,7 @@ class LS4_Control:
       error_msg = None
  
       if fileroot is not None:
+        self.info("setting file root to %s" % fileroot)
         self.ls4_conf['image_prefix']=fileroot
         index=0
         for ls4 in self.ls4_list:
@@ -838,6 +839,7 @@ class LS4_Control:
             index += 1
 
       if (error_msg is None) and self.sync_controllers:
+        self.info("setting sync")
         try:
           await self.set_sync(sync=True,test=True)
         except Exception as e:
@@ -845,6 +847,7 @@ class LS4_Control:
 
 
       if (error_msg is None):
+        self.info("setting image suffix")
         image_suffix = "_%05d"%exp_num + ".fits"
 
         if exp_mode == exp_mode_first:
@@ -864,42 +867,50 @@ class LS4_Control:
                 (get_obsdate(),image_suffix)
 
       if (error_msg is None) and not exp_mode == exp_mode_last:
-        try:
-          if self.sync_controllers:
+        if self.sync_controllers:
+          self.info("settig sync")
+          try:
              await self.set_sync(True)
-        except Exception as e:
-          error_msg = "Exception syncing controllers before new exposure: %s" %e
+          except Exception as e:
+            error_msg = "Exception syncing controllers before new exposure: %s" %e
          
       if error_msg is None:
+         self.info("updating status")
          self.ls4_status.update({'state':'exposing','comment':'expo_mode %s' % exp_mode})
 
       if (error_msg is None) and exp_mode == exp_mode_first:
+        self.info("awaiting exp_sequence threads for exp_mode_first")
         try:
           await asyncio.gather(*(self.exp_sequence(exptime=exptime,ls4=self.ls4_list[index],\
                        ls4_conf= self.ls4_conf_list[index],acquire=True,suffix=image_suffix,\
                        fetch=False,concurrent=False,save=False,enable_shutter=enable_shutter) \
                        for index in range(0,self.num_controllers)))
            
+          self.info("done awaiting exp_sequence threads")
         except Exception as e:
           error_msg = "Exception executing exp_sequence with acquire/fetch/concurrent = True/False/False: %s" % e
 
 
       elif (error_msg is None) and exp_mode == exp_mode_next:
+        self.info("awaiting exp_sequence threads for exp_mode_next")
         try:
           await asyncio.gather(*(self.exp_sequence(exptime=exptime,ls4=self.ls4_list[index],\
                        ls4_conf= self.ls4_conf_list[index],acquire=True,suffix=image_suffix,\
                        fetch=True,concurrent=True,save=self.save_images,enable_shutter=enable_shutter) \
                        for index in range(0,self.num_controllers)))
+          self.info("done awaiting exp_sequence threads")
            
         except Exception as e:
           error_msg = "Exception executing exp_sequence with acquire/fetch/concurrent = True/True/True: %s" % e
 
       elif (error_msg is None) and exp_mode == exp_mode_last:
+        self.info("awaiting exp_sequence threads for exp_mode_last")
         try:
           await asyncio.gather(*(self.exp_sequence(exptime=exptime,ls4=self.ls4_list[index],\
                        ls4_conf= self.ls4_conf_list[index],acquire=False,suffix=image_suffix,\
                        fetch=True,concurrent=False,save=self.save_images,enable_shutter=enable_shutter) \
                        for index in range(0,self.num_controllers)))
+          self.info("done awaiting exp_sequence threads")
 
         except Exception as e:
           error_msg = "Exception executing exp_sequence with acquire/fetch/concurrent = False/True/False: %s" % e
@@ -907,32 +918,37 @@ class LS4_Control:
       elif (error_msg is None) and exp_mode == exp_mode_single:
         # acquire (expose/readout) and then fetch immediately after the readout ends
         # NOTE : Why can't exp_sequence handle the acquisition, wait, and then fetch ?
+        self.info("awaiting exp_sequence threads for exp_mode_single with fetch=False,save=False")
         try:
-
           await asyncio.gather(*(self.exp_sequence(exptime=exptime,ls4=self.ls4_list[index],\
                          ls4_conf= self.ls4_conf_list[index],acquire=True,suffix=image_suffix,\
                          fetch=False,concurrent=False,save=False, enable_shutter=enable_shutter) \
                          for index in range(0,self.num_controllers)))
+          self.info("done awaiting exp_sequence threads")
         except Exception as e:
           error_msg = "Exception executing exp_sequence with acquire/fetch/concurrent = True/False/False: %s" % e
              
         if (error_msg is None):
-          try:
-            if self.sync_controllers:
-               await self.set_sync(False)
-          except Exception as e:
-            error_msg = "Exception unsyncing controllers after acquire before fetch: %s" %e
+          if self.sync_controllers:
+            self.info("setting sync")
+            try:
+             await self.set_sync(False)
+            except Exception as e:
+              error_msg = "Exception unsyncing controllers after acquire before fetch: %s" %e
          
         if (error_msg is None):
+          self.info("awaiting exp_sequence threads for exp_mode_single with fetch=True,save=%s" % self.save_images)
           try:
             await asyncio.gather(*(self.exp_sequence(exptime=exptime,ls4=self.ls4_list[index],\
                        ls4_conf= self.ls4_conf_list[index],acquire=False,suffix=image_suffix,\
                        fetch=True,concurrent=False,save=self.save_images,enable_shutter=enable_shutter) \
                        for index in range(0,self.num_controllers)))
+            self.info("done awaiting exp_sequence threads")
           except Exception as e:
             error_msg = "Exception executing exp_sequence with acquire/fetch/concurrent = False/True/False: %s" % e
  
       if error_msg is not None:
+         self.info("error occurred")
          self.error("########## %s: %s" % (get_obsdate(),error_msg))
       else:
          self.image_count += 1
@@ -941,6 +957,8 @@ class LS4_Control:
          self.ls4_status.update({'state':'done exposing'})
       else:
          self.ls4_status.update({'state':'done exposing','error':True,'comment':error_msg})
+
+      self.info("returning")
 
       return error_msg
          

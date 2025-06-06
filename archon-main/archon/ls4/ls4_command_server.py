@@ -229,11 +229,14 @@ class LS4_Command_Server():
                     self.debug("port %d, done handling command: [%s]  reply: [%s]" % \
                             (self.port,command,reply_list[0]))
                     reply = reply_list[0].strip()
+                    while len(reply) < 256:
+                        reply = reply + " "
                     reply = reply + "\n"
                     reply = reply.encode()
                     self.debug("port %d, sending reply: %s" % (self.port,reply))
                     try:
-                      client_socket.send(reply)
+                      #client_socket.send(reply)
+                      client_socket.sendall(reply)
                     except Exception as e:
                       self.error("port %d, exception sending reply [%s]: %s" % (self.port,reply,e))
                     self.debug("done sending reply: %s" % reply)

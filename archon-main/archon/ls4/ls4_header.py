@@ -83,7 +83,7 @@ class LS4_Header():
                  elif len(key+value)>70:
                     value = value[:70]
               self.debug("key: %s  value: %s" % (key,value))
-              self.header.update({key:value})
+              header.update({key:value})
             except Exception as e:
               self.error("Exception updating update header with configuration key,value %s %s: %s" %\
                         (key,dict[key],e))
