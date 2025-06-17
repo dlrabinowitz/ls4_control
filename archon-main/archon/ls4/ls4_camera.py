@@ -142,7 +142,7 @@ class LS4_Camera():
 
         self.ls4_conf = ls4_conf
 
-        self.ls4_header = LS4_Header(ls4_logger = self.ls4_logger, ls4_conf = self.ls4_conf, ls4_ccd_map = self.ls4_ccd_map)
+        self.ls4_header = LS4_Header(ls4_logger = self.ls4_logger)
  
         # self.param_args[0] is a shared global
         self.param_args = param_args
@@ -156,8 +156,8 @@ class LS4_Camera():
                      'fetch': TimePeriod(),
                      'save': TimePeriod()}
  
-        # copies of ls4_controller config, device status and system
-        # status to be used for header parameters each time an
+        # declare copies of ls4_controller config, device status, system status,
+        # and header_info to be used for header parameters each time an
         # image is fetched from the controller. THis may occur at the
         # same time as a new image is exposed and readout, where the
         # the current values for these parameters are updated.
@@ -165,6 +165,7 @@ class LS4_Camera():
         self.fetch_config={}
         self.fetch_status={}
         self.fetch_system={}
+        self.fetch_header_info={}
 
     def set_lead(self, lead_flag: bool = False):
         self.leader = lead_flag
@@ -614,27 +615,45 @@ class LS4_Camera():
 
         self.ls4_controller = None 
 
-    async def save_image(self,output_image=None, status=None, controller_config = None, system=None, ls4_conf = None):
+    async def save_image(self,output_image=None, status=None, controller_config = None, system=None, ls4_conf = None, header_info = None):
 
         self.timing['save'].start()
 
         if status is None:
-          status=self.fetch_status
+          status={}
+          status.update(self.fetch_status)
+
         if system is None:
-          system= self.fetch_system
+          system={}
+          system.update(self.fetch_system)
+
         if controller_config is None:
-          config = self.fetch_config
+          config = {}
+          config.update(self.fetch_config)
+
         if ls4_conf is None:
-          ls4_conf = self.fetch_ls4_conf
+          ls4_conf={}
+          ls4_conf.update(self.fetch_ls4_conf)
+
+        if header_info is None:
+          header_info={}
+          header_info.update(self.fetch_header_info)
+
+        self.fetch_status={}
+        self.fetch_system={}
+        self.fetch_config={}
+        self.fetch_ls4_conf={}
+        self.fetch_header_info={}
 
         # initialize header info common to all CCD sub-images
         image_index = 0
-        self.ls4_header.initialize()
-        self.ls4_header.set_header_info(conf = ls4_conf)
-        self.ls4_header.set_header_info(conf = config['expose_params'])
-        self.ls4_header.set_header_info(conf = config['archon'])
-        self.ls4_header.set_header_info(conf = status)
-        self.ls4_header.set_header_info(conf = system)
+        await self.ls4_header.initialize()
+        await self.ls4_header.set_header_info(conf = ls4_conf)
+        await self.ls4_header.set_header_info(conf = config['expose_params'])
+        await self.ls4_header.set_header_info(conf = config['archon'])
+        await self.ls4_header.set_header_info(conf = status)
+        await self.ls4_header.set_header_info(conf = system)
+        await self.ls4_header.set_header_info(conf = header_info)
 
         amps_per_ccd = self.ls4_ccd_map.image_info['amps_per_ccd']
 
@@ -650,8 +669,8 @@ class LS4_Camera():
                 image_name =  output_image.replace(".fits","")
                 image_name = image_name + "_%02d"%image_index + ".fits"
 
-                header_info = self.ls4_header.set_header_info(ccd_location=ccd_location, amp_index = amp_index)
-
+                header_info= await self.ls4_header.set_header_info(ls4_ccd_map = self.ls4_ccd_map,\
+                        ccd_location=ccd_location, amp_index = amp_index)
                 hdu = fits.PrimaryHDU(ccd_data)
                 fits_header = hdu.header
                 for k in header_info:
@@ -675,7 +694,7 @@ class LS4_Camera():
         self.timing['save'].end()
     
     async def acquire(self,output_image=None,exptime=0.0, acquire=True, fetch=True, \
-                        concurrent=False, save=True, enable_shutter=True):
+                        concurrent=False, save=True, enable_shutter=True, header=None):
 
         """  If acquire = True: acquire a new  exposure and readout to controller memory.
 
@@ -692,6 +711,10 @@ class LS4_Camera():
 
              Note: Can not have acquire=fetch=concurrent=True. This is because concurrent
              fetching can only occur in a thread where acquire = False.
+
+             Any header info provided  when fetch = True will be add to the fits headers 
+             of the image data when the respective image data are fetched and saved. 
+             Note that these data  may not be saved concurrently.
         """
 
         error_msg = None
@@ -716,7 +739,6 @@ class LS4_Camera():
         if error_msg is None:
           status = await self.get_status()
           system = await self.get_system()
-
 
         if error_msg is None:
 
@@ -768,11 +790,14 @@ class LS4_Camera():
               except Exception as e:
                 error_msg = "exception reading image to controller memory: %s" % e
 
-            # save current ls4_conf, config, and system to be used for header when data are
-            #fetched
+            # save current ls4_conf, config, system, and header info o be used for 
+            # header when data are fetched
+
             self.fetch_ls4_conf.update(self.ls4_conf)
             self.fetch_config.update(self.ls4_controller.config)
             self.fetch_system.update(system)
+            if header is not None:
+              self.fetch_header_info.update(header)
 
         if error_msg is None and fetch and await self.ls4_controller.is_fetch_pending():
  

@@ -47,7 +47,7 @@ from archon.tools import check_bool_value
 from archon.ls4.ls4_exp_modes import *
 from archon.ls4.ls4_mosaic import LS4_Mosaic
 from archon.tools import get_obsdate
-
+from archon.ls4.ls4_header import LS4_Header
 
 class LS4_Control:
 
@@ -120,8 +120,20 @@ class LS4_Control:
        self.initial_clear= check_bool_value(self.ls4_conf['initial_clear'],True)
        self.initial_reboot= check_bool_value(self.ls4_conf['initial_reboot'],True)
 
-       # space for extra header info
-       self.extra_header_info={}
+
+       # init three instances of LS4_Header: 
+       #  (1) self.extra_info_header records info added before
+       #      the expose command is executed using the "header" command in ls4_commands.py
+       #      (e.g. telescope position and status).
+       #  (2) self.acquire_header records the contents of extra_info_header when acquisition starts.
+       #      Any additional info adde using "header" is ignored until the acquisition ends.
+       #  (3) self.fetch_header recorded the contents of acquire_header when acquisition ends. This
+       #      is added to the fits headers when the fetched data are saved.
+
+       self.extra_info_header = LS4_Header(ls4_logger=self.ls4_logger)
+       self.acquire_header = LS4_Header(ls4_logger = self.ls4_logger)
+       self.fetch_header = LS4_Header(ls4_logger = self.ls4_logger)
+
 
        #initialize list of empty configuration dictionaries, one for each named controller.
        #Also initialize list of instantiated LS4_Camera instances to Nones.
@@ -171,6 +183,18 @@ class LS4_Control:
   @ property
   def status(self):
      return self.ls4_status.get()
+
+  async def set_extra_header(self,info):
+     error_msg = None
+
+     if info is not None:
+       try:
+           await self.extra_info_header.set_header_info(conf=info)
+       except Exception as e:
+           error_msg="failed to update extra header: %s" %e
+
+     self.debug("returning with error = %s" % str(error_msg))
+     return error_msg
 
   async def initialize(self, reboot = False):
 
@@ -763,6 +787,7 @@ class LS4_Control:
       assert ls4 is not None, "ls4 controller uninitialized"
       assert isinstance(ls4,(LS4_Camera)),"ls4 is not an instance of LS4_Camera"
 
+      
 
       error_msg = None
 
@@ -787,32 +812,56 @@ class LS4_Control:
           error_msg = "Exception checking voltages: %s" %e
           self.error(error_msg)
 
+        # initialize acquire_header and update with everything in self.extra_info_header 
+        # Then clear self.extra_info_header
+
+        # When the acquisition of new data completes, this latest header data will be copied 
+        # to self.fetch_header.
+        # If a fetch of previous image data is concurrent with the new acquisition, the 
+        # fits headers for that newly fetched  data will be updated from self.fetch_header
+
+        await self.acquire_header.initialize()
+        h = await self.extra_info_header.get_header()
+        await self.acquire_header.set_header_info(conf=h)
+        await self.extra_info_header.initialize()
+
       # acquire and fetch at the same time
       if acquire and fetch and concurrent and (error_msg is None):
-
+        h = await self.fetch_header.get_header()
         try:
-          await asyncio.gather(ls4.acquire(exptime=exptime,output_image=output_image,concurrent=concurrent,\
-                                 acquire=True,fetch=False,save=False,enable_shutter=enable_shutter),
-                               ls4.acquire(exptime=exptime,output_image=output_image,concurrent=concurrent,
-                                 acquire=False, fetch=True,save=save,enable_shutter=enable_shutter))
+          await asyncio.gather(\
+                  ls4.acquire(exptime=exptime,output_image=output_image,concurrent=concurrent,\
+                         acquire=True,fetch=False,save=False,enable_shutter=enable_shutter,\
+                         header=None),
+                  ls4.acquire(exptime=exptime,output_image=output_image,concurrent=concurrent,
+                         acquire=False, fetch=True,save=save,enable_shutter=enable_shutter,
+                         header=h))
         except Exception as e:
            error_msg = "image %s: exception acquiring and fetching at same time: %s" % (output_image,e)
            self.error(error_msg)
+
+        await self.fetch_header.initialize()
+        h  = await self.acquire_header.get_header()
+        await self.fetch_header.set_header_info(conf=h)
 
       # acquire and/or fetch but not at the same time
       elif (acquire or fetch) and (not concurrent) and (error_msg is None):
         if acquire:
           try: 
              await ls4.acquire(exptime=exptime,output_image=output_image,acquire=True,concurrent=concurrent,\
-                              fetch=False,save=False,enable_shutter=enable_shutter)
+                              fetch=False,save=False,enable_shutter=enable_shutter,header=None)
           except Exception as e:
              error_msg = "image %s: exception acquiring and fetching sequentially: %s" % (output_image,e)
              self.error(error_msg)
 
+        await self.fetch_header.initialize()
+        h = await self.acquire_header.get_header()
+        await self.fetch_header.set_header_info(conf=h)
+
         if fetch and (error_msg is None):
           try: 
              await ls4.acquire(exptime=exptime,output_image=output_image,acquire=False,concurrent=concurrent,\
-                    fetch=True,save=save)
+                    fetch=True,save=save,header=h)
           except Exception as e:
              error_msg = "image: %s: exception saving fetched data: %s" %\
                            (output_image,e)

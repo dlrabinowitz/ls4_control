@@ -12,29 +12,17 @@
 ################################
 
 import archon
+import threading
+import asyncio
 from archon.controller.ls4_logger import LS4_Logger
 from archon.ls4.ls4_ccd_map import LS4_CCD_Map
 
 class LS4_Header():
 
-
-
-
     def __init__(self,
-        ls4_logger: LS4_Logger | None = None,
-        ls4_conf: dict | None = None,
-        ls4_ccd_map: LS4_CCD_Map | None = None
+        ls4_logger: LS4_Logger | None = None
     ):
        
-        """ ls4_conf is a dictionary with configuration variables for the instance of LS4_Camera.
-       
-        """
-
-
-        assert ls4_conf is not None,"unspecified ls4 configuration"
-        assert ls4_ccd_map is not None,"unspecified ls4_ccd_map"
-        assert ls4_logger is not None,"unspecified ls4_logger"
-
         self.ls4_logger = ls4_logger
 
         self.info = self.ls4_logger.info
@@ -43,18 +31,23 @@ class LS4_Header():
         self.error= self.ls4_logger.error
         self.critical= self.ls4_logger.critical
 
-        self.ls4_conf = ls4_conf
-        self.ls4_ccd_map = ls4_ccd_map
-
         self.header_info={}
+
+        self.lock = asyncio.Lock()
  
-    def initialize(self):
+    async def initialize(self):
+        await self.lock.acquire()
         self.header_info={}
+        self.lock.release()
 
-    def get_header(self):
-        return self.header_info
+    async def get_header(self):
+        await self.lock.acquire()
+        h={}
+        h.update(self.header_info)
+        self.lock.release()
+        return h
 
-    def _update_header(self,header=None,conf=None,reject_keys=None):
+    async def _update_header(self,header=None,conf=None,reject_keys=None):
 
         """ update header (or self.header_info if header = None) with key,value pairs 
             in given configuration dictionary.
@@ -62,10 +55,10 @@ class LS4_Header():
         """
 
         if header is None:
-          self_update = True 
-          header = self.header_info
+          update_flag = True 
+          header = await self.get_header()
         else:
-          self_update = False
+          update_flag = False
 
         if reject_keys is None:
            reject_keys={}
@@ -88,20 +81,22 @@ class LS4_Header():
               self.error("Exception updating update header with configuration key,value %s %s: %s" %\
                         (key,dict[key],e))
 
-        if self_update:
+        if update_flag:
+           await self.lock.acquire()
            self.header_info.update(header)
+           self.lock.release()
 
-    def set_header_info(self,conf=None,ccd_location=None,amp_index=None):
+    async def set_header_info(self,conf=None,ls4_ccd_map=None,ccd_location=None,amp_index=None):
 
         """
             Add entries to fits header data in self.header_info.
             If conf is specified, use only the entries from conf.
 
-            If ccd_location and amp_index are specifed, then add
-            the corresponding ccd info from  self.ls4_ccd_map.
+            If ls4_ccd_map, ccd_location, and amp_index are specifed, then add
+            the corresponding ccd info from  ls4_ccd_map.
 
-            If conf is specified, ccd_location must be None.
-            if ccd_location is specified, conf must be None.
+            If conf is specified, ls4_ccd_map, and ccd_location are ignored.
+            if ls4_ccd_map,ccd_location,and amp_index are specified, conf is ignore.
 
             Return with newly updated header
         """
@@ -114,10 +109,12 @@ class LS4_Header():
 
 
         try:
-          assert (conf is None) or (ccd_location is None), "can not specificy both conf and ccd_location"  
+          assert (conf is not None) or\
+            ((ls4_ccd_map is not None) and (ccd_location is not None) and (amp_index is not None)), \
+              "must specify conf or else ls4_ccd_map, ccd_location, and amp_index"
         except Exception as e:
           self.error(e)
-          return 
+          return  None
 
         if conf is not None:
           reject_keys=[]
@@ -133,16 +130,15 @@ class LS4_Header():
              else:
                 h[key]=conf[key]
 
-          self._update_header(conf=h,reject_keys=reject_keys)
-          header = self.header_info
+          await self._update_header(conf=h,reject_keys=reject_keys)
 
-        elif ccd_location is not None:
+        else:
 
           try:
             assert amp_index is not None, "unspecified amp index"
-            assert ccd_location in self.ls4_ccd_map.ccd_map, "ccd location %s not found in ccd map" % ccd_location
-            assert amp_index in range(0,self.ls4_ccd_map.amps_per_ccd),\
-                    "amp_index [%d] out of range [0 to %d]" % (amp_index,self.ls4_ccd_map.amps_per_ccd)
+            assert ccd_location in ls4_ccd_map.ccd_map, "ccd location %s not found in ccd map" % ccd_location
+            assert amp_index in range(0,ls4_ccd_map.amps_per_ccd),\
+                    "amp_index [%d] out of range [0 to %d]" % (amp_index,ls4_ccd_map.amps_per_ccd)
           except Exception as e:
             self.error(e)
             return 
@@ -152,18 +148,15 @@ class LS4_Header():
                   "TAP_INDEX":"TAP_INDICES","TAP_SCALE":"TAP_SCALES",\
                   "TAP_OFFSET":"TAP_OFFSETS"}
 
-          ccd_info = self.ls4_ccd_map.ccd_map[ccd_location]
-          self._update_header(conf={"CCD_LOC":ccd_info["CCD_LOC"]})
-          self._update_header(conf={"CCD_NAME":ccd_info["CCD_NAME"]})
+          h={}
+          ccd_info = ls4_ccd_map.ccd_map[ccd_location]
+          h.update({"CCD_LOC":ccd_info["CCD_LOC"],"CCD_NAME":ccd_info["CCD_NAME"]})
 
           for key in key_map:
               k = key_map[key]
               value = ccd_info[k][amp_index]
-              self._update_header(conf={key:value})
- 
-          header = self.header_info
+              h.update({key:value})
+              await self._update_header(conf=h)
 
-        else:
-          header = self.header_info
 
-        return header
+        return await self.get_header()

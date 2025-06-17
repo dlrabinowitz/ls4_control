@@ -188,9 +188,10 @@ class LS4_Commands():
         #   await asyncio.sleep(2)
 
         elif command == 'header':
-           self.info("modifying image header")
            extras = {arg_value_list[0]:arg_value_list[1]}
+           self.info("modifying image header using extras = %s " % str(extras))
            error_msg = await self.ls4_ctrl.set_extra_header(extras)
+           self.info("done modifying image header using extras = %s " % str(extras))
 
         elif command == 'help':
            self.info("printing command help")
@@ -198,6 +199,7 @@ class LS4_Commands():
            self.info("done printing command help")
 
         if error_msg is not None:
+           self.debug("error_msg is %s" % str(error_msg))
            self.error(error_msg)
            reply_list[0] = self.error_reply + " " + error_msg
 

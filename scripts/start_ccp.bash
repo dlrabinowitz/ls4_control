@@ -1,6 +1,6 @@
 #!/bin/bash
 source ~/ls4_venv/bin/activate
-LOG_LEVEL="INFO"
+LOG_LEVEL="DEBUG"
 CLEAR_FLAG="False"
 SUB_READOUT="False"
 RESET_FLAG="False"
