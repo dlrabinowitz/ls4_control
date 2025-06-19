@@ -40,6 +40,10 @@ class LS4_Header():
         self.header_info={}
         self.lock.release()
 
+    @property 
+    async def header(self):
+        return await self.get_header()
+
     async def get_header(self):
         await self.lock.acquire()
         h={}
@@ -47,18 +51,23 @@ class LS4_Header():
         self.lock.release()
         return h
 
-    async def _update_header(self,header=None,conf=None,reject_keys=None):
+    #async def _update_header(self,header=None,conf=None,reject_keys=None):
+    async def _update_header(self,conf=None,reject_keys=None):
 
-        """ update header (or self.header_info if header = None) with key,value pairs 
-            in given configuration dictionary.
+        #""" update header (or self.header_info if header = None) with key,value pairs 
+        #    in given configuration dictionary.
+        #    Ignore keys specified by reject_keys.
+        #"""
+        """ update self.header_info with key,value pairs in conf.
             Ignore keys specified by reject_keys.
         """
 
-        if header is None:
-          update_flag = True 
-          header = await self.get_header()
-        else:
-          update_flag = False
+        #if header is None:
+        #  update_flag = True 
+        #  header = await self.get_header()
+        #else:
+        #  update_flag = False
+        header = await self.get_header()
 
         if reject_keys is None:
            reject_keys={}
@@ -81,10 +90,13 @@ class LS4_Header():
               self.error("Exception updating update header with configuration key,value %s %s: %s" %\
                         (key,dict[key],e))
 
-        if update_flag:
-           await self.lock.acquire()
-           self.header_info.update(header)
-           self.lock.release()
+        #if update_flag:
+        #   await self.lock.acquire()
+        #   self.header_info.update(header)
+        #   self.lock.release()
+        await self.lock.acquire()
+        self.header_info.update(header)
+        self.lock.release()
 
     async def set_header_info(self,conf=None,ls4_ccd_map=None,ccd_location=None,amp_index=None):
 

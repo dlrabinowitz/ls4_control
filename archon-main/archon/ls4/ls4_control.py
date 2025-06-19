@@ -125,8 +125,8 @@ class LS4_Control:
        #  (1) self.extra_info_header records info added before
        #      the expose command is executed using the "header" command in ls4_commands.py
        #      (e.g. telescope position and status).
-       #  (2) self.acquire_header records the contents of extra_info_header when acquisition starts.
-       #      Any additional info adde using "header" is ignored until the acquisition ends.
+       #  (2) self.acquire_header records the contents of extra_info_header and any other info
+       #      added to directly to acquire_header since the end of the previous acquisition.
        #  (3) self.fetch_header recorded the contents of acquire_header when acquisition ends. This
        #      is added to the fits headers when the fetched data are saved.
 
@@ -252,7 +252,7 @@ class LS4_Control:
          conf.update({'map_file':self.conf_path+"/"+self.map_list[index]})
 
          if name not in self.ls4_conf['enable_list']:
-            self.info("Skipping instantiate of controller %s, disabled" % name)
+            self.info("Skipping instantiation of controller %s, disabled" % name)
          else:
             try:
               self.ls4_list[index]=LS4_Camera(ls4_conf=conf,ls4_sync=self.ls4_sync,
@@ -418,40 +418,40 @@ class LS4_Control:
       """ enable autoclear option on controllers and return """
       self.info("########## %s: enabling autoclear " % get_obsdate())
       await asyncio.gather(*(self.start_autoclear(ls4_cam) for ls4_cam in self.ls4_list))
-      self.info("########## %s: done enabling autoclear " % get_obsdate())
+      self.debug("########## %s: done enabling autoclear " % get_obsdate())
 
   async def disable_autoclear(self):
       """ disable autoclear option on controllers and return """
       self.info("########## %s: disabling autoclear " % get_obsdate())
       await asyncio.gather(*(self.stop_autoclear(ls4_cam) for ls4_cam in self.ls4_list))
-      self.info("########## %s: done disabling autoclear " % get_obsdate())
+      self.debug("########## %s: done disabling autoclear " % get_obsdate())
 
 
   async def enable_autoflush(self):
       """ enable autoflush option on controllers and return """
       self.info("########## %s: enabling autoflush " % get_obsdate())
       await asyncio.gather(*(self.start_autoflush(ls4_cam) for ls4_cam in self.ls4_list))
-      self.info("########## %s: done enabling autoflush " % get_obsdate())
+      self.debug("########## %s: done enabling autoflush " % get_obsdate())
 
   async def disable_autoflush(self):
       """ disable autoflush option on controllers and return """
       self.info("########## %s: disabling autoflush " % get_obsdate())
       await asyncio.gather(*(self.stop_autoflush(ls4_cam) for ls4_cam in self.ls4_list))
-      self.info("########## %s: done disabling autoflush " % get_obsdate())
+      self.debug("########## %s: done disabling autoflush " % get_obsdate())
 
   async def power_up_biases(self):
       """ power up CCD biases """
 
       self.info("########## %s: powering up CCD biases" % get_obsdate())
       await asyncio.gather(*(self.power_up_controller(ls4_cam) for ls4_cam in self.ls4_list))
-      self.info("########## %s: done powering up CCD biases" % get_obsdate())
+      self.debug("########## %s: done powering up CCD biases" % get_obsdate())
 
   async def power_down_biases(self):
       """ power up CCD biases """
 
       self.info("########## %s: powering down CCD biases" % get_obsdate())
       await asyncio.gather(*(self.power_down_controller(ls4_cam) for ls4_cam in self.ls4_list))
-      self.info("########## %s: done powering down CCD biases" % get_obsdate())
+      self.debug("########## %s: done powering down CCD biases" % get_obsdate())
 
   async def enable_vsub(self):
       """ enable Vsub CCD bias """
@@ -460,7 +460,7 @@ class LS4_Control:
       results = [None]
       self.info("########## %s: enabling Vsub bias" % get_obsdate())
       results = await asyncio.gather(*(self.enable_vsub_bias(ls4_cam) for ls4_cam in self.ls4_list))
-      self.info("########## %s: done enabling Vsub bias" % get_obsdate())
+      self.debug("########## %s: done enabling Vsub bias" % get_obsdate())
 
       index = 0
       for msg in results:
@@ -482,7 +482,7 @@ class LS4_Control:
       results = [None]
       self.info("########## %s: disabling Vsub bias" % get_obsdate())
       results = await asyncio.gather(*(self.disable_vsub_bias(ls4_cam) for ls4_cam in self.ls4_list))
-      self.info("########## %s: done disabling Vsub bias" % get_obsdate())
+      self.debug("########## %s: done disabling Vsub bias" % get_obsdate())
 
       index = 0
       for msg in results:
@@ -503,7 +503,7 @@ class LS4_Control:
 
       self.info("########## %s: running erase procedure" % get_obsdate())
       await asyncio.gather(*(self.erase_ccds(ls4_cam) for ls4_cam in self.ls4_list))
-      self.info("########## %s: done running erase procedure" % get_obsdate())
+      self.debug("########## %s: done running erase procedure" % get_obsdate())
 
 
   async def purge(self,fast=False):
@@ -511,7 +511,7 @@ class LS4_Control:
 
       self.info("########## %s: running purge procedure" % get_obsdate())
       await asyncio.gather(*(self.purge_ccds(ls4=ls4_cam,fast=fast) for ls4_cam in self.ls4_list))
-      self.info("########## %s: done running purge procedure" % get_obsdate())
+      self.debug("########## %s: done running purge procedure" % get_obsdate())
 
 
   async def flush(self,fast=False,flushcount=1):
@@ -520,7 +520,7 @@ class LS4_Control:
       self.info("########## %s: running flush procedure" % get_obsdate())
       await asyncio.gather(*(self.flush_ccds(ls4=ls4_cam,fast=fast,flushcount=flushcount)\
                                for ls4_cam in self.ls4_list))
-      self.info("########## %s: done running flush procedure" % get_obsdate())
+      self.debug("########## %s: done running flush procedure" % get_obsdate())
 
 
   async def clean(self,erase=False, n_cycles=10,flushcount=1,fast=False):
@@ -530,7 +530,7 @@ class LS4_Control:
       await asyncio.gather(*(self.clean_ccds(ls4=ls4_cam,erase=erase,\
                               n_cycles=n_cycles,flushcount=flushcount,fast=fast)\
                                for ls4_cam in self.ls4_list))
-      self.info("########## %s: done running clean procedure" % get_obsdate())
+      self.debug("########## %s: done running clean procedure" % get_obsdate())
 
 
   async def abort(self,readout=True):
@@ -542,7 +542,7 @@ class LS4_Control:
       self.info("########## %s: aborting exposure" % get_obsdate())
       results = await asyncio.gather(*(self.abort_exposure(ls4=ls4_cam,readout=readout)\
                                for ls4_cam in self.ls4_list))
-      self.info("########## %s: done aborting exposure" % get_obsdate())
+      self.debug("########## %s: done aborting exposure" % get_obsdate())
 
       for r in results:
          if r is not None:
@@ -777,9 +777,62 @@ class LS4_Control:
                              in a concurrent thread.
                                   
                                   
-          Note:  the controllers have three image buffers. As long as the time to fetch
+          Notes:
+
+          1.  the controllers have three image buffers. As long as the time to fetch
           and optionally save an image is less than the time to readout each new image,
           then the fetching and acquiring can proceed simultaneously.
+
+          2. Three header dictionaries (extra_info_header, acquire_header, fetch_header)
+          are used to record status data from the telescope. The data are transferred from one buffer 
+          to another in stages timed to allow concurrent telescope motion, camera readout,
+          and data fetching.
+
+          The staging :
+
+             move telescope
+             update extra_info_header
+             Copy extra_info_header to aquire_header
+             start new acquisition
+             Copy aquire_header to fetch_header
+             start fetching and saving
+             use fetch_header to update FITS headers
+
+          The timing:
+         
+              main thread:
+                (1) Wait for telescope to settle at next pointing.
+                    Update extra_info_header with telescope status.
+                    This may occur while a previous exposure is being readout,
+                    and an even earlier exposure is being fetched and saved.
+
+                (2) Wait for any ongoing acquisition and fetch threads to exit.
+                    Copy extra_info_header to acquire_header.
+                    Clear extra_info_header.
+                    Start new acquisition thread.
+                    The acquire_header will not change until the next acquisition ends.
+                     
+                (3) If concurrent acquire/fetch:
+                    Copy fetch_header to temporary buffer.
+                    Clear fetch_header.
+                    Start fetch thread (with temporary buffer as argument)
+         
+                (4) Wait for acquisition thread to start reading out CCD.
+                    Start moving telescope to next pointing.
+         
+                (5) Wait for acquisition thread (and fetch thread if concurrent) to exit.
+                    Copy acquire_header to fetch_header.
+                    Clear acquire_header.
+                    The fetch header will not change until the next fetch starts
+         
+                (6) If sequential acquire/fetch:
+                      Copy fetch_header to temporary buffer.
+                      Clear fetch_header.
+                      Start new fetch thread (with temporary buffer as argument)
+                      Wait for fetch thread to exit.
+         
+            
+         
 
       """
 
@@ -804,6 +857,11 @@ class LS4_Control:
         image_prefix = ls4_conf['image_prefix']
         output_image = ls4_conf['data_path']+"/"+image_prefix + suffix
 
+      if fetch and (error_msg is None):
+        await self.fetch_header.initialize()
+        h  = await self.acquire_header.header
+        await self.fetch_header.set_header_info(conf=h)
+
       if acquire and (error_msg is None):
         try:
           status = await ls4.get_status()
@@ -812,22 +870,18 @@ class LS4_Control:
           error_msg = "Exception checking voltages: %s" %e
           self.error(error_msg)
 
-        # initialize acquire_header and update with everything in self.extra_info_header 
-        # Then clear self.extra_info_header
-
-        # When the acquisition of new data completes, this latest header data will be copied 
-        # to self.fetch_header.
-        # If a fetch of previous image data is concurrent with the new acquisition, the 
-        # fits headers for that newly fetched  data will be updated from self.fetch_header
-
+        # copy extra_info_header to acquire_header
+        self.debug("copying extra_info_header to acquire_header")
+        h = await self.extra_info_header.header
         await self.acquire_header.initialize()
-        h = await self.extra_info_header.get_header()
         await self.acquire_header.set_header_info(conf=h)
+
         await self.extra_info_header.initialize()
 
       # acquire and fetch at the same time
       if acquire and fetch and concurrent and (error_msg is None):
-        h = await self.fetch_header.get_header()
+        self.debug("copying fetch_header to h")
+        h = await self.fetch_header.header
         try:
           await asyncio.gather(\
                   ls4.acquire(exptime=exptime,output_image=output_image,concurrent=concurrent,\
@@ -841,7 +895,7 @@ class LS4_Control:
            self.error(error_msg)
 
         await self.fetch_header.initialize()
-        h  = await self.acquire_header.get_header()
+        h  = await self.acquire_header.header
         await self.fetch_header.set_header_info(conf=h)
 
       # acquire and/or fetch but not at the same time
@@ -855,7 +909,7 @@ class LS4_Control:
              self.error(error_msg)
 
         await self.fetch_header.initialize()
-        h = await self.acquire_header.get_header()
+        h = await self.acquire_header.header
         await self.fetch_header.set_header_info(conf=h)
 
         if fetch and (error_msg is None):
@@ -877,8 +931,16 @@ class LS4_Control:
   async def expose(self, exptime=0.0, exp_num = 0, enable_shutter = True,  exp_mode=exp_mode_single, fileroot=None):
 
       error_msg = None
- 
-      if fileroot is not None:
+
+      if exp_mode == exp_mode_last:
+        try:
+          assert exp_num>0, "exp_mode is exp_mode_last but no previous exposure"
+        except Exception as e:
+          error_msg = e
+
+     
+
+      if (fileroot is not None) and (error_msg is None):
         self.info("setting file root to %s" % fileroot)
         self.ls4_conf['image_prefix']=fileroot
         index=0
@@ -894,30 +956,30 @@ class LS4_Control:
         except Exception as e:
           error_msg ="########## Exception syncing controllers: %s" %e
 
-
       if (error_msg is None):
+
         self.info("setting image suffix")
         image_suffix = "_%05d"%exp_num + ".fits"
 
         if exp_mode == exp_mode_first:
-          self.info("########## %s: acquiring but not fetching  exposure  %s" % \
-                (get_obsdate(),image_suffix))
+          self.info("########## %s: acquiring but not fetching  exposure  %d" % \
+                (get_obsdate(),exp_num))
         elif exp_mode == exp_mode_next:
-          self.info("########## %s: acquiring exposure %s while fetching the previous exposures" %\
-                (get_obsdate(),image_suffix))
+          self.info("########## %s: acquiring exposure %d while fetching exposure %d" %\
+                (get_obsdate(),exp_num, exp_num-1))
         elif exp_mode == exp_mode_last:
-          self.info("########## %s: fetching last exposure %s" % \
-                (get_obsdate(),image_suffix))
+          self.info("########## %s: fetching last exposure %d" % \
+                (get_obsdate(),exp_num))
         elif exp_mode == exp_mode_single:
-          self.info("########## %s: acquiring and fetching exposure %s" % \
-                (get_obsdate(),image_suffix))
+          self.info("########## %s: acquiring and fetching exposure %d" % \
+                (get_obsdate(),exp_num))
         else:
-          error_msg = "########## %s: unrecognized exposure mode [%s] for exposure %s" %\
-                (get_obsdate(),image_suffix)
+          error_msg = "########## %s: unrecognized exposure mode [%s] for exposure %d" %\
+                (get_obsdate(),exp_nu)
 
       if (error_msg is None) and not exp_mode == exp_mode_last:
         if self.sync_controllers:
-          self.info("settig sync")
+          self.info("setting sync")
           try:
              await self.set_sync(True)
           except Exception as e:
@@ -935,7 +997,7 @@ class LS4_Control:
                        fetch=False,concurrent=False,save=False,enable_shutter=enable_shutter) \
                        for index in range(0,self.num_controllers)))
            
-          self.info("done awaiting exp_sequence threads")
+          self.debug("done awaiting exp_sequence threads")
         except Exception as e:
           error_msg = "Exception executing exp_sequence with acquire/fetch/concurrent = True/False/False: %s" % e
 
@@ -947,7 +1009,7 @@ class LS4_Control:
                        ls4_conf= self.ls4_conf_list[index],acquire=True,suffix=image_suffix,\
                        fetch=True,concurrent=True,save=self.save_images,enable_shutter=enable_shutter) \
                        for index in range(0,self.num_controllers)))
-          self.info("done awaiting exp_sequence threads")
+          self.debug("done awaiting exp_sequence threads")
            
         except Exception as e:
           error_msg = "Exception executing exp_sequence with acquire/fetch/concurrent = True/True/True: %s" % e
@@ -959,7 +1021,7 @@ class LS4_Control:
                        ls4_conf= self.ls4_conf_list[index],acquire=False,suffix=image_suffix,\
                        fetch=True,concurrent=False,save=self.save_images,enable_shutter=enable_shutter) \
                        for index in range(0,self.num_controllers)))
-          self.info("done awaiting exp_sequence threads")
+          self.debug("done awaiting exp_sequence threads")
 
         except Exception as e:
           error_msg = "Exception executing exp_sequence with acquire/fetch/concurrent = False/True/False: %s" % e
@@ -973,7 +1035,7 @@ class LS4_Control:
                          ls4_conf= self.ls4_conf_list[index],acquire=True,suffix=image_suffix,\
                          fetch=False,concurrent=False,save=False, enable_shutter=enable_shutter) \
                          for index in range(0,self.num_controllers)))
-          self.info("done awaiting exp_sequence threads")
+          self.debug("done awaiting exp_sequence threads")
         except Exception as e:
           error_msg = "Exception executing exp_sequence with acquire/fetch/concurrent = True/False/False: %s" % e
              
@@ -992,7 +1054,7 @@ class LS4_Control:
                        ls4_conf= self.ls4_conf_list[index],acquire=False,suffix=image_suffix,\
                        fetch=True,concurrent=False,save=self.save_images,enable_shutter=enable_shutter) \
                        for index in range(0,self.num_controllers)))
-            self.info("done awaiting exp_sequence threads")
+            self.debug("done awaiting exp_sequence threads")
           except Exception as e:
             error_msg = "Exception executing exp_sequence with acquire/fetch/concurrent = False/True/False: %s" % e
  
@@ -1000,14 +1062,15 @@ class LS4_Control:
          self.info("error occurred")
          self.error("########## %s: %s" % (get_obsdate(),error_msg))
       else:
-         self.image_count += 1
+         if exp_mode != exp_mode_last:
+            self.image_count += 1
  
       if error_msg is None:
          self.ls4_status.update({'state':'done exposing'})
       else:
          self.ls4_status.update({'state':'done exposing','error':True,'comment':error_msg})
 
-      self.info("returning")
+      self.debug("returning")
 
       return error_msg
          

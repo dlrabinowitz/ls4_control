@@ -165,7 +165,6 @@ class LS4_Camera():
         self.fetch_config={}
         self.fetch_status={}
         self.fetch_system={}
-        self.fetch_header_info={}
 
     def set_lead(self, lead_flag: bool = False):
         self.leader = lead_flag
@@ -615,7 +614,12 @@ class LS4_Camera():
 
         self.ls4_controller = None 
 
-    async def save_image(self,output_image=None, status=None, controller_config = None, system=None, ls4_conf = None, header_info = None):
+    async def save_image(self,output_image=None, status=None, controller_config = None, system=None, ls4_conf = None, header = None):
+
+        """ save image data to fits files, updating fits headers with key/value pairs from status, 
+            controller_config, status, ls4_conf, and header_info.
+
+        """
 
         self.timing['save'].start()
 
@@ -635,15 +639,11 @@ class LS4_Camera():
           ls4_conf={}
           ls4_conf.update(self.fetch_ls4_conf)
 
-        if header_info is None:
-          header_info={}
-          header_info.update(self.fetch_header_info)
 
         self.fetch_status={}
         self.fetch_system={}
         self.fetch_config={}
         self.fetch_ls4_conf={}
-        self.fetch_header_info={}
 
         # initialize header info common to all CCD sub-images
         image_index = 0
@@ -653,7 +653,10 @@ class LS4_Camera():
         await self.ls4_header.set_header_info(conf = config['archon'])
         await self.ls4_header.set_header_info(conf = status)
         await self.ls4_header.set_header_info(conf = system)
-        await self.ls4_header.set_header_info(conf = header_info)
+        if header is not None:
+          self.debug("updating ls4_header with header_info")
+          await self.ls4_header.set_header_info(conf = header)
+
 
         amps_per_ccd = self.ls4_ccd_map.image_info['amps_per_ccd']
 
@@ -733,6 +736,8 @@ class LS4_Camera():
 
         try:
            assert self.ls4_controller is not None,"controller has not been started"
+           if not fetch:
+              assert  header is None, "fetch is False but header is not None"
         except Exception as e:
            error_msg = e
 
@@ -796,8 +801,6 @@ class LS4_Camera():
             self.fetch_ls4_conf.update(self.ls4_conf)
             self.fetch_config.update(self.ls4_controller.config)
             self.fetch_system.update(system)
-            if header is not None:
-              self.fetch_header_info.update(header)
 
         if error_msg is None and fetch and await self.ls4_controller.is_fetch_pending():
  
@@ -830,7 +833,7 @@ class LS4_Camera():
           try:
             await self.fetch_and_save(output_image=output_image,\
                         save=save,wait_expose=wait_expose,\
-                        wait_readout=wait_readout)
+                        wait_readout=wait_readout,header=header)
           except Exception as e:
             error_msg = "Exception fetching and saving data: %s" %e
 
@@ -841,7 +844,8 @@ class LS4_Camera():
         assert error_msg is None, error_msg
           
     async def fetch_and_save(self,output_image=None, status=None, config=None,system=None,\
-                  ls4_conf=None,save=True,wait_expose=False, wait_readout=False,max_wait = MAX_FETCH_TIME):
+              ls4_conf=None,save=True,wait_expose=False, wait_readout=False,\
+              max_wait = MAX_FETCH_TIME, header = None):
 
         """
            Fetch data from last-written controller buffer and write to disk (if save = True).
@@ -861,20 +865,10 @@ class LS4_Camera():
         if error_msg is None:
           try:
              assert 'frame' in status,"ERROR: no frame info in status" 
-          except Exception as e:
-              error_msg = "%s" % e
-
-        if error_msg is None:
-          try:
              assert self.ls4_controller is not None,"ERROR: controller has not been started"
+             assert not await self.ls4_controller.is_fetching(), "ERROR: controller is still fetching a different image"
           except Exception as e:
-              error_msg = "%s" % e
-
-        if error_msg is None:
-          try:
-            assert not await self.ls4_controller.is_fetching(), "ERROR: controller is still fetching a different image"
-          except Exception as e:
-            error_msg = "%s" % e
+             error_msg = "%s" % e
 
         if error_msg is None and wait_expose and not await self.ls4_controller.is_exposing():
           self.info("%s: waiting up to %7.3f sec for exposure to begin before fetching previous exposure" %\
@@ -928,12 +922,12 @@ class LS4_Camera():
 
         
         if error_msg is None and save:
-          self.info("saving image to %s" % output_image)
+          self.info("saving exposure to %s" % output_image)
           try:
-            await self.save_image(output_image=output_image)
-            self.debug("time to save image: %7.3f sec" % self.timing['save'].period)
+            await self.save_image(output_image=output_image, header = header)
+            self.debug("time to save exposure : %7.3f sec" % self.timing['save'].period)
           except Exception as e:
-            error_msg = "Exception saving image to %s: %s" % (output_image,e)
+            error_msg = "Exception saving exposure to %s: %s" % (output_image,e)
 
         
         assert error_msg is None, error_msg
