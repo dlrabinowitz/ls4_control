@@ -17,13 +17,48 @@ import asyncio
 from archon.controller.ls4_logger import LS4_Logger
 from archon.ls4.ls4_ccd_map import LS4_CCD_Map
 
+class MyLock():
+
+    def __init__(self,ls4_logger=None,name=None):
+           
+        self.ls4_logger = ls4_logger
+
+        if name is None:
+          self.name = "un-named"
+        else:
+          self.name = name
+
+        self.info = self.ls4_logger.info
+        self.debug= self.ls4_logger.debug
+        self.warn = self.ls4_logger.warn
+        self.error= self.ls4_logger.error
+        self.critical= self.ls4_logger.critical
+           
+        self.async_lock = asyncio.Lock()
+
+    def release(self):
+        self.debug("%s: releasing..." % self.name)
+        self.async_lock.release()
+        self.debug("%s: done releasing..." % self.name)
+
+    async def acquire(self):
+        self.debug("%s: acquiring ..." % self.name)
+        await self.async_lock.acquire()
+        self.debug("%s: done acquiring" % self.name)
+
 class LS4_Header():
 
+       
     def __init__(self,
-        ls4_logger: LS4_Logger | None = None
+        ls4_logger: LS4_Logger | None = None,
+        name = None
     ):
        
         self.ls4_logger = ls4_logger
+        if name is not None:
+           self.name = name
+        else:
+           self.name = "un-named"
 
         self.info = self.ls4_logger.info
         self.debug= self.ls4_logger.debug
@@ -33,22 +68,40 @@ class LS4_Header():
 
         self.header_info={}
 
-        self.lock = asyncio.Lock()
+        #self.lock = asyncio.Lock()
+        self.lock = MyLock(ls4_logger=self.ls4_logger,name = self.name)
  
-    async def initialize(self):
+    async def initialize(self,conf=None):
+        error_msg = None
+
+        self.debug("%s: initializing ..." % self.name)
+
         await self.lock.acquire()
         self.header_info={}
         self.lock.release()
+
+        if conf is not None:
+           try:
+             await self.set_header_info(conf=conf)
+           except Exception as e:
+             error_msg = "exception initializeing header: %s" %e
+
+        if error_msg:
+           raise RuntimeError(error_msg)
+
+        self.debug("%s: done initializing" % self.name)
 
     @property 
     async def header(self):
         return await self.get_header()
 
     async def get_header(self):
+        self.debug("%s: getting header ..." % self.name)
         await self.lock.acquire()
         h={}
         h.update(self.header_info)
         self.lock.release()
+        self.debug("%s: done getting header " % self.name)
         return h
 
     #async def _update_header(self,header=None,conf=None,reject_keys=None):
@@ -62,12 +115,15 @@ class LS4_Header():
             Ignore keys specified by reject_keys.
         """
 
+        self.debug("%s: updating header ..." % self.name)
+
         #if header is None:
         #  update_flag = True 
         #  header = await self.get_header()
         #else:
         #  update_flag = False
-        header = await self.get_header()
+        header={}
+        header.update(self.header_info)
 
         if reject_keys is None:
            reject_keys={}
@@ -90,13 +146,8 @@ class LS4_Header():
               self.error("Exception updating update header with configuration key,value %s %s: %s" %\
                         (key,dict[key],e))
 
-        #if update_flag:
-        #   await self.lock.acquire()
-        #   self.header_info.update(header)
-        #   self.lock.release()
-        await self.lock.acquire()
         self.header_info.update(header)
-        self.lock.release()
+        self.debug("%s: done updating header " % self.name)
 
     async def set_header_info(self,conf=None,ls4_ccd_map=None,ccd_location=None,amp_index=None):
 
@@ -128,9 +179,12 @@ class LS4_Header():
           self.error(e)
           return  None
 
+        self.debug("%s: setting header info ... " % self.name)
+
+        h = {}
+
         if conf is not None:
           reject_keys=[]
-          h={}
           for key in conf:
              #if "_list" in key or 'log_format' in key or 'frame' in key:
              if "_list" in key or 'log_format' in key:
@@ -141,8 +195,6 @@ class LS4_Header():
                 pass
              else:
                 h[key]=conf[key]
-
-          await self._update_header(conf=h,reject_keys=reject_keys)
 
         else:
 
@@ -160,7 +212,6 @@ class LS4_Header():
                   "TAP_INDEX":"TAP_INDICES","TAP_SCALE":"TAP_SCALES",\
                   "TAP_OFFSET":"TAP_OFFSETS"}
 
-          h={}
           ccd_info = ls4_ccd_map.ccd_map[ccd_location]
           h.update({"CCD_LOC":ccd_info["CCD_LOC"],"CCD_NAME":ccd_info["CCD_NAME"]})
 
@@ -168,7 +219,12 @@ class LS4_Header():
               k = key_map[key]
               value = ccd_info[k][amp_index]
               h.update({key:value})
-              await self._update_header(conf=h)
 
 
-        return await self.get_header()
+        await self.lock.acquire()
+        await self._update_header(conf=h)
+        h = self.header_info
+        self.lock.release()
+
+        self.debug("%s: done setting header info " % self.name)
+        return h

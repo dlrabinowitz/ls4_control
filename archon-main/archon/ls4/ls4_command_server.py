@@ -229,8 +229,8 @@ class LS4_Command_Server():
                     self.debug("port %d, done handling command: [%s]  reply: [%s]" % \
                             (self.port,command,reply_list[0]))
                     reply = reply_list[0].strip()
-                    while len(reply) < 256:
-                        reply = reply + " "
+                    #while len(reply) < 256:
+                    #    reply = reply + " "
                     reply = reply + "\n"
                     reply = reply.encode()
                     self.debug("port %d, sending reply: %s" % (self.port,reply))

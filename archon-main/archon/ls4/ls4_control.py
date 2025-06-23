@@ -121,18 +121,11 @@ class LS4_Control:
        self.initial_reboot= check_bool_value(self.ls4_conf['initial_reboot'],True)
 
 
-       # init three instances of LS4_Header: 
-       #  (1) self.extra_info_header records info added before
-       #      the expose command is executed using the "header" command in ls4_commands.py
-       #      (e.g. telescope position and status).
-       #  (2) self.acquire_header records the contents of extra_info_header and any other info
-       #      added to directly to acquire_header since the end of the previous acquisition.
-       #  (3) self.fetch_header recorded the contents of acquire_header when acquisition ends. This
-       #      is added to the fits headers when the fetched data are saved.
+       # init self.extra_info_header. It  records info added before
+       # the expose command is executed using the "header" command in ls4_commands.py
+       # (e.g. telescope position and status).
 
-       self.extra_info_header = LS4_Header(ls4_logger=self.ls4_logger)
-       self.acquire_header = LS4_Header(ls4_logger = self.ls4_logger)
-       self.fetch_header = LS4_Header(ls4_logger = self.ls4_logger)
+       self.extra_info_header = LS4_Header(ls4_logger=self.ls4_logger,name = "extra_info_header")
 
 
        #initialize list of empty configuration dictionaries, one for each named controller.
@@ -185,6 +178,8 @@ class LS4_Control:
      return self.ls4_status.get()
 
   async def set_extra_header(self,info):
+     """ update self.extra_info_header with keyword/value pairs from info """
+
      error_msg = None
 
      if info is not None:
@@ -195,6 +190,7 @@ class LS4_Control:
 
      self.debug("returning with error = %s" % str(error_msg))
      return error_msg
+
 
   async def initialize(self, reboot = False):
 
@@ -752,7 +748,8 @@ class LS4_Control:
 
 
   async def exp_sequence(self,exptime=None,suffix="",ls4=None,ls4_conf=None,\
-            acquire=False, fetch=False, save=False, concurrent=False, enable_shutter=False):
+            acquire=False, fetch=False, save=False, concurrent=False, enable_shutter=False,
+            extra_header=None):
 
       """ For the instance of LS4_Camera specified by ls4,
           acquire a new exposure and/or fetch an exposure, with the following 4 modes
@@ -779,61 +776,83 @@ class LS4_Control:
                                   
           Notes:
 
-          1.  the controllers have three image buffers. As long as the time to fetch
+          1 if acquire and fetch and concurrent are True, two threads launch at the same time:
+          an acquisition thread to acquire a new image, and a fetch thread to fetch the data
+          from the previouslt acquired exposre.
+
+          2.  the controllers have three image buffers. As long as the time to fetch
           and optionally save an image is less than the time to readout each new image,
           then the fetching and acquiring can proceed simultaneously.
 
-          2. Three header dictionaries (extra_info_header, acquire_header, fetch_header)
+          3. Three header dictionaries (extra_header, acquire_header and  fetch_header)
           are used to record status data from the telescope. The data are transferred from one buffer 
           to another in stages timed to allow concurrent telescope motion, camera readout,
           and data fetching.
 
           The staging :
 
-             move telescope
-             update extra_info_header
-             Copy extra_info_header to aquire_header
-             start new acquisition
-             Copy aquire_header to fetch_header
-             start fetching and saving
-             use fetch_header to update FITS headers
+             Main thread:
+               move telescope
+               update extra_info_header
+
+             For each instance of Ls4_Camera, use exp_sequence to:
+               copy extra_header to ls4.aquire_header 
+               start new acquisition
+               copy ls4.aquire_header to ls4.fetch_header 
+               start fetching and saving
+               use ls4.fetch_header to update FITS headers
 
           The timing:
          
               main thread:
-                (1) Wait for telescope to settle at next pointing.
-                    Update extra_info_header with telescope status.
-                    This may occur while a previous exposure is being readout,
-                    and an even earlier exposure is being fetched and saved.
+                Wait for telescope to settle at next pointing.
 
-                (2) Wait for any ongoing acquisition and fetch threads to exit.
-                    Copy extra_info_header to acquire_header.
-                    Clear extra_info_header.
-                    Start new acquisition thread.
-                    The acquire_header will not change until the next acquisition ends.
-                     
-                (3) If concurrent acquire/fetch:
+                Update extra_info_header with telescope status.
+                This may occur while a previous exposure is being readout,
+                and an even earlier exposure is being fetched and saved.
+
+                Wait for any ongoing exp_sequence threads to exit.
+
+                For each instance of Ls4_Camera, start a new exp_sequence thread.
+
+              exp_sequence threads:
+
+                Copy extra_header to acquire_header if acquire=True.
+                Start one or more new acquisition threads. 
+
+                The number of threads and their actions depends on the values
+                of acquire,fetch, and concurrent.
+
+              main thread:
+                After starting exp_sequence threads, clear extra_info_header.
+                    
+              exp_sequence threads:
+
+                If concurrent acquire/fetch:
+                  Copy fetch_header to temporary buffer.
+                  Simultaneously start new acquitison and new fetch threads
+                  (with temporary buffer as argument to fetch thread )
+
+                If acquire followed by fetch:
+                  Start new acquisition thread
+         
+              main thread:
+                Wait for any newly started acquisition threads to start reading out CCD.
+                Start moving telescope to next pointing (if any).
+         
+              exp_sequence threads:
+                Wait for any acquisition and fetch threads to exit.
+
+                If there was a new acquisition:
+                  Copy acquire_header to fetch_header.
+                  Clear acquire_header.
+
+                If fetch only or acquisition followed by fetch (non-concurrent):
                     Copy fetch_header to temporary buffer.
                     Clear fetch_header.
-                    Start fetch thread (with temporary buffer as argument)
+                    Start new fetch thread (with temporary buffer as argument)
+                    Wait for fetch thread to exit.
          
-                (4) Wait for acquisition thread to start reading out CCD.
-                    Start moving telescope to next pointing.
-         
-                (5) Wait for acquisition thread (and fetch thread if concurrent) to exit.
-                    Copy acquire_header to fetch_header.
-                    Clear acquire_header.
-                    The fetch header will not change until the next fetch starts
-         
-                (6) If sequential acquire/fetch:
-                      Copy fetch_header to temporary buffer.
-                      Clear fetch_header.
-                      Start new fetch thread (with temporary buffer as argument)
-                      Wait for fetch thread to exit.
-         
-            
-         
-
       """
 
 
@@ -857,12 +876,10 @@ class LS4_Control:
         image_prefix = ls4_conf['image_prefix']
         output_image = ls4_conf['data_path']+"/"+image_prefix + suffix
 
-      if fetch and (error_msg is None):
-        await self.fetch_header.initialize()
-        h  = await self.acquire_header.header
-        await self.fetch_header.set_header_info(conf=h)
+
 
       if acquire and (error_msg is None):
+
         try:
           status = await ls4.get_status()
           assert await ls4.check_voltages(status=status), "voltages out of range"
@@ -870,18 +887,31 @@ class LS4_Control:
           error_msg = "Exception checking voltages: %s" %e
           self.error(error_msg)
 
-        # copy extra_info_header to acquire_header
-        self.debug("copying extra_info_header to acquire_header")
-        h = await self.extra_info_header.header
-        await self.acquire_header.initialize()
-        await self.acquire_header.set_header_info(conf=h)
+        # initialize ls4.acquire_header with contents of extra_header
+        #DEBUG
+        self.info("initializing acquire_header from extra_header")
+        await ls4.acquire_header.initialize(conf=extra_header)
 
-        await self.extra_info_header.initialize()
+        #DEBUG
+        h = await ls4.acquire_header.header
+        if 'tele-dec' in h:
+          self.info("acquire_header['tele-dec'] = %s" % h['tele-dec'])
+        else:
+          self.info("acquire_header missing 'tele-dec'")
 
       # acquire and fetch at the same time
       if acquire and fetch and concurrent and (error_msg is None):
-        self.debug("copying fetch_header to h")
-        h = await self.fetch_header.header
+
+        self.debug("copying fetch_header to temporary header h")
+        h = await ls4.fetch_header.header
+        #DEBUG
+        if 'tele-dec' in h:
+          self.info("fetch_header['tele-dec'] = %s" % h['tele-dec'])
+        else:
+          self.info("fetch_header missing 'tele-dec'")
+
+        # Set header=None for the instance of acquire with acquire=True/fetch=False.
+        # Set header=h 
         try:
           await asyncio.gather(\
                   ls4.acquire(exptime=exptime,output_image=output_image,concurrent=concurrent,\
@@ -894,9 +924,20 @@ class LS4_Control:
            error_msg = "image %s: exception acquiring and fetching at same time: %s" % (output_image,e)
            self.error(error_msg)
 
-        await self.fetch_header.initialize()
-        h  = await self.acquire_header.header
-        await self.fetch_header.set_header_info(conf=h)
+        # Once the concurrent acquire and fetch threads complete, the fetch_header for the 
+        # next image to be fetched  is initialized here with the current contents of acquire_header.
+
+        #DEBUG 
+        self.info("initializing fetch_header with acquire_header")
+        h  = await ls4.acquire_header.header
+        await ls4.fetch_header.initialize(conf=h)
+
+        #DEBUG
+        h = await ls4.fetch_header.header
+        if 'tele-dec' in h:
+          self.info("fetch_header['tele-dec'] = %s" % h['tele-dec'])
+        else:
+          self.info("fetch_header missing 'tele-dec'")
 
       # acquire and/or fetch but not at the same time
       elif (acquire or fetch) and (not concurrent) and (error_msg is None):
@@ -908,9 +949,10 @@ class LS4_Control:
              error_msg = "image %s: exception acquiring and fetching sequentially: %s" % (output_image,e)
              self.error(error_msg)
 
-        await self.fetch_header.initialize()
-        h = await self.acquire_header.header
-        await self.fetch_header.set_header_info(conf=h)
+        # once the acquisition ends, initialize the fetch_header with the current contents of
+        # aquire_header
+        h = await ls4.acquire_header.header
+        await ls4.fetch_header.initialize(conf=h)
 
         if fetch and (error_msg is None):
           try: 
@@ -989,12 +1031,22 @@ class LS4_Control:
          self.info("updating status")
          self.ls4_status.update({'state':'exposing','comment':'expo_mode %s' % exp_mode})
 
+      extra_header=await self.extra_info_header.header
+      #DEBUG
+      if 'tele-dec' in extra_header:
+        self.info("extra_header['tele-dec'] = %s" % extra_header['tele-dec'])
+      else:
+        self.info("extra_header['tele-dec'] not found")
+
+
+
       if (error_msg is None) and exp_mode == exp_mode_first:
         self.info("awaiting exp_sequence threads for exp_mode_first")
         try:
           await asyncio.gather(*(self.exp_sequence(exptime=exptime,ls4=self.ls4_list[index],\
                        ls4_conf= self.ls4_conf_list[index],acquire=True,suffix=image_suffix,\
-                       fetch=False,concurrent=False,save=False,enable_shutter=enable_shutter) \
+                       fetch=False,concurrent=False,save=False,enable_shutter=enable_shutter,\
+                       extra_header=extra_header) \
                        for index in range(0,self.num_controllers)))
            
           self.debug("done awaiting exp_sequence threads")
@@ -1007,7 +1059,8 @@ class LS4_Control:
         try:
           await asyncio.gather(*(self.exp_sequence(exptime=exptime,ls4=self.ls4_list[index],\
                        ls4_conf= self.ls4_conf_list[index],acquire=True,suffix=image_suffix,\
-                       fetch=True,concurrent=True,save=self.save_images,enable_shutter=enable_shutter) \
+                       fetch=True,concurrent=True,save=self.save_images,enable_shutter=enable_shutter, \
+                       extra_header=extra_header) \
                        for index in range(0,self.num_controllers)))
           self.debug("done awaiting exp_sequence threads")
            
@@ -1019,7 +1072,8 @@ class LS4_Control:
         try:
           await asyncio.gather(*(self.exp_sequence(exptime=exptime,ls4=self.ls4_list[index],\
                        ls4_conf= self.ls4_conf_list[index],acquire=False,suffix=image_suffix,\
-                       fetch=True,concurrent=False,save=self.save_images,enable_shutter=enable_shutter) \
+                       fetch=True,concurrent=False,save=self.save_images,enable_shutter=enable_shutter, \
+                       extra_header=extra_header) \
                        for index in range(0,self.num_controllers)))
           self.debug("done awaiting exp_sequence threads")
 
@@ -1033,7 +1087,8 @@ class LS4_Control:
         try:
           await asyncio.gather(*(self.exp_sequence(exptime=exptime,ls4=self.ls4_list[index],\
                          ls4_conf= self.ls4_conf_list[index],acquire=True,suffix=image_suffix,\
-                         fetch=False,concurrent=False,save=False, enable_shutter=enable_shutter) \
+                         fetch=False,concurrent=False,save=False, enable_shutter=enable_shutter, \
+                         extra_header=extra_header) \
                          for index in range(0,self.num_controllers)))
           self.debug("done awaiting exp_sequence threads")
         except Exception as e:
@@ -1052,7 +1107,8 @@ class LS4_Control:
           try:
             await asyncio.gather(*(self.exp_sequence(exptime=exptime,ls4=self.ls4_list[index],\
                        ls4_conf= self.ls4_conf_list[index],acquire=False,suffix=image_suffix,\
-                       fetch=True,concurrent=False,save=self.save_images,enable_shutter=enable_shutter) \
+                       fetch=True,concurrent=False,save=self.save_images,enable_shutter=enable_shutter, \
+                       extra_header=extra_header) \
                        for index in range(0,self.num_controllers)))
             self.debug("done awaiting exp_sequence threads")
           except Exception as e:
@@ -1069,6 +1125,11 @@ class LS4_Control:
          self.ls4_status.update({'state':'done exposing'})
       else:
          self.ls4_status.update({'state':'done exposing','error':True,'comment':error_msg})
+
+      #self.debug("clearing extra_info_header")
+      #await self.extra_info_header.initialize()
+
+      #self.extra_info_header.initialize()
 
       self.debug("returning")
 

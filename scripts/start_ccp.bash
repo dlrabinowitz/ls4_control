@@ -39,7 +39,8 @@ while [ $index -le $n_args ]; do
       REBOOT_FLAG=True  
 
    elif [ $param == "-subread" ]; then
-      SUB_READOUT=True
+      echo "subread not implemented"
+      #SUB_READOUT=True
 
    elif [ $param == "-poweroff" ]; then
       RESET_FLAG=True  
@@ -121,13 +122,12 @@ SHUTTER_MODE='open'
 if [ $SUB_READOUT  == "True" ]; then
   ARCHON_CFG_LIST="northeast_1024.acf,southeast_1024.acf,northwest_1024.acf,southwest_1024.acf"
 else
-  #ARCHON_CFG_LIST="northeast.acf,southeast.acf,northwest.acf,southwest.acf"
-  ARCHON_CFG_LIST="northeast.acf"
-  #ARCHON_CFG_LIST="northeast_dp.acf,southeast_dp.acf,northwest_dp.acf,southwest_dp.acf"
+  #ARCHON_CFG_LIST="northeast.acf"
+  ARCHON_CFG_LIST="northeast.acf,southeast.acf,northwest.acf,southwest.acf"
 fi
 
-#JSON_CFG_LIST="northeast.json,southeast.json,northwest.json,southwest.json"
-JSON_CFG_LIST="northeast.json"
+#JSON_CFG_LIST="northeast.json"
+JSON_CFG_LIST="northeast.json,southeast.json,northwest.json,southwest.json"
 
 # not used internally yet by ls4_ccp.py
 ABORT_FILE="/tmp/abort_ls4"
@@ -135,16 +135,16 @@ if [ -e $ABORT_FILE ]; then
    rm $ABORT_FILE
 fi
 
-NAME_LIST="ctrl1"
-ENABLE_LIST="ctrl1"
-IP_LIST="192.168.3.1"
-IP_BIND_LIST="192.168.3.10"
-PORT_LIST="0"
-#NAME_LIST="ctrl1,ctrl2,ctrl3,ctrl4"
-#ENABLE_LIST="ctrl1,ctrl2,ctrl3,ctrl4"
-#IP_LIST="192.168.1.1,192.168.2.1,192.168.3.1,192.168.4.1"
-#IP_BIND_LIST="192.168.1.10,192.168.2.10,192.168.3.10,192.168.4.10"
-#PORT_LIST="0,0,0,0"
+#NAME_LIST="ctrl1"
+#ENABLE_LIST="ctrl1"
+#IP_LIST="192.168.3.1"
+#IP_BIND_LIST="192.168.3.10"
+#PORT_LIST="0"
+NAME_LIST="ctrl1,ctrl2,ctrl3,ctrl4"
+ENABLE_LIST="ctrl1,ctrl2,ctrl3,ctrl4"
+IP_LIST="192.168.1.1,192.168.2.1,192.168.3.1,192.168.4.1"
+IP_BIND_LIST="192.168.1.10,192.168.2.10,192.168.3.10,192.168.4.10"
+PORT_LIST="0,0,0,0"
 
 #SYNC="True"
 SYNC="False"

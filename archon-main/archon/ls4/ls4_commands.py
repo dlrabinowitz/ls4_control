@@ -189,6 +189,8 @@ class LS4_Commands():
 
         elif command == 'header':
            extras = {arg_value_list[0]:arg_value_list[1]}
+           if 'tele-dec' in arg_value_list[0]:
+              self.info("key: %s  value: %s" % ('tele-dec',arg_value_list[1]))
            error_msg = await self.ls4_ctrl.set_extra_header(extras)
 
         elif command == 'help':

@@ -41,6 +41,56 @@ import argparse
 
 from . import VOLTAGE_TOLERANCE, MAX_FETCH_TIME, AMPS_PER_CCD, MAX_CCDS, VSUB_BIAS_NAME
 
+"""
+    Three header dictionaries (extra_info_header, acquire_header, fetch_header)
+    are used to record status data from the telescope. The data are transferred from one buffer 
+    to another in stages timed to allow concurrent telescope motion, camera readout,
+     and data fetching.
+
+          The staging :
+
+             move telescope
+             update extra_info_header
+             Copy extra_info_header to aquire_header
+             start new acquisition
+             Copy aquire_header to fetch_header
+             start fetching and saving
+             use fetch_header to update FITS headers
+
+          The timing:
+         
+              main thread:
+                (1) Wait for telescope to settle at next pointing.
+                    Update extra_info_header with telescope status.
+                    This may occur while a previous exposure is being readout,
+                    and an even earlier exposure is being fetched and saved.
+
+                (2) Wait for any ongoing acquisition and fetch threads to exit.
+                    Copy extra_info_header to acquire_header.
+                    Clear extra_info_header.
+                    Start new acquisition thread.
+                    The acquire_header will not change until the next acquisition ends.
+                     
+                (3) If concurrent acquire/fetch:
+                    Copy fetch_header to temporary buffer.
+                    Clear fetch_header.
+                    Start fetch thread (with temporary buffer as argument)
+         
+                (4) Wait for acquisition thread to start reading out CCD.
+                    Start moving telescope to next pointing.
+         
+                (5) Wait for acquisition thread (and fetch thread if concurrent) to exit.
+                    Copy acquire_header to fetch_header.
+                    Clear acquire_header.
+                    The fetch header will not change until the next fetch starts
+         
+                (6) If sequential acquire/fetch:
+                      Copy fetch_header to temporary buffer.
+                      Clear fetch_header.
+                      Start new fetch thread (with temporary buffer as argument)
+                      Wait for fetch thread to exit.
+         
+"""         
 class LS4_Camera():
 
     required_conf_params = ['data_path','acf_file','test','log_level','ip','name','map_file']
@@ -73,7 +123,6 @@ class LS4_Camera():
         self.ls4_logger = None
         self.check_voltages=None
         self.ls4_ccd_map = None
-        self.ls4_header = None
 
         self.leader = False
         if fake is not None:
@@ -142,7 +191,19 @@ class LS4_Camera():
 
         self.ls4_conf = ls4_conf
 
-        self.ls4_header = LS4_Header(ls4_logger = self.ls4_logger)
+
+       # init three instances of LS4_Header: 
+       #  (1) self.ls4_header records all keyword/value pairs that will go into the 
+       #      FITS headers for each saved image. 
+       #  (2) self.acquire_header records the contents of extra_info_header 
+       #      (maintained by ls4_control.py) and any other info added to directly 
+       #      to acquire_header since the end of the previous acquisition.
+       #  (3) self.fetch_header recorded the contents of acquire_header when acquisition ends. This
+       #      is added to the fits headers when the fetched data are saved
+
+        self.ls4_header = LS4_Header(ls4_logger = self.ls4_logger, name = "ls4_header")
+        self.acquire_header = LS4_Header(ls4_logger = self.ls4_logger, name = "acquire_header")
+        self.fetch_header = LS4_Header(ls4_logger = self.ls4_logger, name = "fetch_header")
  
         # self.param_args[0] is a shared global
         self.param_args = param_args
@@ -858,6 +919,15 @@ class LS4_Camera():
         error_msg = None
         self.image_data = None
         wait_timeout = False
+
+        #DEBUG
+        if header is not None:
+          if 'tele-dec' in header:
+            self.info("header['tele-dec'] = %s" % header['tele-dec'])
+          else:
+            self.info("header missing 'tele-dec'")
+        else:
+          self.warn("no header data specified for fits images")
 
         if status is None:
            status = self.fetch_status
