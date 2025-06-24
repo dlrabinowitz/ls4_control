@@ -1,3 +1,39 @@
+############################
+# -*- coding: utf-8 -*-
+#
+# @Author: David Rabinowitz (david.rabinowitz@yale.edu)
+# @Date: 2025-06-25
+# @Filename: ls4_sync.py
+# @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
+#
+# Python code defining LS4_Sync class 
+#
+# This provides routines to synchronously set parameters shared by multiple Archon controllers.
+#
+# When controllers are set to follow a lead controller, their configuration and control 
+# parameters can  be set synchronously. To achieve this, each controller if first sent
+# either the "PREPPARAM" or "FASTPREPPARAM" command (these are pare of the ascii intruction set
+# understood by the controller firmware (see achon.pdf manual).
+#
+# Subsequently, each "LOADPARAM" or "FASTLOADPARAM" command sent to the lead controller 
+# (in order to set a specific parameter value)) goes out synchronouls to the follower
+# controllers.
+
+# To coordinate these actions, the LS4_Sync class creates a new instance of 
+# the asyncio Event synchronizer for each controller.  
+# When the LS4_Control class creates a new instance of the LS4_Camera class,
+# the LS4_Camera class creates a new instance of the LS4Controller class.
+#
+# Ls4_Control uses LS4_Sync.add_controller() to add the associated instance of LS4Controller 
+# to a list maintained by LS4_Sync.
+#
+# Member function "set_param(param,value)" uses the "asyncio.gather()" function to synchronously
+# run the "LS4Controller.set_param(index,param_value)" for all the controllers.
+#
+#
+################################
+
+
 import asyncio
 
 from archon.controller.ls4_controller import LS4Controller

@@ -2,12 +2,14 @@
 # -*- coding: utf-8 -*-
 #
 # @Author: David Rabinowitz (david.rabinowitz@yale.edu)
-# @Date: 2024-01-16
+# @Date: 2024-06-25
 # @Filename: ls4_voltages.py
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
-# Python code defining LS4_Voltage class  to handle checking camera biases 
-# and voltages
+# Python code defining LS4_Voltage class .
+
+# This checks camera biases and clock voltages againsts
+# programmed values.
 #
 ################################
 

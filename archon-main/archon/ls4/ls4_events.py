@@ -1,3 +1,21 @@
+############################
+# -*- coding: utf-8 -*-
+#
+# @Author: David Rabinowitz (david.rabinowitz@yale.edu)
+# @Date: 2025-06-25
+# @Filename: ls4_events.py
+# @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
+#
+# Python code defining LS4_Events class 
+
+# This provides utility functions for working with asyncio Events.
+
+# The LS4_Events class is specifically used to synchronize calls to
+# set_param() and send_command() by ls4_controller.py
+#
+################################
+
+
 import asyncio
 from archon import log
 from archon.controller.ls4_logger import LS4_Logger

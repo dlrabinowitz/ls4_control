@@ -1,5 +1,15 @@
-# LS4_Commnds class providing commands to be executed by LS4_CCP command server
+############################
+# -*- coding: utf-8 -*-
 #
+# @Author: David Rabinowitz (david.rabinowitz@yale.edu)
+# @Date: 2025-06-25
+# @Filename: ls4_commands.py
+# @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
+#
+# Python code defining LS4_Commands class 
+# This provides commands to be executed by LS4_CCP command server
+#
+############################
 
 import sys
 import os
@@ -189,8 +199,6 @@ class LS4_Commands():
 
         elif command == 'header':
            extras = {arg_value_list[0]:arg_value_list[1]}
-           if 'tele-dec' in arg_value_list[0]:
-              self.info("key: %s  value: %s" % ('tele-dec',arg_value_list[1]))
            error_msg = await self.ls4_ctrl.set_extra_header(extras)
 
         elif command == 'help':

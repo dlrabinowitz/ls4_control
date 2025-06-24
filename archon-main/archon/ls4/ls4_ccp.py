@@ -1,7 +1,15 @@
-# LS4_CCP class for front-end control of the LS4 camera.
+############################
+# -*- coding: utf-8 -*-
 #
-# This file defines the LS4_CCP class, the front-end iterface for controlling the LS4
-# camera. An instance of LS4_CCP initializes and configures the LS4 camera using
+# @Author: David Rabinowitz (david.rabinowitz@yale.edu)
+# @Date: 2025-06-25
+# @Filename: ls4_ccp.py
+# @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
+#
+# Python code defining LS4_CCP class
+# This provides fron-end interface for control of the LS4 camera.
+#
+# An instance of LS4_CCP initializes and configures the LS4 camera using
 # the LS4_Control class. Initialization parameters can be provided as command-line
 # arguments at start up, or by reading these same configuration parameters from a
 # startup file.
@@ -45,6 +53,7 @@
 #
 #   send "shutdown" command when done
 #
+############################
 
 import sys
 import os

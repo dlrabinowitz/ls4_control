@@ -1,7 +1,19 @@
-# define LS4_Command_Server class.
-
-# This is a creates a basic TCP server to receive commands, execute them, and return
-# a reply
+############################
+# -*- coding: utf-8 -*-
+#
+# @Author: David Rabinowitz (david.rabinowitz@yale.edu)
+# @Date: 2025-06-25
+# @Filename: ls4_command_server.py
+# @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
+#
+# Python code defining LS4_Command_Server class
+# This creates a basic TCP server to receive commands, execute them, and return
+# a reply.
+#
+# At instantation the class is provided a dictionary defining the command names and  their parameters,
+# and a function that performs the required actions for each command name.
+#
+############################
 
 
 import sys

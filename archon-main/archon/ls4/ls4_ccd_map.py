@@ -2,23 +2,16 @@
 # -*- coding: utf-8 -*-
 #
 # @Author: David Rabinowitz (david.rabinowitz@yale.edu)
-# @Date: 2024-01-16
+# @Date: 2025-06-25
 # @Filename: ls4_ccd_map.py
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
 # Python code defining LS4_CCD_Map class 
-# The LS4 camera-control program instantiated one
-# instance of the class for each Archon controller.
-# All access to the controller (initializing, 
-# configuring, exposing, readout, buffer access)
-# is through this class.
+# This provides utilities that return positional and instrumental parameters
+# for each CCD amplifier based on the instrument wiring , ccd locations, and
+# configuration parameters assigned to the controllers.
 #
-# The class is an extensionn of the sdss-archon code
-# available on github. Some of the sdss-archon code was
-# modified for this purpose
 #
-################################
-
 # Notes about LS4 tap lines and CCD placement
 #
 # For each quadrant of the CCD (NW, NE, SW, SE) there are 8 connectors (A, B, ..., H)
@@ -86,6 +79,8 @@
 #  E.G:
 #  {"A": {"CCD_NAME": "S-003"}, "E": {"CCD_NAME": "S-196"}}
 #
+############################
+
 import numpy as np
 import sys
 import asyncio

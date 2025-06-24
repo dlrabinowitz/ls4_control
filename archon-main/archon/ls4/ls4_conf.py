@@ -1,3 +1,18 @@
+############################
+# -*- coding: utf-8 -*-
+#
+# @Author: David Rabinowitz (david.rabinowitz@yale.edu)
+# @Date: 2025-06-25
+# @Filename: ls4_conf.py
+# @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
+#
+# Python code defining LS4_Conf class 
+#
+# This provides code to read configuration parameters from
+# the command line or from a configuration files
+#
+################################
+
 
 import sys
 import os

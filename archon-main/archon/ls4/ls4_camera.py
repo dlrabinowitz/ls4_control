@@ -2,20 +2,20 @@
 # -*- coding: utf-8 -*-
 #
 # @Author: David Rabinowitz (david.rabinowitz@yale.edu)
-# @Date: 2024-01-16
+# @Date: 2025-06-25
 # @Filename: ls4_camera.py
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
 # Python code defining LS4_Camera class 
-# The LS4 camera-control program instantiated one
-# instance of the class for each Archon controller.
-# All access to the controller (initializing, 
-# configuring, exposing, readout, buffer access)
-# is through this class.
 #
-# The class is an extensionn of the sdss-archon code
-# available on github. Some of the sdss-archon code was
-# modified for this purpose
+# This class handles mid-level control of a single Archon controller.
+# It translates high-level functions executed by the LS4_Control class (
+# (see ls4_control.py) to low-level functions executed by the LS4Controller 
+# class (see ls4_controller.py).
+
+# Ls4_Control instantiates one  instance of LS4_Camera for each Archon controller.
+# All access to the controller (initializing,  configuring, exposing, readout,
+# buffer access) is through the LS4_Camera class.
 #
 ################################
 
@@ -919,15 +919,6 @@ class LS4_Camera():
         error_msg = None
         self.image_data = None
         wait_timeout = False
-
-        #DEBUG
-        if header is not None:
-          if 'tele-dec' in header:
-            self.info("header['tele-dec'] = %s" % header['tele-dec'])
-          else:
-            self.info("header missing 'tele-dec'")
-        else:
-          self.warn("no header data specified for fits images")
 
         if status is None:
            status = self.fetch_status

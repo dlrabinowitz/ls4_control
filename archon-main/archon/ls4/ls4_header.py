@@ -2,12 +2,19 @@
 # -*- coding: utf-8 -*-
 #
 # @Author: David Rabinowitz (david.rabinowitz@yale.edu)
-# @Date: 2024-01-16
+# @Date: 2025-06-25
 # @Filename: ls4_header.py 
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
-# Python code defining LS4_Header class , with code to manager initialize, update,
-# and manager header info for fits file.
+# Python code defining LS4_Header class .
+
+# This initializes, updates, and manages header info for saved fits images.
+#
+# An instance of LS4_Header maintains a dictionary of key/value pairs
+# allowing for updates, clearing, initializing, and retrieval of the
+# dictionary.
+#
+# The routines are thread safe.
 #
 ################################
 
@@ -18,7 +25,7 @@ from archon.controller.ls4_logger import LS4_Logger
 from archon.ls4.ls4_ccd_map import LS4_CCD_Map
 
 class MyLock():
-
+    """ class to allow debugging of thread-locking within LS4_Header class """
     def __init__(self,ls4_logger=None,name=None):
            
         self.ls4_logger = ls4_logger
@@ -37,14 +44,14 @@ class MyLock():
         self.async_lock = asyncio.Lock()
 
     def release(self):
-        self.debug("%s: releasing..." % self.name)
+        #self.debug("%s: releasing..." % self.name)
         self.async_lock.release()
-        self.debug("%s: done releasing..." % self.name)
+        #self.debug("%s: done releasing..." % self.name)
 
     async def acquire(self):
-        self.debug("%s: acquiring ..." % self.name)
+        #self.debug("%s: acquiring ..." % self.name)
         await self.async_lock.acquire()
-        self.debug("%s: done acquiring" % self.name)
+        #self.debug("%s: done acquiring" % self.name)
 
 class LS4_Header():
 
@@ -74,7 +81,7 @@ class LS4_Header():
     async def initialize(self,conf=None):
         error_msg = None
 
-        self.debug("%s: initializing ..." % self.name)
+        #self.debug("%s: initializing ..." % self.name)
 
         await self.lock.acquire()
         self.header_info={}
@@ -89,19 +96,19 @@ class LS4_Header():
         if error_msg:
            raise RuntimeError(error_msg)
 
-        self.debug("%s: done initializing" % self.name)
+        #self.debug("%s: done initializing" % self.name)
 
     @property 
     async def header(self):
         return await self.get_header()
 
     async def get_header(self):
-        self.debug("%s: getting header ..." % self.name)
+        #self.debug("%s: getting header ..." % self.name)
         await self.lock.acquire()
         h={}
         h.update(self.header_info)
         self.lock.release()
-        self.debug("%s: done getting header " % self.name)
+        #self.debug("%s: done getting header " % self.name)
         return h
 
     #async def _update_header(self,header=None,conf=None,reject_keys=None):
@@ -115,7 +122,7 @@ class LS4_Header():
             Ignore keys specified by reject_keys.
         """
 
-        self.debug("%s: updating header ..." % self.name)
+        #self.debug("%s: updating header ..." % self.name)
 
         #if header is None:
         #  update_flag = True 
@@ -147,7 +154,7 @@ class LS4_Header():
                         (key,dict[key],e))
 
         self.header_info.update(header)
-        self.debug("%s: done updating header " % self.name)
+        #self.debug("%s: done updating header " % self.name)
 
     async def set_header_info(self,conf=None,ls4_ccd_map=None,ccd_location=None,amp_index=None):
 
@@ -179,7 +186,7 @@ class LS4_Header():
           self.error(e)
           return  None
 
-        self.debug("%s: setting header info ... " % self.name)
+        #self.debug("%s: setting header info ... " % self.name)
 
         h = {}
 
@@ -226,5 +233,5 @@ class LS4_Header():
         h = self.header_info
         self.lock.release()
 
-        self.debug("%s: done setting header info " % self.name)
+        #self.debug("%s: done setting header info " % self.name)
         return h

@@ -1,10 +1,22 @@
+############################
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-# @Author: José Sánchez-Gallego (gallegoj@uw.edu)
-# @Date: 2021-01-20
-# @Filename: tools.py
+# @Author: David Rabinowitz (david.rabinowitz@yale.edu)
+# @Date: 2025-06-25
+# @Filename: ls4_abort.py
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
+
+# Python code defining LS4_Camera class 
+# This  monitor and handle aborts of the LS4 controller.
+#
+# When abort_file appears, this is a signal to abort any ongoing exposure.
+#
+# If abort_server_file appears, this is a signal to abort any ongoing exposure
+#  then  to abort the command server and exit.
+#
+############################
+
 
 from __future__ import annotations
 

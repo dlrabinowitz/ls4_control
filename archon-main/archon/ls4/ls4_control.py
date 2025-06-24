@@ -1,6 +1,16 @@
-# This file defines the LS4_Control class, which allows control of the LS4 
+############################
+# -*- coding: utf-8 -*-
+#
+# @Author: David Rabinowitz (david.rabinowitz@yale.edu)
+# @Date: 2025-06-25
+# @Filename: ls4_control.py
+# @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
+#
+# Python code defining LS4_Control class 
+#
+# This allows control of the LS4 
 # camera through high-level commands to the Archon CCD controllers.
-
+#
 # The program implements basic commands to initialize, configure, and readout the 
 # four synchronized Archon controllers that are interfaced to camera.
 # Each controller reads out one quadrant of the array, consisting of 8 2K x 4K CCDs,
@@ -25,8 +35,9 @@
 # distribution, which is built on top of the SDSS/archon on github.
 # 
 #
-# See "test()" routine for a typical implementation
+# See "go()" routine in "__main__" section for a typical implementation
 #
+############################
 
 import sys
 import os
@@ -888,27 +899,13 @@ class LS4_Control:
           self.error(error_msg)
 
         # initialize ls4.acquire_header with contents of extra_header
-        #DEBUG
-        self.info("initializing acquire_header from extra_header")
         await ls4.acquire_header.initialize(conf=extra_header)
-
-        #DEBUG
-        h = await ls4.acquire_header.header
-        if 'tele-dec' in h:
-          self.info("acquire_header['tele-dec'] = %s" % h['tele-dec'])
-        else:
-          self.info("acquire_header missing 'tele-dec'")
 
       # acquire and fetch at the same time
       if acquire and fetch and concurrent and (error_msg is None):
 
         self.debug("copying fetch_header to temporary header h")
         h = await ls4.fetch_header.header
-        #DEBUG
-        if 'tele-dec' in h:
-          self.info("fetch_header['tele-dec'] = %s" % h['tele-dec'])
-        else:
-          self.info("fetch_header missing 'tele-dec'")
 
         # Set header=None for the instance of acquire with acquire=True/fetch=False.
         # Set header=h 
@@ -927,17 +924,9 @@ class LS4_Control:
         # Once the concurrent acquire and fetch threads complete, the fetch_header for the 
         # next image to be fetched  is initialized here with the current contents of acquire_header.
 
-        #DEBUG 
-        self.info("initializing fetch_header with acquire_header")
         h  = await ls4.acquire_header.header
         await ls4.fetch_header.initialize(conf=h)
 
-        #DEBUG
-        h = await ls4.fetch_header.header
-        if 'tele-dec' in h:
-          self.info("fetch_header['tele-dec'] = %s" % h['tele-dec'])
-        else:
-          self.info("fetch_header missing 'tele-dec'")
 
       # acquire and/or fetch but not at the same time
       elif (acquire or fetch) and (not concurrent) and (error_msg is None):
@@ -1032,13 +1021,6 @@ class LS4_Control:
          self.ls4_status.update({'state':'exposing','comment':'expo_mode %s' % exp_mode})
 
       extra_header=await self.extra_info_header.header
-      #DEBUG
-      if 'tele-dec' in extra_header:
-        self.info("extra_header['tele-dec'] = %s" % extra_header['tele-dec'])
-      else:
-        self.info("extra_header['tele-dec'] not found")
-
-
 
       if (error_msg is None) and exp_mode == exp_mode_first:
         self.info("awaiting exp_sequence threads for exp_mode_first")
