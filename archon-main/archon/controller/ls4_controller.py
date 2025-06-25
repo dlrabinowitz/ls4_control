@@ -381,6 +381,9 @@ class LS4Controller(LS4_Device):
               self.acf_config = config_parser
               self._parse_params()
 
+              #DEBUG
+              self.debug("Controller Parameters: %s" % str(self.parameters))
+
         # disable shutter on power up
         self.shutter_enable=False
 
@@ -1805,6 +1808,37 @@ class LS4Controller(LS4_Device):
 
         self.parameters = {k.upper(): int(v) for k, v in dict(matches).items()}
 
+
+        # add LINECOUNT and PIXELCOUNT values to parameters. These appear as variable
+        # settings in the Archon config file, but do not apear prefixed with the  "PARAMETER"
+        # label
+
+        d = {}
+        keywords = ['LINECOUNT','PIXELCOUNT']
+        for k in keywords:
+
+          result = re.findall(
+              r'%s+\s*=\s*([0-9]+)'%k,
+              data,
+              re.IGNORECASE,
+          )
+
+          value = None
+
+          if len(result) == 0:
+              error_msg = "unable to find %s in config file" % k
+          elif len(result) > 1:
+              error_msg = "more than one instance of %s in config file" % k
+          else:
+              value = int(result[0])
+
+          d[k]=value
+
+        self.debug("updating parameters with %s" % str(d))
+        self.parameters.update(d)
+
+
+
     async def _set_default_window_params(self, reset: bool = True):
         """Sets the default window parameters.
 
@@ -2292,7 +2326,6 @@ class LS4Controller(LS4_Device):
            else:
               # During readout, get_frame will timeout after max_wait sec and
               # return None. Keep checking periodically to see when readout is complete.
-              #DEBUG
               if self.fake_controller:
                 frame = self.fake_control.get_frame()
               else:
