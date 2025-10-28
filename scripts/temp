@@ -1,0 +1,29 @@
+ABORT_FILE="/tmp/ls4_abort"
+ABORT_SERVER_FILE="/tmp/ls4_abort_server"
+if [ -e $ABORT_FILE ]; then
+   rm -f $ABORT_FILE
+fi
+
+if [ -e $ABORT_FILE ]; then
+   echo "ERROR: can not remove abort file $ABORT_FILE"
+   ls -altd $ABORT_FILE
+   exit
+fi
+
+if [ -e $ABORT_SERVER_FILE ]; then
+   rm -f $ABORT_SERVER_FILE 
+fi
+
+
+if [ -e $ABORT_SERVER_FILE ]; then
+   echo "ERROR: can not remove abort server file $ABORT_SERVER_FILE"
+   ls -altd $ABORT_SERVER_FILE
+   exit
+fi
+
+if [ -e $ABORT_FILE ]; then
+  rm $ABORT_FILE
+fi
+if [ -e $ABORT_SERVER_FILE ]; then
+  rm $ABORT_SERVER_FILE
+fi

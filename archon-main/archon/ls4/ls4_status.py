@@ -1,8 +1,20 @@
-# class LS4_Status handles over-all management of status for LS4_CONTROL
+############################
+# -*- coding: utf-8 -*-
+#
+# @Author: David Rabinowitz (david.rabinowitz@yale.edu)
+# @Date: 2025-06-25
+# @Filename: ls4_status.py
+# @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
+#
+# Python code defining LS4_Status class 
+# This handles over-all management of status for LS4_CONTROL
 #
 #   .update() :  update status with dictionary of status values
 #   .status: returns the latest status
 #   .clear() : clears the current status
+#
+# The routines are thread safe.
+################################
 
 import sys
 import os

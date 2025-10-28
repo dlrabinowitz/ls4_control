@@ -1,5 +1,15 @@
-# LS4_Commnds class providing commands to be executed by LS4_CCP command server
+############################
+# -*- coding: utf-8 -*-
 #
+# @Author: David Rabinowitz (david.rabinowitz@yale.edu)
+# @Date: 2025-06-25
+# @Filename: ls4_commands.py
+# @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
+#
+# Python code defining LS4_Commands class 
+# This provides commands to be executed by LS4_CCP command server
+#
+############################
 
 import sys
 import os
@@ -95,6 +105,8 @@ class LS4_Commands():
         reply_list[0]=self.done_reply
         arg_name_list=None
         arg_dict = None
+
+        t_start = time.time()
         self.debug("%s command [%s] args [%s]" %\
                      (get_obsdate(),command,str(arg_value_list)) )
 
@@ -120,11 +132,11 @@ class LS4_Commands():
            pass
 
         elif command == 'open_shutter':
-           self.info("opening shutter")
+           self.debug("opening shutter")
            await asyncio.sleep(2)
 
         elif command == 'close_shutter':
-           self.info("closing shutter")
+           self.debug("closing shutter")
            await asyncio.sleep(2)
 
         elif command == 'status':
@@ -133,7 +145,9 @@ class LS4_Commands():
            reply_list[0] = reply_list[0].replace(",",",\n") 
 
         elif command == 'expose':
+           self.debug("awaiting expose with arg_dict : %s" % str(arg_dict))
            error_msg = await self.expose(arg_dict)
+           self.debug("done awaiting expose")
            if self.ls4_abort.abort:
              await self.ls4_abort.clear_exposure_abort()
 
@@ -180,27 +194,31 @@ class LS4_Commands():
 
 
         #elif command == 'r':
-        #   self.info("reading CCD images")
+        #   self.debug("reading CCD images")
         #   await asyncio.sleep(2)
 
         elif command == 'header':
-           self.info("modifying image header")
            extras = {arg_value_list[0]:arg_value_list[1]}
-           self.ls4_ctrl.set_extra_header(extras)
+           error_msg = await self.ls4_ctrl.set_extra_header(extras)
 
         elif command == 'help':
-           self.info("printing command help")
            reply_list[0] = self.done_reply + self.help_string()
-           self.info("done printing command help")
 
         if error_msg is not None:
+           self.debug("error_msg is %s" % str(error_msg))
            self.error(error_msg)
            reply_list[0] = self.error_reply + " " + error_msg
 
+        t_end = time.time()
+        dt = t_end - t_start
+        self.debug("command done in %7.3f s" % dt)
+        self.debug("awaiting update_cam_status")
         await self.ls4_ctrl.update_cam_status()
+        self.debug("done awaiting update_cam_status")
 
         self.debug("%s command [%s] args [%s] reply [%s]" %\
               (get_obsdate(),command,arg_value_list,reply_list[0]))
+        self.debug("done command function")
 
     def help_string(self,arg_dict=None):
 
@@ -219,9 +237,9 @@ class LS4_Commands():
         error_msg = None
 
         try:
-          self.info("enabling Vsub bias")
+          self.debug("enabling Vsub bias")
           await self.ls4_ctrl.enable_vsub()
-          self.info("done enabling Vsub bias")
+          self.debug("done enabling Vsub bias")
         except Exception as e:
           error_msg = "Exception enabling Vsub bias: %s" %e
 
@@ -234,9 +252,9 @@ class LS4_Commands():
         error_msg = None
 
         try:
-          self.info("disabling Vsub bias")
+          self.debug("disabling Vsub bias")
           await self.ls4_ctrl.disable_vsub()
-          self.info("done disabling Vsub bias")
+          self.debug ("done disabling Vsub bias")
         except Exception as e:
           error_msg = "Exception disabling Vsub bias: %s" %e
 
@@ -249,9 +267,9 @@ class LS4_Commands():
         error_msg = None
 
         try:
-          self.info("powering up biases")
+          self.debug("powering up biases")
           await self.ls4_ctrl.power_up_biases()
-          self.info("done powering up biases")
+          self.debug("done powering up biases")
         except Exception as e:
           error_msg = "Exception powering up CCD biases: %s" %e
 
@@ -264,9 +282,9 @@ class LS4_Commands():
         error_msg = None
 
         try:
-          self.info("powering down biases")
+          self.debug("powering down biases")
           await self.ls4_ctrl.power_down_biases()
-          self.info("done powering down biases")
+          self.debug("done powering down biases")
         except Exception as e:
           error_msg = "Exception powering down CCD biases: %s" %e
 
@@ -278,9 +296,9 @@ class LS4_Commands():
         error_msg = None
 
         try:
-          self.info("enabling autoclear")
+          self.debug("enabling autoclear")
           await self.ls4_ctrl.enable_autoclear()
-          self.info("done enabling autoclear")
+          self.debug("done enabling autoclear")
         except Exception as e:
           error_msg = "Exception enabling autoclear: %s" %e
 
@@ -293,9 +311,9 @@ class LS4_Commands():
         error_msg = None
 
         try:
-          self.info("disabling autoclear")
+          self.debug("disabling autoclear")
           await self.ls4_ctrl.disable_autoclear()
-          self.info("done disabling autoclear")
+          self.debug("done disabling autoclear")
         except Exception as e:
           error_msg = "Exception disabling autoclear: %s" %e
 
@@ -308,9 +326,9 @@ class LS4_Commands():
         error_msg = None
 
         try:
-          self.info("enabling autoflush")
+          self.debug("enabling autoflush")
           await self.ls4_ctrl.enable_autoflush()
-          self.info("done enabling autoflush")
+          self.debug("done enabling autoflush")
         except Exception as e:
           error_msg = "Exception enabling autoflush: %s" %e
 
@@ -323,9 +341,9 @@ class LS4_Commands():
         error_msg = None
 
         try:
-          self.info("disabling autoflush")
+          self.debug("disabling autoflush")
           await self.ls4_ctrl.disable_autoflush()
-          self.info("done disabling autoflush")
+          self.debug("done disabling autoflush")
         except Exception as e:
           error_msg = "Exception disabling autoflush: %s" %e
 
@@ -344,9 +362,9 @@ class LS4_Commands():
 
         if error_msg is None:
           try:
-            self.info("clearing: %s" % arg_dict)
+            self.debug("clearing: %s" % arg_dict)
             await self.ls4_ctrl.clear(clear_time=clear_time)
-            self.info("done clearing: %s" % arg_dict)
+            self.debug("done clearing: %s" % arg_dict)
           except Exception as e:
             error_msg = "Exception clearing %s: %s" % (arg_dict,e)
 
@@ -359,9 +377,9 @@ class LS4_Commands():
         error_msg = None
 
         try:
-          self.info("erasing")
+          self.debug("erasing")
           await self.ls4_ctrl.erase()
-          self.info("done erasing")
+          self.debug("done erasing")
 
         except Exception as e:
           error_msg = "Exception erasing: %s" % e
@@ -382,9 +400,9 @@ class LS4_Commands():
 
         if error_msg is None:
           try:
-            self.info("purging: %s" % arg_dict)
+            self.debug("purging: %s" % arg_dict)
             await self.ls4_ctrl.purge(fast=fast)
-            self.info("done purging: %s" % arg_dict)
+            self.debug("done purging: %s" % arg_dict)
           except Exception as e:
             error_msg = "Exception purging %s: %s" % (arg_dict,e)
 
@@ -405,9 +423,9 @@ class LS4_Commands():
 
         if error_msg is None:
           try:
-            self.info("flushing: %s" % arg_dict)
+            self.debug("flushing: %s" % arg_dict)
             await self.ls4_ctrl.flush(fast=fast,flushcount=flushcount)
-            self.info("done flushing: %s" % arg_dict)
+            self.debug("done flushing: %s" % arg_dict)
           except Exception as e:
             error_msg = "Exception flushing %s: %s" % (arg_dict,e)
 
@@ -429,9 +447,9 @@ class LS4_Commands():
           error_msg = "Exception parsing args for clean command: %s" % e
         if error_msg is None:
           try:
-            self.info("cleaning: %s" % arg_dict)
+            self.debug("cleaning: %s" % arg_dict)
             await self.ls4_ctrl.clean(erase=erase,n_cycles=n_cycles,fast=fast,flushcount=flushcount)
-            self.info("done cleaning: %s" % arg_dict)
+            self.debug("done cleaning: %s" % arg_dict)
           except Exception as e:
             error_msg = "Exception cleaning %s: %s" % (arg_dict,e)
 
@@ -488,10 +506,10 @@ class LS4_Commands():
 
         if error_msg is None:
           try:
-            self.info("exposing : %s" % arg_dict)
+            self.debug("exposing : %s" % arg_dict)
             error_msg = await self.ls4_ctrl.expose(exptime=exptime,exp_num=exp_num,
                     exp_mode = exp_mode, enable_shutter=shutter, fileroot=fileroot)
-            self.info("done exposing : %s" % arg_dict)
+            self.debug("done exposing : %s" % arg_dict)
 
           except Exception as e:
             error_msg = "Exception exposing %s: %s" % (arg_dict,e)

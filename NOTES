@@ -1,0 +1,112 @@
+2025 Sep 23
+Single Amp Readout
+
+Left is better than right. Left yield one ccd with high CTE and one with
+half of image just readout noise (no charge is shifted to amplifier).
+
+mosiac:
+  E.G.
+     $x/scripts/make_mosaic.csh testC 00000
+testC is prefix, 00000 is image index
+
+
+code: single_amp
+
+Changing left to right:
+
+start_ccp.bash : choose "left" acf or "right" acf files
+
+diff norteast_left.acf northeast_right.acf
+< MOD1\SOURCE1=1
+< MOD1\SOURCE2=5
+---
+> MOD1\SOURCE1=4
+> MOD1\SOURCE2=2
+334,335c334,335
+< MOD1\SOURCE4=4
+< MOD1\SOURCE5=2
+---
+> MOD1\SOURCE4=1
+> MOD1\SOURCE5=5
+371,372c371,372
+< MOD10\SOURCE1=1
+< MOD10\SOURCE2=5
+---
+> MOD10\SOURCE1=4
+> MOD10\SOURCE2=2
+374,375c374,375
+< MOD10\SOURCE4=4
+< MOD10\SOURCE5=2
+---
+> MOD10\SOURCE4=1
+> MOD10\SOURCE5=5
+471,472c471,472
+< MOD2\SOURCE1=1
+< MOD2\SOURCE2=5
+---
+> MOD2\SOURCE1=4
+> MOD2\SOURCE2=2
+474,475c474,475
+< MOD2\SOURCE4=4
+< MOD2\SOURCE5=2
+---
+> MOD2\SOURCE4=1
+> MOD2\SOURCE5=5
+511,512c511,512
+< MOD3\SOURCE1=1
+< MOD3\SOURCE2=5
+---
+> MOD3\SOURCE1=4
+> MOD3\SOURCE2=2
+514,515c514,515
+< MOD3\SOURCE4=4
+< MOD3\SOURCE5=2
+---
+> MOD3\SOURCE4=1
+> MOD3\SOURCE5=5
+1629,1636c1629,1636
+< TAPLINE0="AD3L, 4, 5000"
+< TAPLINE1="AD2L, 4, 5000"
+< TAPLINE2="AD8L, 4, 5000"
+< TAPLINE3="AD6L, 4, 5000"
+< TAPLINE4="AD12L, 4, 5000"
+< TAPLINE5="AD10L, 4, 5000"
+< TAPLINE6="AD13L, 4, 5000"
+< TAPLINE7="AD15L, 4, 5000"
+---
+> TAPLINE0="AD4R, 4, 5000"
+> TAPLINE1="AD1R, 4, 5000"
+> TAPLINE2="AD7R, 4, 5000"
+> TAPLINE3="AD5R, 4, 5000"
+> TAPLINE4="AD11R, 4, 5000"
+> TAPLINE5="AD9R, 4, 5000"
+> TAPLINE6="AD14R, 4, 5000"
+> TAPLINE7="AD16R, 4, 5000"
+
+
+archon-main/archon/ls4:
+  __init__.py
+    MAX_FETCH_TIME = 20.0
+    AMPS_PER_CCD = 1
+    MAX_CCDS = 8
+    # "BOTH", "LEFT", or "RIGHT"`
+    READOUT_DIRECTION = "RIGHT"
+
+archon-main/archon/controller/ls4_controller.py:
+
+    def __init__( :
+
+        self.config["timeouts"].update(\
+            {"write_config_timeout": 2,\
+            "write_config_delay": 0.0001,\
+            "expose_timeout": 2,\
+            #"readout_max": 30,\
+            # double to allow for single-readout time (should be ~36 sec)
+            "readout_max": 60,\
+            "flush": 60.0,\
+            "fast_flush": 6.0,\
+            "purge": 60.0,\
+            "erase": 60.0})
+
+
+

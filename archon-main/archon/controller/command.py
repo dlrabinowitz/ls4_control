@@ -61,9 +61,15 @@ class ArchonCommand(asyncio.Future):
         command_string: str,
         command_id: int,
         controller=None,
+        fake=False,
         expected_replies: Optional[int] = 1,
         timeout: Optional[float] = None,
     ):
+
+        self.fake_controller = fake
+ 
+        #if not self.fake_controller:
+        #  super().__init__()
         super().__init__()
 
         self.command_string = command_string.upper()
@@ -82,6 +88,11 @@ class ArchonCommand(asyncio.Future):
                 f"command_id must be between 0x00 and 0x{MAX_COMMAND_ID:X}"
             )
 
+        #if not self.fake_controller:
+        #  self.timer: Optional[Timer] = Timer(timeout, self._timeout) if timeout else None
+        #  self.__event = asyncio.Event()
+        if self.fake_controller:
+           timeout = 0.001
         self.timer: Optional[Timer] = Timer(timeout, self._timeout) if timeout else None
         self.__event = asyncio.Event()
 
@@ -142,6 +153,9 @@ class ArchonCommand(asyncio.Future):
 
         n_output = 0
 
+        if self.fake_controller:
+           return
+
         while True:
             await self.__event.wait()
             if len(self.replies) > n_output:
@@ -159,6 +173,12 @@ class ArchonCommand(asyncio.Future):
         if the command is not yet done.
         """
 
+        #print("running succeeded")
+        if self.fake_controller:
+           #print("setting self.status to Done")
+           self.status = ArchonCommandStatus.DONE
+       
+        #print("returning self.status = %s" % str(self.status))
         return self.status == self.status.DONE
 
     def _mark_done(self, status: ArchonCommandStatus = ArchonCommandStatus.DONE):
@@ -169,7 +189,11 @@ class ArchonCommand(asyncio.Future):
         if self.timer:
             self.timer.cancel()
 
-        self.status = status
+        if self.fake_controller:
+           self.status = ArchonCommandStatus.DONE
+        else:
+           self.status = status
+
         if not self.done():
             self.set_result(self)
 

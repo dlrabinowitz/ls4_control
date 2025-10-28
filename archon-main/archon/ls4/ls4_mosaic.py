@@ -2,13 +2,16 @@
 # -*- coding: utf-8 -*-
 #
 # @Author: David Rabinowitz (david.rabinowitz@yale.edu)
-# @Date: 2024-01-16
-# @Filename: ls4_camera.py
+# @Date: 2025-06-25
+# @Filename: ls4_mosaic.py
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
-# ls4_mosaic.py
+# Python code defining LS4_Mosaic class 
 #
-# class to assemble subimages fits files into a single mosaic fits
+# This provides routines to assemble the subimages  (one for each amplifier readout ) into
+# single image with the sub-images in their correct relative positions and orientations.
+#
+# The gaps between CCDs are not preserved, and overscan regions are not removed.
 #
 ################################
 

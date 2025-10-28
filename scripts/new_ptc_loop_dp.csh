@@ -12,6 +12,7 @@ if (! -e $LS4_CONTROL_ROOT/scripts/make_mosaics.csh ) then
    exit
 endif
 
+se ls4_host = `hostname`
 set num_exp_pairs = 50
 set exptime0 = 0.0 
 set exp_incr = 0.10
@@ -41,14 +42,14 @@ set DISK_LIMIT = 90
 
 set command = "vsub_on"
 echo `date` $command
-set l = `echo $command | netcat -N ls4-workstn 5000`
+set l = `echo $command | netcat -N $ls4_host 5000`
 echo `date` $l   
 if ( $l != "DONE") exit
 
 if ( $INITIAL_CLEAR == 1 ) then
   set command = "clear $INITIAL_CLEAR_TIME"
   echo `date` $command
-  set l = `echo $command | netcat -N ls4-workstn 5000`
+  set l = `echo $command | netcat -N $ls4_host 5000`
   echo `date` $l   
   if ( $l != "DONE") exit
 endif
@@ -89,7 +90,7 @@ while ( $l == "DONE" && $n <= $n_final )
       if ( $ERASE_EACH_TIME  == 1 ) then
         set command = "erase"
         echo `date` $command
-        set l = `echo $command | netcat -N ls4-workstn 5000`
+        set l = `echo $command | netcat -N $ls4_host 5000`
         echo `date` $l   
         if ( $l != "DONE" ) then
            echo "error erasing on exposure $n"
@@ -100,8 +101,8 @@ while ( $l == "DONE" && $n <= $n_final )
       if ( $CLEAN_EACH_TIME == 1 ) then
         set command = "clean $CLEAR_ERASE $CLEAR_ERASE_CYCLES $CLEAR_FLUSH_COUNT $CLEAR_FAST_FLUSH"
         echo `date` $command
-        set l = `echo $command | netcat -N ls4-workstn 5000`
-        #set l = `echo "clear 10" | netcat -N ls4-workstn 5000`
+        set l = `echo $command | netcat -N $ls4_host 5000`
+        #set l = `echo "clear 10" | netcat -N $ls4_host 5000`
         echo `date` $l   
         if ( $l != "DONE" ) then  
            echo "error clearing on exposure $n"
@@ -112,7 +113,7 @@ while ( $l == "DONE" && $n <= $n_final )
       if ( $CLEAR_EACH_TIME == 1 ) then
         set command = "clear $CLEARING_TIME"
         echo `date` $command
-        set l = `echo $command | netcat -N ls4-workstn 5000`
+        set l = `echo $command | netcat -N $ls4_host 5000`
         echo `date` $l   
         if ( $l != "DONE" ) then  
            echo "error clearing on exposure $n"
@@ -124,7 +125,7 @@ while ( $l == "DONE" && $n <= $n_final )
 
   set command = "expose $shutter $exptime test $exp_mode"
   echo `date` $command
-  set l = `echo $command | netcat -N ls4-workstn 5000`
+  set l = `echo $command | netcat -N $ls4_host 5000`
   echo `date` $l   
   if ( $l != "DONE" ) then  
      echo "error taking  exposure $n"
@@ -151,7 +152,7 @@ while ( $l == "DONE" && $n <= $n_final )
 end
 
 echo `date` "shutting down"
-set l = `echo "shutdown" | netcat -N ls4-workstn 5000`
+set l = `echo "shutdown" | netcat -N $ls4_host 5000`
 echo `date` "shutting down" $l
 
 

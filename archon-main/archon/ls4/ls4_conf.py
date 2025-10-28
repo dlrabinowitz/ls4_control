@@ -1,3 +1,18 @@
+############################
+# -*- coding: utf-8 -*-
+#
+# @Author: David Rabinowitz (david.rabinowitz@yale.edu)
+# @Date: 2025-06-25
+# @Filename: ls4_conf.py
+# @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
+#
+# Python code defining LS4_Conf class 
+#
+# This provides code to read configuration parameters from
+# the command line or from a configuration files
+#
+################################
+
 
 import sys
 import os
@@ -7,6 +22,7 @@ from archon import log
 import logging
 import time
 import argparse
+import platform
 from archon.controller.ls4_logger import LS4_Logger
 
    
@@ -17,6 +33,7 @@ def namelist(s):
 class LS4_Conf():
     """ class to handle configuration parameters """
 
+    hostname = platform.node()
 
     def __init__(self,logger=None,ls4_conf_file=None,init_conf=None,parse_args=False):
 
@@ -124,6 +141,9 @@ class LS4_Conf():
        # initialize enabled to false. Becomes true when respective LS4_CAM is instantiated
        conf['enabled'] = False    
 
+       # default is to read CCD out through both amps
+       conf['amp_direction']="both"
+
        return conf
 
     def read_conf_file(self,input=None):
@@ -227,17 +247,23 @@ class LS4_Conf():
        parser.add_argument('--delay', type=float, default=0.0,
                            help='delay (sec) between exposure pairs')
        parser.add_argument('--shutter_mode', type=str, default="open",
-                           help='choose alternate, dark, or open')
-       parser.add_argument('--server_name', metavar='H', type=str, default='ls4-workstn',
-                           help='name of the command server host')
+                      help='choose alternate, dark, or open')
+       parser.add_argument('--server_name', metavar='H', type=str, 
+                           default=self.hostname,
+                      help='name of the command server host')
        parser.add_argument('--server_port', metavar='P', type=int, default=5000,
-                           help='port number of the command server')
+                      help='port number of the command server')
        parser.add_argument('--status_port', metavar='Q', type=int, default=5001,
-                           help='port number of the status server')
+                      help='port number of the status server')
        parser.add_argument('--reset', metavar='R', type=str, default="False",
-                          help='reset the controllers and exit')
-       parser.add_argument('--initial_reboot', metavar='B', type=str, default="False",
-                          help='initially reboot controllers before configuring')
+                      help='reset the controllers and exit')
+       parser.add_argument('--initial_reboot', metavar='B', type=str,
+                      default="False",
+                      help='initially reboot controllers before configuring')
+       parser.add_argument('--amp_direction', type=str, default="both",
+                       help='choose both, left, or right')
+
+
 
        conf.update(vars(parser.parse_args()))
 

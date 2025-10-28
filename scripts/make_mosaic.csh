@@ -2,7 +2,7 @@
 #
 # make mosaic image from 64 amp output of LS4 
 #
-set amp_selection = "BOTH"
+set amp_selection = $CCD_AMP_SELECTION
 set dark_subtract = 0
 if ( $#argv != 2 && $#argv != 3 ) then
    echo "syntax: make_mosaic.csh [prefix (e.g. test)] [sequence number] [directory_path]  "
@@ -34,7 +34,8 @@ echo "output: $output"
 set l = `ls "$prefix"*"$seq_num"*".fits"`
 set l1 = `echo $l | sed -e "s/ /,/g"`
 
-if ( $amp_selection != "BOTH" ) then
+if ( $amp_selection != "BOTH" && $amp_selection != "both" ) then
+  echo "assuming left amp readout"
   set prog = "mosaic_left.py --amp_selection $amp_selection "
 else
   set prog = "mosaic.py "

@@ -1,7 +1,19 @@
-# define LS4_Command_Server class.
-
-# This is a creates a basic TCP server to receive commands, execute them, and return
-# a reply
+############################
+# -*- coding: utf-8 -*-
+#
+# @Author: David Rabinowitz (david.rabinowitz@yale.edu)
+# @Date: 2025-06-25
+# @Filename: ls4_command_server.py
+# @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
+#
+# Python code defining LS4_Command_Server class
+# This creates a basic TCP server to receive commands, execute them, and return
+# a reply.
+#
+# At instantation the class is provided a dictionary defining the command names and  their parameters,
+# and a function that performs the required actions for each command name.
+#
+############################
 
 
 import sys
@@ -212,16 +224,27 @@ class LS4_Command_Server():
               # Keep reading commands from the open socket until it closes
               connection_open = True
               while connection_open and not self.ls4_abort.abort_server:
-                command = client_socket.recv(self.maxbufsize).decode()
-                command=command.strip()
-                self.debug("port %d, command is : %s" % (self.port,command))
-                if not command:
+                bad_command = False
+                try:
+                  command = client_socket.recv(self.maxbufsize).decode()
+                  command=command.strip()
+                except Exception as e:
+                  bad_command = True
+                  error_msg = "ERROR receiving command over socket. Ignoring: %s" % e
+                  self.warn(error_msg)
+                
+                if bad_command:
+                    self.debug("bad command received. Return error reply")
+                    reply = ERROR_REPLY
+                    reply_list=[reply]
+                elif not command:
                     #print("client %s disconnected" % client_address)
                     connection_open=False
                     poller.unregister(client_socket)
                     client_socket.close()
                     del client_sockets[fd]
                 else:
+                    self.debug("port %d, command is : %s" % (self.port,command))
                     reply = None
                     reply_list=[reply]
                     self.debug("port %d, handling command: %s" % (self.port,command))
@@ -229,11 +252,14 @@ class LS4_Command_Server():
                     self.debug("port %d, done handling command: [%s]  reply: [%s]" % \
                             (self.port,command,reply_list[0]))
                     reply = reply_list[0].strip()
+                    #while len(reply) < 256:
+                    #    reply = reply + " "
                     reply = reply + "\n"
                     reply = reply.encode()
                     self.debug("port %d, sending reply: %s" % (self.port,reply))
                     try:
-                      client_socket.send(reply)
+                      #client_socket.send(reply)
+                      client_socket.sendall(reply)
                     except Exception as e:
                       self.error("port %d, exception sending reply [%s]: %s" % (self.port,reply,e))
                     self.debug("done sending reply: %s" % reply)
@@ -254,9 +280,6 @@ class LS4_Command_Server():
 
     def check_command(self,command_str=None):
 
-        command_list = command_str.split()
-        command = command_list[0]
-        arg_value_list = command_list[1:]
         error_msg = ""
         warn_msg = ""
         shutdown_flag=False
@@ -264,12 +287,79 @@ class LS4_Command_Server():
         reboot_flag=False
         error_flag=False
 
-        if command not in self.command_dict:
+        command_list = command_str.split()
+        command = command_list[0]
+        arg_value_list = command_list[1:]
+
+        # if a list of words appears in the arg_value_list, and these
+        # list entries are bracketed by list element "'",
+        # then these list entries were originally split up from a string argument to
+        # the command (probably the "header" command).
+        # Join the words back into the original string argument, 
+        # and adjust the arg_value_list so that the string argument
+        # appears as a single entry:
+        # E.G. if arg_value_list =
+        #       ["a", "b". "c", "'",  "I", "am", "a", "string, "'", "d"]
+        # then change it to"
+        #       ["a", "b". "c", "I am  a string", "d"]
+        # ending with "'". Count all these entries as one arg
+
+        new_arg_list = []
+        if "'" in arg_value_list:
+          string_arg = ""
+          # determine values index1,i1,index2,i2 such that
+          #   string_arg = the concatenation of arg_value_list[i1:i2]
+          # and
+          #   new arg_arg_list = arg_value_list[0:index1] + [string_arg] + arg_values_list[index2:]
+          #
+          # set index1 to the index of the first instance of "'" in the arg list
+          index1 = arg_value_list.index("'")
+          #
+          # initialize new arg list with elements from the original arg list preceding the first "'"
+          new_arg_list = arg_value_list[0:index1]
+
+          # initialize list of words (l) to go into string
+          i1 = index1 + 1
+          l = arg_value_list[i1:]
+
+          # check that a second instance of "'" appears in list l. If not, record and error
+          if "'" in l: 
+
+            #set index to the index of the first  instance of "'" in list l.
+            index = l.index("'")
+
+            # join all the elements  in list l from 0 to index into string_arg
+            string_arg  = " ".join(l[0:index])
+
+            # set index2 to the index within arg_val_list of the second instance of "'" in the arg list
+            index2 = i1 + l.index("'")
+
+            # finally set new arg list to the elements from arg_value_list preceding the first "'",
+            # followed by string_arg, and ending with all the elements from arg_value_list succeeding
+            # the second "'".
+            # 
+            i2 = index2 + 1
+            new_arg_list = arg_value_list[0:index1] + [string_arg] + arg_value_list[i2:]    
+            self.debug("orginal arg_value_list: %s" % str(arg_value_list))
+            self.debug("new arg_value_list: %s" % str(new_arg_list))
+            arg_value_list = new_arg_list
+          else:
+            error_msg="argument has unterminated string: command [%s], args[%s], expected [%s]" %\
+                     (command,str(arg_value_list),str(self.command_dict[command]['arg_name_list']))
+            error_flag = True
+
+        n_args = len(arg_value_list) 
+          
+
+        if error_flag:
+           self.error(error_msg)
+
+        elif command not in self.command_dict:
            warn_msg = "invalid command: %s" % str(command_list)
            self.error(warn_msg)
            error_flag=True
 
-        elif len(arg_value_list) != len(self.command_dict[command]['arg_name_list']):
+        elif n_args  != len(self.command_dict[command]['arg_name_list']):
            error_msg="incorrect args: command [%s], args[%s], expected [%s]" %\
                      (command,str(arg_value_list),str(self.command_dict[command]['arg_name_list']))
            self.error(error_msg)

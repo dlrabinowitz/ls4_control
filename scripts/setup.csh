@@ -1,5 +1,5 @@
 #!/bin/tcsh 
-source ~/ls4_venv/bin/activate.csh
+source ~/observer_venv/bin/activate.csh
 setenv LS4_CONTROL_ROOT  `pwd`
 set x = $LS4_CONTROL_ROOT
 set s = $x/scripts

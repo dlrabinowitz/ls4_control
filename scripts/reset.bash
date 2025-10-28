@@ -1,5 +1,5 @@
 #!/bin/bash
-source ~/ls4_venv/bin/activate
+source $PYTHON_VENV/bin/activate
 LOG_LEVEL="DEBUG"
 EXPTIME=0.05
 INITIAL_CLEAR="True"

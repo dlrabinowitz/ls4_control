@@ -329,9 +329,18 @@ def assemble_mosaic(conf=None):
            kw=header_kwds[index]+str(i1)
            im_head[kw]=wcs_val[index][i]
 
+
+     # fits has problem with comment keyword
+     #print("comment = [%s]" % im_head['comment'])
+     try: 
+       comment_str = im_head['COMMENT']
+       im_head.remove('comment', ignore_missing=True)
+       im_head['COMMENT']=comment_str
+     except Exception as e:
+       print ("error fixing comment : %s" % e)
+
      hdu_list.flush()
      hdu_list.close()
-  
   write_fits(mos_data,im_head,conf['output'])
 
 def namelist(s):

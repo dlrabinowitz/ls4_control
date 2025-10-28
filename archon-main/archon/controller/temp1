@@ -1,0 +1,61 @@
+def get_device_status(self,\
+              update_frame: bool = True,\
+              update_power_bits: bool = True) -> dict[str, Any]:
+
+        """Returns a dictionary with the output of the ``STATUS`` command."""
+
+        device_status=None
+
+        cmd = await self.send_command("STATUS", timeout=10)
+        if not cmd.succeeded():
+            error = cmd.status == ArchonCommandStatus.TIMEDOUT
+            raise LS4ControllerError(
+                f"Command STATUS finished with status {cmd.status.name!r}",
+                set_error_status=error,
+            )
+
+        for key_val_str in str(cmd.replies[0].reply).split():
+            key_val = key_val_str.split("=")
+            key=key_val[0].lower()
+            val= key_val[1]
+            value = None
+            # The timing code uses one of the DIO bits of the XBIAS card (MOD4/DINPUTS) to signal 
+            # when it is busy running a main-loop procedure (erasing, purging, clearing, flushing,
+            # etc). The STATUS_START_BIT is asserted when the procedure is running, and 
+            # cleared when finished. Set keyword 'MAINLOOP' to show the status of this bit
+            # (False when asserted, True otherwise)
+            # code is in the main loop (finished) or not.
+            if "mod4/dinputs" in key:
+               #assert check_int(val), "value for MOD4/DINPUTS [%s] is not an integer" % val
+               value = int(val)
+               device_status['mainloop'] = not ( int(val,2)& STATUS_START_BIT)
+            elif check_int(val):
+               value = int(val)
+            else:
+               value = float(val)
+            device_status[key]=value
+                
+        """
+        keywords = str(cmd.replies[0].reply).split()
+        device_status = {
+            key.lower(): int(value) if check_int(value) else float(value)
+            for (key, value) in map(lambda k: k.split("="), keywords)
+        }
+        """
+
+        if update_power_bits:
+           await self.power()
+
+        if update_frame:
+           if self.fake_controller:
+              frame= self.fake_control.get_frame()
+           else:
+              frame=await self.get_frame()
+           device_status['frame']=frame
+
+        device_status['shutter']=self.shutter_enable
+        s = self.status
+        sd = s.status_dict
+        device_status.update(sd)
+
+        return device_status

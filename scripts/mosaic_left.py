@@ -117,7 +117,8 @@ def write_fits(data=None,header=None,output='test.fits'):
     hdu = fits.PrimaryHDU(data)
     fits_header = hdu.header
     for k in header:
-      fits_header[k] = header[k]
+      if k not in ['COMMENT']:
+        fits_header[k] = header[k]
 
     hdul = fits.HDUList([hdu])
     hdul.writeto(output,overwrite=True)
@@ -228,6 +229,16 @@ def assemble_mosaic(conf=None):
   im = im_list[0]
   hdu_list = fits.open(im)
   im_head = hdu_list[0].header
+
+  # fits has problem with comment keyword
+  #print("comment = [%s]" % im_head['comment'])
+  try:
+    comment_str = im_head['COMMENT']
+    im_head.remove('comment', ignore_missing=True)
+    im_head['COMMENT']=comment_str
+  except Exception as e:
+    print ("error fixing comment : %s" % e)
+
   width=im_head['NAXIS1']
   height=im_head['NAXIS2']
   prescan_x = 6
@@ -249,13 +260,14 @@ def assemble_mosaic(conf=None):
      assert im_data_raw.shape == shape,\
              "image %s has shape(%s) inconsitent with first image(%s)" %\
                    (im,im_data_raw.shape,shape)
-     ccd_name= im_head['CCD_NAME'].strip()
+     #ccd_name= im_head['CCD_NAME'].strip()
+     ccd_name= im_head['CCD_LOC'].strip()
      amp_name = im_head['AMP_NAME'].strip()
      tap_name = im_head['TAP_NAME'].strip()
 
      position = amp_name
 
-     assert ccd_name in ccd_map.keys(),"ccd_name %s not in ccd_map" % ccd_name
+     assert ccd_name in ccd_map.keys(),"ccd_name %s not in ccd_map [%s]" % (ccd_name,ccd_map.keys())
      assert amp_name in ['LEFT','RIGHT'],"amp_name %s must be LEFT or RIGHT" % amp_name
 
      if im_list_dark is not None:

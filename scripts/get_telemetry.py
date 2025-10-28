@@ -1,4 +1,4 @@
-#!/home/daver/ls4_venv/bin/python
+#!/home/ls4/observer_venv/bin/python
 # get_telemetry.py
 #
 # read telemetry keywords from list of files and plot values

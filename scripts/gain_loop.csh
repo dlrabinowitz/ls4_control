@@ -7,8 +7,8 @@ if (! -e $LS4_CONTROL_ROOT/scripts/make_mosaics.csh ) then
    exit
 endif
 
+set ls4_host = `hostname`
 set CLEAR = 1
-
 set MAX_EXPTIME = 700
 set exptime0 = 0
 set exp_incr = 20 
@@ -20,12 +20,12 @@ set DISK_LIMIT = 90
 
 if ( $CLEAR == 1 ) then
   echo `date` "clearing 30 sec"
-  set l = `echo "clear 30" | netcat -N ls4-workstn 5000`
+  set l = `echo "clear 30" | netcat -N $ls4_host 5000`
   echo `date` $l   
   if ( $l != "DONE") exit
 endif
 
-set l = `echo "vsub_on" | netcat -N ls4-workstn 5000`
+set l = `echo "vsub_on" | netcat -N $ls4_host 5000`
 echo `date` $l   
 if ( $l != "DONE") exit
 
@@ -60,7 +60,7 @@ while ( $l == "DONE" && $sequence_done == 0)
     set exp_mode = "next"
   endif
   echo `date` $n $exp_mode start
-  set l = `echo "expose $shutter $exptime test $exp_mode" | netcat -N ls4-workstn 5000`
+  set l = `echo "expose $shutter $exptime test $exp_mode" | netcat -N $ls4_host 5000`
   echo `date` $n $exp_mode $l   
   #$LS4_CONTROL_ROOT/scripts/make_mosaics.csh testC 
   mv testC*fits $save_dir
@@ -68,7 +68,7 @@ while ( $l == "DONE" && $sequence_done == 0)
 end
 
 echo `date` "shutting down"
-set l = `echo "shutdown" | netcat -N ls4-workstn 5000`
+set l = `echo "shutdown" | netcat -N $ls4_host 5000`
 echo `date` "shutting down" $l
 
 
