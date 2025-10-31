@@ -25,7 +25,7 @@ in bash:
 
 test:
 
-    scripts/test.bash
+    see doc/README
 
 
   
