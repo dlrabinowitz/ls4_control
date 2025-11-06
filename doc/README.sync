@@ -1,0 +1,131 @@
+Synchronization of the Archon Controllers
+
+Note: Synchronization has two meanings:
+
+(1) synchronizing the readout of the Archon Controls (hardware/firmware)
+
+(2) synchronizing the threads of code used to read out the controllers (software).
+
+
+
+Basics
+
+1. Start with a routine to program and command a single controller (using primitives from SDSS Archon code. see sdss_controller.pdf)
+
+   ls4_control uses the "LS4_Camera" class.
+
+2. Construct a high-level routine to  spawn 4 iterations of LS4_Camera:
+   (see ls4_control.py):
+
+    # first create 4 instances of LS4_camera 
+
+    for index in range(0,5):
+      self.ls4_list[index]=\
+         LS4_Camera(ls4_conf=conf,ls4_sync=self.ls4_sync,
+         command_args=self.ls4_sync.command_args,
+         param_args=self.ls4_sync.param_args, 
+         fake=self.fake_controller)
+
+   where self.ls4_sync provides tools to synchronize calls to the controllers (instance of LS4_Sync class, see ls4_sync.py). 
+
+3. Example: initialize the 4 controllers at the same time (synchronously)
+
+   First create an asyncio routine that initializes a single controller given an instance of LS4_Camera as an argument ("ls4"):
+
+    async def init_controller(self,ls4=None,hold_timing=False, reboot = False):
+      """ initialize the controller associated with the instance of 
+          LS4_Camera specified by ls4.
+          If hold_time is True, do not run the timing code. 
+          If reboot is True, reboot the controller before initializing
+      """
+      if ls4 is not None:
+        ls4.debug("initializing with reboot = %s" % reboot )
+        await ls4.init_controller(hold_timing=hold_timing,reboot=reboot)
+
+   Now,  to simulatenously initialize 4 controllers, use asyncio.gather to execute 4 calls to self.init_controller:
+
+    await asyncio.gather(\
+            *(self.init_controller(ls4_cam, hold_timing=False, reboot = False)
+            for ls4_cam in self.ls4_list)\
+            )
+
+4. Synchronized  operation (confuration and readout) of the 4 controllers
+
+   Synchronized configuration is usually not needed. The functions that write parameters do not have to do so simultaenously. However, the commands to start a readout need to be simultaneous, and the timing code run by the controllers during exposure and readout need to be synchronized.
+
+   Read the Archon manual to understand better how to synchronize readout.
+
+   ls4_control uses the "send_command" function (see LS4_Controller class) to send a command to the Archon controllers so that they execute the command synchrounously. This will normally be executed by four threads at the same time, using the asyncio.gather() function discussed above.
+
+   The send_command routine is defined as follows:`
+
+    async def send_command(
+        self,
+        command_string: str,
+        command_id: Optional[int] = None,
+        sync_flag: bool | None = None,
+        **kwargs,
+    ) -> ArchonCommand:
+
+
+      #First prepare an instance of the ArchonCommand class using the 
+      command_string passes to send_command.
+
+      command = ArchonCommand(
+              command_string,
+              command_id,
+              controller=self,
+              fake=self.fake_controller,
+              **kwargs,
+      )
+
+      # Now prepare the controllers to execute the command:
+
+      if sync_flag:
+        await self.ls4_sync_io.sync_prepare(param_args=None,\
+          command_args={'command_string':command_string,
+          'command_id':command_id})
+
+      # The threads that are sending a command to the follower
+      # controllers (those that receive the sync clock provided 
+      # by the lead controller ) write the command to the 
+      # respective controller here. The controllers
+      # do not execute the command yet. That occurs below.
+           
+      if not self.ls4_sync_io.leader:
+            self.write(command.raw)
+
+      # Now the threads check in with the lead controller to
+      # signal they are ready. THe lead controller waits for
+      # the followers to update.
+
+      try:
+           await self.ls4_sync_io.sync_update(command_flag=True)
+      except Exception as e:
+           error_msg = "Exception updating sync: %s" % e
+ 
+      # Finally the lead thread writes the command 
+      # to the lead controller. This all
+
+      if self.ls4_sync_io.leader and not error_msg:
+           self.write(command.raw)
+
+      if not error_msg:
+           self.debug("%s: verifying sync" % prefix)
+           try:
+              await self.ls4_sync_io.sync_verify(command_flag=True)
+           except Exception as e:
+              error_msg = "Exception verifying sync: %s" % e
+
+      if error_msg is not None:
+           self.error("%s: %s" % (prefix,error_msg))
+           raise LS4ControllerError(\
+              f"Failed running {command_string}: %s" % error_msg)
+
+      return command
+
+    
+  
+
+
+  
